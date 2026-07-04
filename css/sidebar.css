@@ -1,0 +1,236 @@
+/* =========================================
+   4. SEITENMENÜ (ASIDE / NAV)
+   ========================================= */
+
+aside {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 300px;
+    background: linear-gradient(180deg, #0a1535 0%, #111111 100%);
+    color: #fff;
+    padding: 0 16px 40px 16px;
+    box-shadow: 6px 0 36px rgba(0,0,0,0.55);
+    z-index: 1000;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(100, 180, 255, 0.45) transparent;
+    transform: translateX(-100%);
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+aside::-webkit-scrollbar { width: 4px; }
+aside::-webkit-scrollbar-track { background: transparent; }
+aside::-webkit-scrollbar-thumb { background: rgba(100, 180, 255, 0.45); border-radius: 4px; }
+aside::-webkit-scrollbar-thumb:hover { background: rgba(100, 180, 255, 0.75); }
+
+aside.open {
+    transform: translateX(0);
+}
+
+/* ── Sidebar Brand/Logo-Bereich ── */
+.sidebar-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 20px 4px 18px 4px;
+    margin-bottom: 4px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+    position: relative;
+    text-decoration: none !important;
+    color: inherit;
+    transition: background 0.2s ease;
+    border-radius: 10px 10px 0 0;
+}
+
+.sidebar-brand:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.sidebar-brand::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, var(--primary-blue), var(--accent), transparent);
+    opacity: 0.6;
+}
+
+.sidebar-logo {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    object-fit: cover;
+    flex-shrink: 0;
+    box-shadow: 0 0 14px rgba(0, 71, 204, 0.45);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sidebar-brand-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    overflow: hidden;
+}
+
+.sidebar-brand-name {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #fff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-family: var(--font-heading);
+}
+
+.sidebar-brand-tagline {
+    font-size: 0.6rem;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--accent);
+    font-weight: 700;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-family: var(--font-display);
+}
+
+/* ── Close-Button ── */
+.close-btn {
+    font-size: 1.4rem;
+    color: rgba(255, 255, 255, 0.6);
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    cursor: pointer;
+    position: absolute;
+    top: 18px;
+    right: 16px;
+    width: 36px;
+    height: 36px;
+    line-height: 36px;
+    text-align: center;
+    transition: color 0.2s, background 0.2s;
+}
+
+.close-btn:hover {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.16);
+}
+
+nav { margin-top: 10px; }
+nav ul { list-style: none; }
+nav ul li { margin-bottom: 3px; }
+
+/* Einheitliche Icon-Breite - ersetzt style="width:25px;" in allen Seiten */
+nav ul li a i {
+    width: 25px;
+    flex-shrink: 0;
+    text-align: center;
+}
+
+nav ul li a {
+    color: rgba(255, 255, 255, 0.72);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    padding: 10px 12px;
+    background: transparent;
+    border-radius: 8px;
+    border-left: 3px solid transparent;
+    transition: background 0.18s ease, color 0.18s ease, padding-left 0.18s ease, box-shadow 0.18s ease;
+    font-size: 0.93rem;
+    font-weight: 400;
+    gap: 2px;
+}
+
+nav ul li a:hover {
+    background: rgba(0, 71, 204, 0.22);
+    color: #fff;
+    padding-left: 16px;
+    border-left-color: rgba(0, 71, 204, 0.5);
+    box-shadow: 0 2px 10px rgba(0, 71, 204, 0.18);
+    transform: none;
+}
+
+nav ul li a.menu_current {
+    background: linear-gradient(90deg, rgba(0, 71, 204, 0.45), rgba(0, 71, 204, 0.15));
+    border-left: 3px solid var(--accent);
+    padding-left: 16px;
+    font-weight: 600;
+    color: #fff;
+    box-shadow: 0 2px 14px rgba(0, 71, 204, 0.3);
+}
+
+/* ── Section Labels ── */
+nav ul li.nav-section-label {
+    font-size: 0.62rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: rgba(255, 255, 255, 0.28);
+    font-weight: 700;
+    padding: 18px 12px 5px 12px;
+    margin-top: 4px;
+    margin-bottom: 4px;
+    pointer-events: none;
+    cursor: default;
+    font-family: var(--font-body);
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    list-style: none;
+}
+
+/* ── Suchzeile in der Sidebar ── */
+.sidebar-search {
+    padding: 12px 4px 10px 4px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+    margin-bottom: 6px;
+}
+
+.sidebar-search-row {
+    display: flex;
+    gap: 6px;
+}
+
+.sidebar-search input {
+    flex: 1;
+    min-width: 0;
+    padding: 9px 12px;
+    background: rgba(255, 255, 255, 0.09);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    color: #fff;
+    font-size: 0.85rem;
+    font-family: inherit;
+    outline: none;
+    transition: background 0.2s, border-color 0.2s;
+}
+
+.sidebar-search input::placeholder {
+    color: rgba(255, 255, 255, 0.35);
+}
+
+.sidebar-search input:focus {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(0, 71, 204, 0.7);
+}
+
+.sidebar-search button {
+    padding: 9px 13px;
+    background: var(--primary-blue);
+    border: none;
+    border-radius: 8px;
+    color: #fff;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background 0.2s;
+    flex-shrink: 0;
+}
+
+.sidebar-search button:hover {
+    background: var(--dark-blue);
+}

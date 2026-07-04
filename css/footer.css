@@ -1,0 +1,362 @@
+/* =========================================
+   FOOTER - Modernes 3-Spalten-Layout
+   ========================================= */
+
+footer {
+    background: linear-gradient(160deg, #0d1f5c 0%, #060e2e 100%);
+    color: rgba(255, 255, 255, 0.65);
+    padding: 0;
+    border-top: 1px solid transparent;
+    border-image: linear-gradient(90deg, transparent 0%, var(--primary-blue) 30%, var(--accent) 60%, transparent 100%) 1;
+    border-bottom-left-radius: 12px;
+    border-bottom-right-radius: 12px;
+    font-size: 0.9rem;
+    position: relative;
+}
+
+/* Glowing top accent line (border-image doesn't work with border-radius, so we use ::before) */
+footer::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent 0%, var(--primary-blue) 25%, var(--accent) 55%, var(--primary-blue) 80%, transparent 100%);
+    opacity: 0.75;
+}
+
+/* ── Simple footer layout (logo + nav + text) ── */
+.footer-logo-link {
+    display: block;
+    width: fit-content;
+    margin: 28px auto 14px auto;
+    cursor: pointer;
+    -webkit-tap-highlight-color: rgba(255, 204, 0, 0.2);
+}
+
+footer > .footer-logo-link img.footer-logo,
+footer > img.footer-logo {
+    display: block;
+    height: 46px;
+    width: auto;
+    border-radius: 8px;
+    opacity: 0.9;
+    filter: drop-shadow(0 0 10px rgba(0, 71, 204, 0.5));
+    transition: opacity 0.3s, filter 0.3s, transform 0.3s;
+    margin: 0 auto;
+}
+
+footer > .footer-logo-link:hover img.footer-logo,
+footer > img.footer-logo:hover {
+    opacity: 1;
+    filter: drop-shadow(0 0 16px rgba(255, 204, 0, 0.5));
+    transform: translateY(-2px);
+}
+
+/* Club-Name unter Logo */
+.footer-club-name {
+    display: block;
+    text-align: center;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.55);
+    letter-spacing: 0.5px;
+    margin: 0 0 16px 0;
+}
+
+/* Footer Schnell-Nav */
+.footer-quick-nav {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 6px 18px;
+    margin: 0 auto 18px auto;
+    padding: 0 20px;
+    list-style: none;
+}
+
+.footer-quick-nav li a {
+    color: rgba(255, 255, 255, 0.45) !important;
+    text-decoration: none !important;
+    font-size: 0.8rem;
+    font-weight: 500;
+    transition: color 0.2s ease;
+}
+
+.footer-quick-nav li a:hover {
+    color: var(--accent) !important;
+}
+
+/* Trennlinie vor Copyright */
+.footer-rule {
+    display: block;
+    height: 1px;
+    background: linear-gradient(90deg, transparent 0%, var(--primary-blue) 25%, var(--accent) 55%, var(--primary-blue) 80%, transparent 100%);
+    opacity: 0.5;
+    margin: 0 auto 14px auto;
+    max-width: 400px;
+}
+
+footer > p {
+    text-align: center;
+    font-size: 0.82rem;
+    font-weight: 300;
+    color: rgba(255, 255, 255, 0.38);
+    margin: 0 0 6px 0;
+    padding: 0 20px;
+}
+
+footer > p a {
+    color: rgba(255, 255, 255, 0.5) !important;
+    transition: color 0.2s;
+}
+
+footer > p a:hover {
+    color: rgba(255, 255, 255, 0.8) !important;
+}
+
+footer > p:last-child {
+    padding-bottom: 22px;
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+    .footer-logo-link {
+        margin: 20px auto 10px auto;
+    }
+    .footer-quick-nav {
+        gap: 4px 14px;
+    }
+    .footer-quick-nav li a {
+        font-size: 0.75rem;
+    }
+}
+
+/* ── 3-Spalten-Grid ── */
+.footer-inner {
+    display: grid;
+    grid-template-columns: 1.6fr 1fr 1fr;
+    gap: 48px;
+    padding: 52px 50px 42px 50px;
+}
+
+/* ── Branding-Spalte ── */
+.footer-brand .footer-logo {
+    height: 46px;
+    width: auto;
+    margin: 0 0 16px 0;
+    opacity: 0.88;
+    filter: none;
+    display: block;
+    border-radius: 6px;
+    transition: opacity 0.3s ease;
+    box-shadow: none;
+}
+
+.footer-brand .footer-logo:hover {
+    opacity: 1;
+    transform: none;
+    filter: none;
+}
+
+.footer-tagline {
+    font-size: 0.68rem;
+    font-family: var(--font-display);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--accent);
+    font-weight: 700;
+    margin-bottom: 10px !important;
+}
+
+.footer-desc {
+    font-size: 0.87rem;
+    line-height: 1.68;
+    font-weight: 300;
+    color: rgba(255, 255, 255, 0.45);
+    margin-bottom: 22px !important;
+}
+
+.footer-social-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255, 255, 255, 0.08);
+    color: #fff !important;
+    text-decoration: none !important;
+    padding: 9px 16px;
+    border-radius: 8px;
+    font-size: 0.87rem;
+    font-weight: 600;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.footer-social-btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.26);
+    text-decoration: none !important;
+    transform: none;
+}
+
+.footer-social-btn i {
+    font-size: 1.05rem;
+    color: #e1306c;
+}
+
+/* ── Spaltenüberschriften ── */
+.footer-heading {
+    font-size: 0.66rem !important;
+    text-transform: uppercase;
+    letter-spacing: 1.8px;
+    color: rgba(255, 255, 255, 0.32) !important;
+    margin: 0 0 16px 0 !important;
+    font-weight: 700 !important;
+    font-family: var(--font-body);
+    border: none !important;
+    padding: 0 !important;
+}
+
+/* ── Link-Listen ── */
+.footer-links {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.footer-links li {
+    margin-bottom: 9px;
+}
+
+.footer-links a {
+    color: rgba(255, 255, 255, 0.58) !important;
+    text-decoration: none !important;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: color 0.2s ease, padding-left 0.18s ease;
+    font-weight: 300;
+}
+
+.footer-links a i {
+    font-size: 0.76rem;
+    color: rgba(255, 204, 0, 0.65);
+    width: 14px;
+    flex-shrink: 0;
+    text-align: center;
+}
+
+.footer-links a:hover {
+    color: #fff !important;
+    padding-left: 4px;
+    text-decoration: none !important;
+}
+
+.footer-links a:hover i {
+    color: var(--accent);
+}
+
+/* ── Footer-Unterzeile ── */
+.footer-bottom {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 50px;
+    border-top: none;
+    background-image: linear-gradient(90deg, transparent 0%, var(--primary-blue) 20%, var(--accent) 50%, var(--primary-blue) 80%, transparent 100%);
+    background-repeat: no-repeat;
+    background-size: 100% 1px;
+    background-position: top;
+    font-size: 0.78rem;
+    font-weight: 300;
+    color: rgba(255, 255, 255, 0.28);
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.footer-bottom a {
+    color: rgba(255, 255, 255, 0.42) !important;
+    text-decoration: underline;
+    transition: color 0.2s;
+}
+
+.footer-bottom a:hover {
+    color: rgba(255, 255, 255, 0.75) !important;
+}
+
+.designer-credit {
+    font-size: 0.78rem;
+    color: rgba(255, 255, 255, 0.28) !important;
+    margin: 0 !important;
+    opacity: 1 !important;
+}
+
+.designer-credit a {
+    color: rgba(255, 255, 255, 0.45) !important;
+    text-decoration: none !important;
+    font-weight: 600;
+    transition: color 0.2s;
+}
+
+.designer-credit a:hover {
+    color: var(--accent) !important;
+}
+
+/* ── Mobile ── */
+@media (max-width: 768px) {
+    .footer-inner {
+        grid-template-columns: 1fr;
+        gap: 28px;
+        padding: 36px 24px 28px 24px;
+    }
+
+    .footer-bottom {
+        flex-direction: column;
+        gap: 6px;
+        padding: 14px 24px;
+        text-align: center;
+    }
+
+    /* Einfacher Footer (ohne .footer-inner) */
+    footer {
+        padding: 16px 20px 14px;
+        text-align: center;
+    }
+
+    footer > img.footer-logo {
+        height: 32px;
+        width: auto;
+        display: block;
+        margin: 0 auto 8px auto;
+        opacity: 0.85;
+    }
+
+    footer > p {
+        font-size: 0.72rem;
+        line-height: 1.5;
+        margin: 3px 0;
+        color: rgba(255, 255, 255, 0.45);
+    }
+
+    footer > p a {
+        color: rgba(255, 255, 255, 0.55) !important;
+    }
+
+    .designer-credit {
+        font-size: 0.68rem !important;
+    }
+}
+
+@media (min-width: 769px) and (max-width: 900px) {
+    .footer-inner {
+        grid-template-columns: 1fr 1fr;
+        gap: 32px;
+        padding: 40px 36px 34px 36px;
+    }
+
+    .footer-brand {
+        grid-column: 1 / -1;
+    }
+}

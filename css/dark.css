@@ -1,0 +1,261 @@
+body.dark-mode {
+    background-color: #0f1117;
+    background-image: radial-gradient(circle, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+    background-size: 28px 28px;
+    color: #e0e0e0;
+}
+
+/* Backgrounds & Container */
+body.dark-mode .container,
+body.dark-mode .news-card,
+body.dark-mode .trainer-card,
+body.dark-mode .chart-container,
+body.dark-mode .archive-year summary,
+body.dark-mode .archive-content,
+body.dark-mode .location-box,
+body.dark-mode .table-responsive,
+body.dark-mode table.stats-table,
+body.dark-mode .record-box,
+body.dark-mode .result-item {
+    background-color: #1e1e1e;
+    color: #e0e0e0;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+    border-color: #333;
+}
+
+body.dark-mode .record-box {
+    background: #1e1e1e;
+}
+
+
+/* Typography & Links */
+body.dark-mode h1, 
+body.dark-mode h2, 
+body.dark-mode h3, 
+body.dark-mode .trainer-name, 
+body.dark-mode .news-card h3 { 
+    color: #ffffff; 
+}
+
+body.dark-mode p, 
+body.dark-mode .news-date { 
+    color: #a0a0a0; 
+    background-color: transparent; 
+}
+
+body.dark-mode .news-link, 
+body.dark-mode .archive-content ul li a,
+body.dark-mode .action-btn {
+    background: rgba(255, 255, 255, 0.05);
+    color: #74a3ff; 
+}
+
+body.dark-mode .news-link:hover, 
+body.dark-mode .archive-content ul li a:hover,
+body.dark-mode .action-btn:hover {
+    background: var(--primary-blue);
+    color: #fff !important;
+}
+
+body.dark-mode .result-item a,
+body.dark-mode .member-role { 
+    color: #74a3ff; 
+}
+
+/* Borders & Accents */
+body.dark-mode .news-card,
+body.dark-mode .trainer-card,
+body.dark-mode .location-box,
+body.dark-mode .record-box {
+    border-top: 4px solid var(--primary-blue);
+}
+
+body.dark-mode .archive-year {
+    border-left: 4px solid var(--primary-blue);
+}
+
+/* Tables */
+body.dark-mode table.stats-table tr:hover td { background-color: #2a2a2a; }
+body.dark-mode table.stats-table td { border-bottom: 1px solid #333; color: #e0e0e0; }
+
+/* Suchleiste groß */
+body.dark-mode .main-search-box input {
+    background: #2a2a2a;
+    border-color: #444;
+    color: #fff;
+}
+body.dark-mode .main-search-box input:focus { border-color: #74a3ff; }
+
+/* Sonstiges */
+body.dark-mode .countdown-wrapper { color: #fff; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+body.dark-mode footer { background: linear-gradient(160deg, #06102a 0%, #020810 100%); border-top: none; }
+/* designer-credit ist im neuen Footer bereits korrekt gestylt */
+
+/* Dark Mode Anpassungen für Unterseiten */
+body.dark-mode .contact-form { background: transparent; border-color: #333; border-top: none; box-shadow: none; }
+body.dark-mode .contact-form label { color: #e0e0e0; }
+body.dark-mode .contact-form input, body.dark-mode .contact-form textarea { background: #2a2a2a; border: 1.5px solid #444; color: #fff; }
+body.dark-mode .contact-form .form-field input:focus,
+body.dark-mode .contact-form .form-field textarea:focus { border-color: #4d7aff; box-shadow: 0 0 0 3px rgba(77, 122, 255, 0.15); background: #333; }
+body.dark-mode .contact-form .form-field label { color: #777; }
+body.dark-mode .contact-form .form-field input:focus ~ label,
+body.dark-mode .contact-form .form-field input:not(:placeholder-shown) ~ label,
+body.dark-mode .contact-form .form-field textarea:focus ~ label,
+body.dark-mode .contact-form .form-field textarea:not(:placeholder-shown) ~ label { color: #74a3ff; }
+body.dark-mode .success-box { background: #1b3320; border-top-color: #66bb6a; }
+body.dark-mode .success-box h2 { color: #81c784; }
+body.dark-mode .success-box p { color: #e0e0e0; }
+body.dark-mode .close-success-btn { color: #aaa; }
+
+/* Contact Layout Dark Mode */
+body.dark-mode .contact-layout { box-shadow: 0 10px 40px rgba(0,0,0,0.4); }
+body.dark-mode .contact-sidebar { background: linear-gradient(160deg, #002080, #000e3a); }
+body.dark-mode .contact-info-item:hover .ci-icon { background: rgba(255,255,255,0.12); }
+body.dark-mode .contact-main { background: #1e1e1e; }
+body.dark-mode .contact-main .contact-form { background: transparent; }
+
+body.dark-mode .price-box, body.dark-mode .impressum-box, body.dark-mode .chart-box { background: #1e1e1e; border-top-color: var(--dark-blue); border-left-color: var(--dark-blue); }
+body.dark-mode .price-row { border-bottom-color: #333; }
+body.dark-mode .price-title { color: #e0e0e0; }
+body.dark-mode .price-value { color: #4285F4; }
+body.dark-mode .note-box { background: #332b00; color: #fff; }
+body.dark-mode .result-item mark { background: #4a3e00; color: #ffe066; }
+body.dark-mode .philosophy-box { background: #112233; border-left-color: #4285F4; color: #e0e0e0; }
+body.dark-mode .download-section { background: rgba(255,255,255,0.02); border-color: #444; }
+
+body.dark-mode .milestone-box { background: #1e1e1e; border-bottom-color: var(--dark-blue); box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+body.dark-mode .milestone-number { color: #4285F4; }
+body.dark-mode .milestone-text { color: #aaa; }
+
+body.dark-mode .charts-wrapper .chart-box { box-shadow: 4px 4px 0 rgba(66,133,244,0.15); }
+body.dark-mode .chart-title--primary { color: #4285F4; }
+body.dark-mode .chart-title--dark    { color: #6ba8ff; }
+body.dark-mode .chart-title--light   { color: #74a3ff; }
+body.dark-mode .chart-podium-total { background: rgba(255,255,255,0.04); color: #aaa; border-left-color: #c8a000; }
+body.dark-mode .podium-gold   { background: rgba(255,204,0,0.1);   color: #d4a800; border-color: rgba(255,204,0,0.3); }
+body.dark-mode .podium-silver { background: rgba(0,71,204,0.18);   color: #4285F4; border-color: rgba(66,133,244,0.3); }
+body.dark-mode .podium-bronze { background: rgba(66,133,244,0.12); color: #6ba8ff; border-color: rgba(66,133,244,0.25); }
+
+body.dark-mode .faq-item { background: #1e1e1e; }
+body.dark-mode .faq-answer { background: #252525; }
+
+body.dark-mode .history-section { border-left-color: var(--dark-blue); }
+body.dark-mode .history-section h2 { color: #4285F4; }
+body.dark-mode .history-img-frame { background: #1e1e1e; border-color: #333; box-shadow: 0 6px 15px rgba(0,0,0,0.3); }
+body.dark-mode .history-img-frame figcaption { color: #aaa; }
+body.dark-mode .history-img-frame.placeholder-frame { background: #332b00; border-color: #ff9800; }
+body.dark-mode .history-img-frame.placeholder-frame figcaption { color: #ffc107; }
+body.dark-mode .event-list { background: #1e1e1e; border-top-color: var(--dark-blue); }
+body.dark-mode .event-list li { color: #e0e0e0; }
+body.dark-mode .event-list li::before { color: #4285F4; }
+
+body.dark-mode .mode-switch { background: #111; }
+body.dark-mode .mode-btn.active { background: #4285F4; }
+body.dark-mode .table-container { background: #1e1e1e; border-top-color: var(--dark-blue); }
+body.dark-mode .table-container th { background: #252525; border-bottom-color: #333; color: #888; }
+body.dark-mode .table-container td { border-bottom-color: #333; }
+body.dark-mode .class-title { background: #2a2a2a; color: #4285F4; border-left-color: #4285F4; border-bottom-color: #444; }
+body.dark-mode .current-driver-box { background: #1e1e1e; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+body.dark-mode .driver-info div { color: #fff; }
+
+body.dark-mode .maps-placeholder { background: #1e1e1e; border-color: #555; }
+
+/* News date pill dark mode */
+body.dark-mode .news-badge-termin  { background: #1b3a1b; color: #81c784; }
+body.dark-mode .news-badge-wertung { background: #0d2340; color: #74a3ff; }
+body.dark-mode .news-badge-special { background: #332b00; color: #ffd54f; }
+
+/* Trainer card dark mode */
+body.dark-mode .trainer-card { background: #1e1e1e; border-bottom-color: var(--dark-blue); }
+body.dark-mode .trainer-img { background-color: #2a2a2a; }
+body.dark-mode .maps-placeholder-content p { color: #bbb; }
+
+body.dark-mode .info-card { background: #1e1e1e; border-top-color: var(--dark-blue); box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+body.dark-mode .info-card h3 { color: #4285F4; }
+body.dark-mode .secondary-btn { color: #74a3ff; border-color: #74a3ff; }
+body.dark-mode .secondary-btn:hover { background: var(--primary-blue); color: #fff !important; border-color: var(--primary-blue); }
+
+body.dark-mode .klaro .cookie-modal .cm-modal .cm-body { background-color: #1e1e1e !important; color: #e0e0e0 !important; }
+body.dark-mode .klaro .cookie-modal .cm-modal .cm-footer { background-color: #121212 !important; border-top: 1px solid #333 !important; }
+
+/* Sub-page main dark background */
+body.dark-mode:not(.page-home) main {
+    background: #1a1a2e;
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.35);
+}
+
+/* Welcome & Quick-Nav Glass Cards Dark Mode */
+body.dark-mode .welcome-section {
+    background: rgba(25, 27, 50, 0.78);
+    border-color: rgba(255, 255, 255, 0.08);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    color: #9aa3c0;
+}
+
+/* Hero Overlay Dark Mode */
+body.dark-mode .hero-text-overlay {
+    background: linear-gradient(to bottom, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.15) 70%, transparent 100%);
+}
+
+/* Scrollbar Dark Mode */
+body.dark-mode ::-webkit-scrollbar-thumb { background: #4285F4; }
+body.dark-mode ::-webkit-scrollbar-thumb:hover { background: #6ea3ff; }
+
+/* Reveal - im Dark Mode sofort sichtbar (kein Flash beim Load) */
+body.dark-mode .reveal { color: inherit; }
+
+/* Maps-Button Dark Mode */
+body.dark-mode .maps-btn {
+    background-color: #3a6ee8;
+    box-shadow: 0 4px 10px rgba(58, 110, 232, 0.3);
+}
+body.dark-mode .maps-btn:hover {
+    background-color: #2b5de0;
+    box-shadow: 0 6px 15px rgba(58, 110, 232, 0.4);
+}
+
+/* Allgemeine Tabellen-Zeilen Dark Mode */
+body.dark-mode table tr:hover td { background-color: #2a2a2a; }
+body.dark-mode table td,
+body.dark-mode table th { border-bottom-color: #333; color: #e0e0e0; }
+body.dark-mode table th { background-color: #1a1a3e; }
+body.dark-mode table { background-color: #1e1e1e; }
+body.dark-mode .table-responsive { background-color: #1e1e1e; }
+
+/* Breadcrumb Dark Mode */
+body.dark-mode .breadcrumb { color: #777; }
+body.dark-mode .breadcrumb a { color: #777; }
+body.dark-mode .breadcrumb a:hover { color: #74a3ff; }
+body.dark-mode .breadcrumb [aria-current="page"] { color: #74a3ff; }
+body.dark-mode .breadcrumb-sep { color: #555; }
+
+/* Sponsor-Karten Dark Mode */
+body.dark-mode .sponsor-card {
+    background: #1e1e1e;
+    border-color: #333;
+}
+body.dark-mode .sponsor-card:hover {
+    box-shadow: 0 10px 28px rgba(0, 71, 204, 0.2);
+    border-color: #4d7aff;
+}
+body.dark-mode .sponsor-card-name { color: #888; }
+
+/* Link-Karten Dark Mode */
+body.dark-mode .link-card-grid li a {
+    background: #1e1e1e;
+    color: #e0e0e0;
+    border-left-color: #4285F4;
+}
+body.dark-mode .link-card-grid li a:hover {
+    background: var(--primary-blue);
+    color: #fff;
+}
+body.dark-mode .link-card-grid li a i { color: #74a3ff; }
+body.dark-mode .link-card-grid li a:hover i { color: #fff; }
+
+/* Suche Suggestions Dark Mode (already in modules.css, but dark.css takes precedence) */
+body.dark-mode .sugg-item:hover,
+body.dark-mode .sugg-item:focus {
+    background: var(--primary-blue);
+    color: #fff;
+}
