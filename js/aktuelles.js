@@ -1,0 +1,147 @@
+﻿// ==========================================
+// MCH Singen - Aktuelles-Seite
+// Zuständig für: ICS-Kalender-Generierung
+//
+// Alle drei Exportfunktionen werden direkt per
+// onclick="..." im HTML aufgerufen, daher kein
+// DOMContentLoaded-Wrapper nötig.
+// ==========================================
+
+// Monatsnamen → zweistellige Zahl (DE + EN, da Datendateien gemischt sein können)
+// Hinweis: "April", "September", "November" sind in beiden Sprachen identisch.
+const monateMap = {
+    "Januar": "01", "Februar": "02", "März": "03", "April": "04",
+    "Mai": "05", "Juni": "06", "Juli": "07", "August": "08",
+    "September": "09", "Oktober": "10", "November": "11", "Dezember": "12",
+    "January": "01", "February": "02", "March": "03",
+    "May": "05", "June": "06", "July": "07",
+    "October": "10", "December": "12"
+};
+
+// ---- ICS-Header erzeugen ----
+function icsHeader() {
+    return "BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//MCH Singen//DE\nCALSCALE:GREGORIAN\n";
+}
+
+// ---- Trainingstermine (Kart-Gruppen) als ICS herunterladen ----
+// Format pro Zeile: Tag;Monat;Jahr;Startzeit-Endzeit;Gruppe
+async function ladeUndGeneriereICS(zielGruppe) {
+    try {
+        const res  = await fetch('../data/trainingstermine2026.txt');
+        const data = await res.text();
+        let ics    = icsHeader();
+
+        data.split('\n').forEach(zeile => {
+            if (!zeile.trim()) return;
+            const p = zeile.split(';');
+            if (p.length < 5) return;
+
+            const tag    = p[0].trim().padStart(2, '0');
+            const monat  = monateMap[p[1].trim()];
+            const jahr   = p[2].trim();
+            const start  = p[3].trim().split('-')[0].trim().replace(':', '');
+            const gruppe = p[4].trim();
+
+            // Gruppe 3 = beide Gruppen
+            if (gruppe == zielGruppe || gruppe == "3") {
+                ics += `BEGIN:VEVENT\n` +
+                       `SUMMARY:MCH Training Gruppe ${gruppe}\n` +
+                       `DTSTART:${jahr}${monat}${tag}T${start}00\n` +
+                       `DTEND:${jahr}${monat}${tag}T133000\n` +
+                       `LOCATION:Münchriedstraße 10, Singen\n` +
+                       `END:VEVENT\n`;
+            }
+        });
+
+        ics += "END:VCALENDAR";
+        downloadFile(ics, `MCH_Training_Gruppe_${zielGruppe}.ics`);
+    } catch {
+        alert("Fehler beim Laden der Trainingstermine.");
+    }
+}
+
+// ---- Kart-Renntermine als ICS herunterladen ----
+// Format pro Zeile: Tag;Monat;Jahr;Startzeit;Verein;Ort;MapsLink
+async function ladeRenntermineICS() {
+    try {
+        const res  = await fetch('../data/timer.txt');
+        const data = await res.text();
+        let ics    = icsHeader();
+
+        data.split('\n').forEach(zeile => {
+            if (!zeile.trim()) return;
+            const p = zeile.split(';');
+            if (p.length < 4) return;
+
+            const tag      = p[0].trim().padStart(2, '0');
+            const monat    = monateMap[p[1].trim()];
+            const jahr     = p[2].trim();
+            const zeit     = p[3].trim().replace(':', '');
+            const verein   = p[4]?.trim() ?? "";
+            const ort      = p[5]?.trim() ?? "Unbekannt";
+            const mapsLink = p[6]?.trim() ?? "";
+
+            ics += `BEGIN:VEVENT\n` +
+                   `SUMMARY:Rennen beim ${verein} ${ort}\n` +
+                   `DTSTART:${jahr}${monat}${tag}T${zeit}00\n` +
+                   `LOCATION:${ort}\n`;
+            if (mapsLink) {
+                ics += `DESCRIPTION:Google Maps: ${mapsLink}\nURL:${mapsLink}\n`;
+            }
+            ics += "END:VEVENT\n";
+        });
+
+        ics += "END:VCALENDAR";
+        downloadFile(ics, "MCH_Kart_Renntermine.ics");
+    } catch {
+        alert("Fehler beim Laden der Kart-Renntermine.");
+    }
+}
+
+// ---- Trial-Renntermine als ICS herunterladen ----
+// Format pro Zeile: Tag;Monat;Jahr;Startzeit;Verein;Ort;MapsLink
+async function ladeTrialRenntermineICS() {
+    try {
+        const res  = await fetch('../data/timer_trial.txt');
+        const data = await res.text();
+        let ics    = icsHeader();
+
+        data.split('\n').forEach(zeile => {
+            if (!zeile.trim()) return;
+            const p = zeile.split(';');
+            if (p.length < 4) return;
+
+            const tag      = p[0].trim().padStart(2, '0');
+            const monat    = monateMap[p[1].trim()];
+            const jahr     = p[2].trim();
+            const zeit     = p[3].trim().replace(':', '');
+            const verein   = p[4]?.trim() ?? "";
+            const ort      = p[5]?.trim() ?? "Unbekannt";
+            const mapsLink = p[6]?.trim() ?? "";
+
+            ics += `BEGIN:VEVENT\n` +
+                   `SUMMARY:Trial-Lauf ${verein} ${ort}\n` +
+                   `DTSTART:${jahr}${monat}${tag}T${zeit}00\n` +
+                   `LOCATION:${ort}\n`;
+            if (mapsLink) {
+                ics += `DESCRIPTION:Google Maps: ${mapsLink}\nURL:${mapsLink}\n`;
+            }
+            ics += "END:VEVENT\n";
+        });
+
+        ics += "END:VCALENDAR";
+        downloadFile(ics, "MCH_Trial_Renntermine.ics");
+    } catch {
+        alert("Fehler beim Laden der Trial-Renntermine.");
+    }
+}
+
+// ---- Hilfsfunktion: Datei-Download auslösen ----
+function downloadFile(content, fileName) {
+    const blob = new Blob([content], { type: 'text/calendar;charset=utf-8' });
+    const link = document.createElement('a');
+    link.href     = URL.createObjectURL(blob);
+    link.download = fileName;
+    link.click();
+    URL.revokeObjectURL(link.href);
+}

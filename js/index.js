@@ -1,0 +1,391 @@
+﻿// ==========================================
+// MCH Singen - Startseite
+// Karussell · Sport-Switcher · Countdown · Maps
+// ==========================================
+
+document.addEventListener('DOMContentLoaded', () => {
+
+    // ==========================================
+    // 0. BILD-KARUSSELL
+    // ==========================================
+    const slider = document.querySelector('.image-slider');
+    const track = document.querySelector('.slider-track');
+
+    if (slider && track) {
+        const totalSlides = track.querySelectorAll('.slide').length; // 5 (clone + 3 real + clone)
+        const realSlides = totalSlides - 2; // 3
+        const slideWidthPercent = 100 / totalSlides; // 20%
+
+        let currentIndex = 1;
+        let autoPlayTimer = null;
+        let isTransitioning = false;
+        let touchStartX = 0;
+        let mouseStartX = 0;
+        let isDragging = false;
+
+        const dotsContainer = slider.querySelector('.slider-dots');
+
+        for (let i = 0; i < realSlides; i++) {
+            const dot = document.createElement('button');
+            dot.className = 'slider-dot' + (i === 0 ? ' active' : '');
+            dot.setAttribute('aria-label', `Bild ${i + 1}`);
+            dot.addEventListener('click', () => { goTo(i + 1); resetAutoPlay(); });
+            dotsContainer.appendChild(dot);
+        }
+
+        function updateDots(realIndex) {
+            dotsContainer.querySelectorAll('.slider-dot').forEach((d, i) =>
+                d.classList.toggle('active', i === realIndex)
+            );
+        }
+
+        function setPosition(index, withTransition) {
+            track.style.transition = withTransition
+                ? 'transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94)'
+                : 'none';
+            track.style.transform = `translateX(-${index * slideWidthPercent}%)`;
+        }
+
+        function goTo(index, withTransition = true) {
+            if (isTransitioning && withTransition) return;
+            if (withTransition) isTransitioning = true;
+            currentIndex = index;
+            setPosition(currentIndex, withTransition);
+            const dotIndex = ((currentIndex - 1) % realSlides + realSlides) % realSlides;
+            updateDots(dotIndex);
+        }
+
+        track.addEventListener('transitionend', () => {
+            isTransitioning = false;
+            if (currentIndex >= realSlides + 1) goTo(1, false);
+            else if (currentIndex <= 0) goTo(realSlides, false);
+        });
+
+        const goNext = () => goTo(currentIndex + 1);
+        const goPrev = () => goTo(currentIndex - 1);
+
+        function startAutoPlay() {
+            stopAutoPlay();
+            autoPlayTimer = setInterval(goNext, 5000);
+        }
+        function stopAutoPlay() { clearInterval(autoPlayTimer); autoPlayTimer = null; }
+        function resetAutoPlay() { stopAutoPlay(); startAutoPlay(); }
+
+        slider.querySelector('.slider-prev').addEventListener('click', e => { e.preventDefault(); goPrev(); resetAutoPlay(); });
+        slider.querySelector('.slider-next').addEventListener('click', e => { e.preventDefault(); goNext(); resetAutoPlay(); });
+
+        slider.addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; stopAutoPlay(); }, { passive: true });
+        slider.addEventListener('touchend', e => {
+            const diff = touchStartX - e.changedTouches[0].clientX;
+            if (Math.abs(diff) > 40) diff > 0 ? goNext() : goPrev();
+            startAutoPlay();
+        }, { passive: true });
+
+        slider.addEventListener('mousedown', e => { mouseStartX = e.clientX; isDragging = true; stopAutoPlay(); });
+        document.addEventListener('mouseup', e => {
+            if (!isDragging) return;
+            isDragging = false;
+            const diff = mouseStartX - e.clientX;
+            if (Math.abs(diff) > 40) diff > 0 ? goNext() : goPrev();
+            startAutoPlay();
+        });
+
+        slider.addEventListener('mouseenter', stopAutoPlay);
+        slider.addEventListener('mouseleave', () => { if (!isDragging) startAutoPlay(); });
+
+        goTo(1, false);
+        startAutoPlay();
+    }
+
+
+    // ==========================================
+    // 1. SPORT-SWITCHER (Kart / Trial)
+    // ==========================================
+    const sportTrack = document.getElementById('sport-track');
+    const sportTabs = document.querySelectorAll('.sport-tab-btn');
+    let currentSport = 0; // 0 = Kart, 1 = Trial
+    let sportTouchStartX = 0;
+
+    function switchSport(index) {
+        currentSport = index;
+        sportTrack.style.transform = `translateX(-${index * 50}%)`;
+        sportTabs.forEach((tab, i) => tab.classList.toggle('active', i === index));
+        if (typeof klaro !== 'undefined') {
+            try {
+                if (klaro.getManager().getConsent('googleMaps')) {
+                    if (index === 0) window.loadKartMap();
+                    else window.loadTrialMap();
+                }
+            } catch(e) {}
+        }
+    }
+
+    if (sportTrack) {
+        // Tab-Klick
+        sportTabs.forEach((tab, i) => {
+            tab.addEventListener('click', () => switchSport(i));
+        });
+
+        // Pfeil-Buttons
+        document.querySelector('.sport-arrow-prev')?.addEventListener('click', () =>
+            switchSport(currentSport === 0 ? 1 : 0)
+        );
+        document.querySelector('.sport-arrow-next')?.addEventListener('click', () =>
+            switchSport(currentSport === 0 ? 1 : 0)
+        );
+
+        // Touch-Swipe auf dem Sport-Switcher
+        const sportOverflow = document.querySelector('.sport-switcher-overflow');
+        if (sportOverflow) {
+            sportOverflow.addEventListener('touchstart', e => {
+                sportTouchStartX = e.touches[0].clientX;
+            }, { passive: true });
+            sportOverflow.addEventListener('touchend', e => {
+                const diff = sportTouchStartX - e.changedTouches[0].clientX;
+                if (Math.abs(diff) > 40) switchSport(diff > 0 ? 1 : 0);
+            }, { passive: true });
+        }
+    }
+
+
+    // ==========================================
+    // 2. GOOGLE MAPS LOADER (Kart & Trial)
+    // ==========================================
+    const kartMapsUrl = "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2681.4429994236526!2d8.847113176939527!3d47.7728795772659!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x479a61e3df6a161b%3A0x6e0eb058ca76e828!2sM%C3%BCnchriedstra%C3%9Fe%2010%2C%2078224%20Singen%20(Hohentwiel)!5e0!3m2!1sde!2sde!4v1715014800000!5m2!1sde!2sde";
+    // Kleinandelfingen, Schweiz - bitte ggf. durch präzisen Embed-Link ersetzen
+    const trialMapsUrl = "https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d5394!2d8.7228!3d47.5831!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!5e0!3m2!1sde!2sch!4v1715014800001!5m2!1sde!2sch";
+
+    function injectMap(containerId, url) {
+        const c = document.getElementById(containerId);
+        if (!c || c.innerHTML.includes('iframe')) return;
+        c.style.border = "none";
+        c.style.background = "transparent";
+        c.style.minHeight = "auto";
+        c.style.padding = "0";
+        c.innerHTML = `<iframe src="${url}" width="100%" height="350" style="border:0; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.15); margin-bottom: 20px;" allowfullscreen loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>`;
+    }
+
+    window.loadKartMap  = () => injectMap('map-placeholder-kart',  kartMapsUrl);
+    window.loadTrialMap = () => injectMap('map-placeholder-trial', trialMapsUrl);
+    // Rückwärtskompatibel (Klaro-Callback ruft loadGoogleMap auf)
+    window.loadGoogleMap = () => { window.loadKartMap(); window.loadTrialMap(); };
+
+    function klaro_updateConsent() {
+        if (typeof klaro === 'undefined') return;
+        try {
+            const manager = klaro.getManager();
+            if (manager.updateConsent) manager.updateConsent('googleMaps', true);
+            else manager.updateService('googleMaps', true);
+            if (manager.saveAndApplyConsents) manager.saveAndApplyConsents();
+            else manager.saveAndApply();
+        } catch(e) {}
+    }
+
+    document.getElementById('load-map-btn-kart')?.addEventListener('click', () => {
+        klaro_updateConsent();
+        window.loadKartMap();
+    });
+    document.getElementById('load-map-btn-trial')?.addEventListener('click', () => {
+        klaro_updateConsent();
+        window.loadTrialMap();
+    });
+
+    if (typeof klaro !== 'undefined') {
+        try {
+            if (klaro.getManager().getConsent('googleMaps')) {
+                window.loadKartMap();
+                window.loadTrialMap();
+            }
+        } catch(e) {}
+    }
+
+
+    // ==========================================
+    // 3. COUNTDOWN-HELFER
+    // ==========================================
+    function parseTimerFile(text) {
+        const dates = [];
+        for (const raw of text.split('\n')) {
+            const line = raw.trim();
+            if (!line) continue;
+            const parts = line.split(';');
+            if (parts.length < 4) continue;
+            const [day, month, year, time] = parts.map(p => p.trim());
+            const ts = new Date(`${month} ${day}, ${year} ${time}`).getTime();
+            if (!isNaN(ts)) {
+                dates.push({
+                    timestamp: ts,
+                    verein:   (parts[4] || '').trim(),
+                    ort:      (parts[5] || '').trim(),
+                    link:     (parts[6] || '').trim(),
+                    pdf:      (parts[7] || '').trim(),
+                });
+            }
+        }
+        return dates;
+    }
+
+    function getNextEvent(dates) {
+        const now = Date.now();
+        const today = new Date(now);
+        const sorted = [...dates].sort((a, b) => a.timestamp - b.timestamp);
+        for (const ev of sorted) {
+            const d = new Date(ev.timestamp);
+            const sameDay = today.getFullYear() === d.getFullYear() &&
+                            today.getMonth()    === d.getMonth()    &&
+                            today.getDate()     === d.getDate();
+            if (ev.timestamp > now || sameDay) return ev;
+        }
+        return null;
+    }
+
+    function startCountdown(dates, ids) {
+        const { heading, cdBox, cdMsg, pdfBtn,
+                days, hours, minutes, seconds } = ids;
+
+        const headEl  = document.getElementById(heading);
+        const pdfEl   = document.getElementById(pdfBtn);
+        const cdBoxEl = document.getElementById(cdBox);
+        const cdMsgEl = document.getElementById(cdMsg);
+        const el = id => document.getElementById(id);
+
+        // HEAD-Check: Button nur zeigen wenn PDF wirklich auf dem Server liegt.
+        // Wird einmalig pro Event ausgeführt (nicht jede Sekunde).
+        const pdfWrapper = pdfEl?.parentElement ?? null;
+        let lastCheckedPdf = null;
+        function updatePdfButton(ev) {
+            if (!pdfEl) return;
+            const url = ev?.pdf || '';
+            const show = (visible) => {
+                if (pdfWrapper) pdfWrapper.style.display = visible ? 'block' : 'none';
+            };
+            if (!url) { show(false); return; }
+            if (url === lastCheckedPdf) return;
+            lastCheckedPdf = url;
+            fetch(url, { method: 'HEAD' })
+                .then(r => { pdfEl.href = url; show(r.ok); })
+                .catch(() => show(false));
+        }
+
+        setInterval(() => {
+            const ev = getNextEvent(dates);
+
+            if (!ev) {
+                if (cdBoxEl) cdBoxEl.style.display = 'none';
+                if (cdMsgEl) { cdMsgEl.innerHTML = 'Saison beendet!'; cdMsgEl.style.display = 'block'; }
+                if (headEl)  headEl.style.display = 'none';
+                if (pdfWrapper) pdfWrapper.style.display = 'none';
+                return;
+            }
+
+            updatePdfButton(ev);
+
+            const now      = Date.now();
+            const distance = ev.timestamp - now;
+            const name     = `${ev.verein} ${ev.ort}`.trim();
+            const nameHtml = ev.link
+                ? `<a href="${ev.link}" target="_blank" style="color:#ffcc00;text-decoration:underline;">${name}</a>`
+                : name;
+
+            if (distance <= 0) {
+                if (headEl)  headEl.style.display = 'none';
+                if (cdBoxEl) cdBoxEl.style.display = 'none';
+                if (cdMsgEl) {
+                    cdMsgEl.innerHTML    = `HEUTE! ${nameHtml} 🏁`;
+                    cdMsgEl.style.display = 'block';
+                }
+            } else {
+                if (headEl) {
+                    headEl.style.display = 'block';
+                    headEl.innerHTML = `Nächstes Event${name ? ' beim ' + nameHtml : ''} startet in:`;
+                }
+                const d = Math.floor(distance / 86400000);
+                const h = Math.floor((distance % 86400000) / 3600000);
+                const m = Math.floor((distance % 3600000)  / 60000);
+                const s = Math.floor((distance % 60000)    / 1000);
+                const pad = n => String(n).padStart(2, '0');
+
+                if (el(days))    el(days).innerHTML    = pad(d);
+                if (el(hours))   el(hours).innerHTML   = pad(h);
+                if (el(minutes)) el(minutes).innerHTML = pad(m);
+                if (el(seconds)) el(seconds).innerHTML = pad(s);
+
+                if (cdBoxEl) cdBoxEl.style.display = 'flex';
+                if (cdMsgEl) cdMsgEl.style.display  = 'none';
+            }
+        }, 1000);
+    }
+
+
+    // ==========================================
+    // 4. KART-COUNTDOWN (timer.txt)
+    // ==========================================
+    fetch('data/timer.txt')
+        .then(r => { if (!r.ok) throw new Error(); return r.text(); })
+        .then(text => {
+            startCountdown(parseTimerFile(text), {
+                heading:  'countdown-heading-kart',
+                cdBox:    'countdown-kart',
+                cdMsg:    'countdown-message-kart',
+                pdfBtn:   'pdf-link-kart',
+                days:     'days-kart',
+                hours:    'hours-kart',
+                minutes:  'minutes-kart',
+                seconds:  'seconds-kart',
+            });
+        })
+        .catch(() => {});
+
+
+    // ==========================================
+    // 5. TRIAL-COUNTDOWN (timer_trial.txt)
+    // ==========================================
+    fetch('data/timer_trial.txt')
+        .then(r => { if (!r.ok) throw new Error(); return r.text(); })
+        .then(text => {
+            startCountdown(parseTimerFile(text), {
+                heading:  'countdown-heading-trial',
+                cdBox:    'countdown-trial',
+                cdMsg:    'countdown-message-trial',
+                pdfBtn:   'pdf-link-trial',
+                days:     'days-trial',
+                hours:    'hours-trial',
+                minutes:  'minutes-trial',
+                seconds:  'seconds-trial',
+            });
+        })
+        .catch(() => {});
+
+
+    // ==========================================
+    // 4. STATS COUNTER ANIMATION
+    // ==========================================
+    const statNumbers = document.querySelectorAll('.stat-number[data-target]');
+
+    if (statNumbers.length) {
+        const counterObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (!entry.isIntersecting) return;
+                const el = entry.target;
+                const mode = el.getAttribute('data-mode');
+                if (mode === 'year') return; // Jahreszahl statisch anzeigen
+                const target = parseInt(el.getAttribute('data-target'), 10);
+                const suffix = el.getAttribute('data-suffix') || '';
+                const duration = 1600;
+                const startTime = Date.now();
+                function tick() {
+                    const elapsed = Date.now() - startTime;
+                    const progress = Math.min(elapsed / duration, 1);
+                    const eased = 1 - Math.pow(1 - progress, 3);
+                    el.textContent = Math.round(target * eased) + suffix;
+                    if (progress < 1) requestAnimationFrame(tick);
+                }
+                requestAnimationFrame(tick);
+                counterObserver.unobserve(el);
+            });
+        }, { threshold: 0.6 });
+
+        statNumbers.forEach(el => counterObserver.observe(el));
+    }
+
+});
