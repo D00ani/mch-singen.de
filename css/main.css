@@ -1,0 +1,108 @@
+/* =========================================
+   5. HAUPTINHALT & TYPOGRAFIE
+   ========================================= */
+
+main {
+    padding: 20px 40px;
+}
+
+body:not(.page-home) main {
+    background: #fff;
+    border-radius: 0 0 10px 10px;
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.07);
+    margin-bottom: 0;
+}
+
+main h1 {
+    color: var(--primary-blue);
+    border-bottom: 3px solid var(--accent);
+    padding-bottom: 12px;
+    margin-bottom: 20px;
+    font-size: 1.8rem;
+    font-weight: 900;
+    font-style: italic;
+    letter-spacing: -0.3px;
+}
+
+main h2 {
+    margin-top: 30px;
+    margin-bottom: 12px;
+    font-size: 1.3rem;
+    font-weight: 800;
+    font-style: italic;
+    color: var(--text-main);
+    padding-bottom: 8px;
+    border-bottom: 2px solid rgba(0, 71, 204, 0.09);
+}
+
+main h3 {
+    margin-top: 20px;
+    margin-bottom: 8px;
+    font-size: 1.05rem;
+    color: var(--text-main);
+    font-weight: 700;
+}
+
+main p { 
+    margin-bottom: 12px; /* Weniger Platz zwischen Absätzen */
+    font-size: 0.95rem; 
+}
+
+main a { 
+    color: var(--primary-blue); 
+    text-decoration: none; 
+    font-weight: 600; 
+    transition: color 0.2s; 
+}
+
+main a:hover { 
+    color: var(--dark-blue); 
+    text-decoration: underline; 
+}
+
+main img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 20px auto;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+/* --- BREADCRUMB --- */
+.breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.8rem;
+    color: var(--text-light);
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+}
+
+.breadcrumb a {
+    color: var(--text-light);
+    font-weight: 500;
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.breadcrumb a:hover {
+    color: var(--primary-blue);
+    text-decoration: none;
+}
+
+.breadcrumb a i {
+    font-size: 0.75rem;
+}
+
+.breadcrumb-sep {
+    color: var(--text-light);
+    opacity: 0.5;
+    font-size: 0.85rem;
+}
+
+.breadcrumb [aria-current="page"] {
+    color: var(--primary-blue);
+    font-weight: 600;
+}

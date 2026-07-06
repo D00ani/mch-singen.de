@@ -1,0 +1,126 @@
+/* =========================================
+   14. KLARO COOKIE BANNER DESIGN (MCH STYLE)
+   ========================================= */
+
+.klaro .cookie-notice {
+    background-color: var(--dark-blue) !important;
+    color: #fff !important;
+    border-top: 4px solid var(--primary-blue) !important;
+    box-shadow: 0 -5px 20px rgba(0,0,0,0.3) !important;
+    font-family: var(--font-body) !important;
+}
+
+.klaro .cookie-notice .cn-body .cn-text {
+    font-size: var(--text-base) !important;
+    line-height: 1.5 !important;
+}
+
+.klaro .cookie-notice .cn-body .cn-learn-more {
+    color: #ff9800 !important;
+    text-decoration: none !important;
+    font-weight: 600 !important;
+}
+.klaro .cookie-notice .cn-body .cn-learn-more:hover {
+    text-decoration: underline !important;
+}
+
+.klaro .cn-button.cm-btn-success,
+.klaro .cm-btn.cm-btn-success {
+    background: linear-gradient(135deg, var(--primary-blue), #002277) !important;
+    color: #fff !important;
+    border-radius: 8px !important;
+    font-weight: 600 !important;
+    border: none !important;
+    transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+.klaro .cn-button.cm-btn-danger, 
+.klaro .cn-button.cm-btn-decline,
+.klaro .cm-btn.cm-btn-danger {
+    background: #555 !important;
+    color: #fff !important;
+    border-radius: 8px !important;
+    font-weight: 600 !important;
+    border: none !important;
+    transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+.klaro .cn-button:hover,
+.klaro .cm-btn:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3) !important;
+}
+
+.klaro .cookie-modal .cm-modal {
+    border-radius: 12px !important;
+    overflow: hidden !important;
+    font-family: var(--font-body) !important;
+}
+
+.klaro .cookie-modal .cm-modal .cm-header {
+    background-color: var(--dark-blue) !important;
+    border-bottom: 4px solid var(--primary-blue) !important;
+}
+
+.klaro .cookie-modal .cm-modal .cm-header h1 {
+    color: #fff !important;
+}
+/* =========================================
+   13. GOOGLE MAPS PLATZHALTER (DATENSCHUTZ)
+   ========================================= */
+
+.maps-placeholder {
+    background: linear-gradient(135deg, #ffffff, #f4f5f8);
+    border: 2px dashed var(--primary-blue);
+    border-radius: 12px;
+    padding: 30px 20px;
+    text-align: center;
+    margin: 20px 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 350px; /* Exakt so hoch wie die echte Karte später! */
+    transition: background 0.3s ease;
+}
+
+.maps-placeholder-content {
+    max-width: 500px;
+}
+
+.maps-placeholder-content span {
+    font-size: 3.5rem;
+    display: block;
+    margin-bottom: 10px;
+}
+
+.maps-placeholder-content h3 {
+    color: var(--primary-blue);
+    margin-bottom: 10px;
+    font-size: 1.5rem;
+}
+
+.maps-placeholder-content p {
+    font-size: 0.95rem;
+    color: var(--text-light);
+    margin: 0 auto 25px auto;
+    line-height: 1.6;
+}
+
+.maps-load-btn {
+    background: linear-gradient(135deg, var(--primary-blue), var(--dark-blue));
+    color: #fff;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 8px;
+    font-size: var(--text-lg);
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.maps-load-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 15px rgba(0, 51, 160, 0.4);
+}
+
+

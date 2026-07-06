@@ -1,0 +1,7 @@
+07;June;2026;09:00;AC;Engen;https://maps.app.goo.gl/bMwK8Lz1RDAN8nkq8;media/dokumente/kurzausschreibungacengen2026.pdf
+14;June;2026;09:00;MSG;Salemertal;https://maps.app.goo.gl/fHg1h7Gsjbomixuo6;media/dokumente/kurzausschreibungsgsalemertal2026.pdf
+05;July;2026;09:00;MCH;Singen;https://maps.app.goo.gl/6XPEY7VjdMwcb7KN8;media/dokumente/kurzausschreibungmchsingen2026.pdf
+12;July;2026;09:00;MSC;Steißlingen;https://maps.app.goo.gl/2S4dx5ZM1jy8kBtR6;media/dokumente/kurzausschreibungmscsteißlingen2026.pdf
+26;July;2026;09:00;MCH;Singen;https://maps.app.goo.gl/6XPEY7VjdMwcb7KN8;media/dokumente/kurzausschreibungmchsingen2026.pdf
+20;September;2026;09:00;AC;Singen;https://maps.app.goo.gl/KwhkrBTtwZZVutny9;media/dokumente/kurzausschreibungacsingen2026.pdf
+27;September;2026;09:00;AC;Singen;https://maps.app.goo.gl/KwhkrBTtwZZVutny9;media/dokumente/kurzausschreibungacsingen2026.pdf

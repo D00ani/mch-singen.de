@@ -1,0 +1,4 @@
+19;July;2026;10:00;Trial;Kleinandelfingen;https://maps.google.com/?q=Kleinandelfingen,+Schweiz;media/dokumente/termine/termine_trial_2026.pdf
+16;August;2026;10:00;Trial;Kleinandelfingen;https://maps.google.com/?q=Kleinandelfingen,+Schweiz;media/dokumente/termine/termine_trial_2026.pdf
+13;September;2026;10:00;Trial;Kleinandelfingen;https://maps.google.com/?q=Kleinandelfingen,+Schweiz;media/dokumente/termine/termine_trial_2026.pdf
+11;October;2026;10:00;Trial;Kleinandelfingen;https://maps.google.com/?q=Kleinandelfingen,+Schweiz;media/dokumente/termine/termine_trial_2026.pdf

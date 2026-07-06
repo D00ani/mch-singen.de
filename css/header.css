@@ -1,0 +1,344 @@
+/* =========================================
+   2. HEADER BEREICH (STICKY) & LOGO
+   ========================================= */
+
+header {
+    position: sticky;
+    top: 0;
+    z-index: 900;
+    background: linear-gradient(135deg, rgba(0, 71, 204, 0.94), rgba(0, 27, 94, 0.94));
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    color: #fff;
+    padding: 14px 30px 14px 93px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    column-gap: 15px;
+    row-gap: 0;
+    border-top-left-radius: 12px;
+    border-top-right-radius: 12px;
+    border-top: 2px solid var(--accent);
+    border-bottom: 3px solid var(--accent);
+    box-shadow: 0 6px 24px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.12);
+    transition: background 0.4s ease, box-shadow 0.4s ease, backdrop-filter 0.4s ease;
+    overflow: hidden;
+}
+
+header.header-scrolled {
+    background: linear-gradient(135deg, rgba(0, 51, 160, 0.82), rgba(0, 27, 94, 0.82));
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    box-shadow: 0 5px 30px rgba(0, 0, 0, 0.28);
+    border-bottom-color: rgba(255, 204, 0, 0.6);
+}
+
+/* Diagonaler Shine-Sweep über den gesamten Header */
+@keyframes header-shine {
+    0%   { transform: translateX(-150%) skewX(-20deg); }
+    100% { transform: translateX(500%)  skewX(-20deg); }
+}
+
+header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 28%;
+    height: 100%;
+    background: linear-gradient(
+        105deg,
+        transparent 35%,
+        rgba(255, 255, 255, 0.055) 50%,
+        transparent 65%
+    );
+    animation: header-shine 9s ease-in-out infinite 1.5s;
+    pointer-events: none;
+}
+
+/* Inhalt bleibt über dem Shine-Effekt */
+header > * {
+    position: relative;
+    z-index: 1;
+}
+
+.home-link {
+    display: contents;
+    text-decoration: none;
+    color: inherit;
+}
+
+.logo-container {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.header-logo {
+    height: 52px;
+    width: auto;
+    border-radius: 6px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    margin-right: 5px;
+    transition: transform 0.2s ease, filter 0.2s ease;
+}
+
+.logo-container a:hover .header-logo {
+    transform: scale(1.06);
+    filter: drop-shadow(0 3px 10px rgba(255, 204, 0, 0.5));
+}
+
+/* Goldene Trennlinie zwischen MCH- und DMV-Logo */
+.logo-container a:first-child {
+    position: relative;
+    margin-right: 14px;
+}
+
+.logo-container a:first-child .header-logo {
+    margin-right: 0;
+}
+
+.logo-container a:first-child::after {
+    content: '';
+    position: absolute;
+    right: -7px;
+    top: 50%;
+    transform: translateY(-50%);
+    height: 60%;
+    width: 1.5px;
+    background: rgba(255, 204, 0, 0.45);
+    border-radius: 1px;
+}
+
+.logo-container a:nth-child(2) .header-logo {
+    margin-left: 0 !important;
+}
+
+.home-link-text {
+    display: inline-flex;
+    flex-direction: column;
+    align-self: center;
+    text-decoration: none;
+    color: #fff;
+}
+
+.header-text {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.header-text .header-title {
+    font-family: var(--font-display);
+    font-size: clamp(0.7rem, 0.4rem + 1vw, 1.25rem);
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin: 0;
+    line-height: 1.2;
+    color: #fff;
+}
+
+.header-text p:not(.header-title) {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #cfd6e0;
+    opacity: 1;
+    margin: 4px 0 0 0;
+    letter-spacing: 1px;
+    font-family: var(--font-display);
+    animation: tagline-fadein 0.9s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.35s both;
+}
+
+/* =========================================
+   3. HAMBURGER BUTTON
+   ========================================= */
+
+.hamburger-btn {
+    position: fixed;
+    top: 21px;
+    left: 40px;
+    z-index: 950;
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.12);
+    color: white;
+    border: none;
+    font-size: 1.05rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.hamburger-btn:hover {
+    background: rgba(255, 255, 255, 0.22);
+    transform: scale(1.05);
+}
+
+/* Macht das Logo und den Text klickbar */
+.logo-link, .text-link {
+    display: contents;
+    text-decoration: none;
+    color: inherit;
+}
+
+/* =========================================
+   4. HEADER-BUTTONS (SOCIAL, THEME, SUCHE)
+   ========================================= */
+
+.social-header {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.search-header-btn { order: 1; }
+.theme-toggle-btn  { order: 2; margin-right: 20px; }
+.social-text       { order: 3; }
+.insta-btn         { order: 4; }
+
+.social-text {
+    display: none;
+}
+
+.insta-btn, .theme-toggle-btn, .search-header-btn {
+    width: 38px;
+    height: 38px;
+    font-size: 1.05rem;
+    border-radius: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    cursor: pointer;
+    transition: background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.insta-btn:hover, .theme-toggle-btn:hover, .search-header-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.08);
+    border-color: rgba(255, 255, 255, 0.38);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.22);
+}
+
+.insta-btn svg {
+    fill: white;
+    width: 17px;
+    height: 17px;
+}
+
+/* =========================================
+   5. TAGLINE ANIMATION
+   ========================================= */
+
+@keyframes tagline-fadein {
+    from {
+        opacity: 0;
+        transform: translateY(5px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* =========================================
+   6. HEADER INLINE NAVIGATION
+   ========================================= */
+
+.header-nav {
+    flex: 0 0 100%;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    padding: 5px 0 4px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+
+.header-nav::-webkit-scrollbar { display: none; }
+
+.header-nav a {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    color: rgba(255, 255, 255, 0.72);
+    text-decoration: none;
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    white-space: nowrap;
+    transition: background 0.2s ease, color 0.2s ease;
+}
+
+.header-nav a:hover {
+    background: rgba(255, 255, 255, 0.12);
+    color: #fff;
+}
+
+.header-nav a.active {
+    background: rgba(255, 204, 0, 0.18);
+    color: var(--accent);
+    font-weight: 600;
+}
+
+.header-nav a i {
+    font-size: 0.7rem;
+    opacity: 0.8;
+}
+
+.header-nav a.active i {
+    opacity: 1;
+}
+
+/* =========================================
+   7. CTA-BUTTON "MITGLIED WERDEN"
+   ========================================= */
+
+.header-cta-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 13px;
+    border-radius: 20px;
+    background: var(--accent);
+    color: #001b5e !important;
+    text-decoration: none !important;
+    font-size: 0.78rem;
+    font-weight: 700;
+    white-space: nowrap;
+    flex-shrink: 0;
+    order: 0;
+    transition: background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.header-cta-btn:hover {
+    background: #ffd740;
+    transform: scale(1.05);
+    box-shadow: 0 3px 14px rgba(255, 204, 0, 0.42);
+}
+
+/* =========================================
+   8. SOCIAL TEXT — auf breiten Screens sichtbar
+   ========================================= */
+
+@media (min-width: 1200px) {
+    .social-text {
+        display: inline;
+        font-size: 0.78rem;
+        color: rgba(255, 255, 255, 0.65);
+        white-space: nowrap;
+    }
+}

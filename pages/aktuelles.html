@@ -1,0 +1,258 @@
+﻿<!DOCTYPE html>
+<html lang="de">
+<head>
+    <!-- Favicons -->
+    <link rel="icon" type="image/png" href="../media/logos/favicon.png">
+    <link rel="apple-touch-icon" href="../media/logos/favicon.png">
+
+    <!-- Zeichensatz & Viewport -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- SEO & Open Graph -->
+    <link rel="canonical" href="https://mch-singen.de/pages/aktuelles.html">
+    <meta name="description" content="Aktuelle News, Trainingsplan, Renntermine und Wertungen des MCH Singen Motorsportclubs.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://mch-singen.de/pages/aktuelles.html">
+    <meta property="og:site_name" content="MCH Singen Motorsportclub Hohentwiel e.V.">
+    <meta property="og:title" content="Aktuelle News & Termine - MCH Singen Motorsportclub">
+    <meta property="og:description" content="Aktuelle News, Trainingsplan, Renntermine und Wertungen des MCH Singen Motorsportclubs.">
+    <meta property="og:image" content="https://mch-singen.de/media/bilder/mch_pic.jpg">
+
+    <title>Aktuelle News & Termine - Motorsportclub Singen Hohentwiel</title>
+
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/all.min.css">
+
+    <!-- Scripts (defer = erst nach HTML-Parse) -->
+    <script defer src="../js/klaro-config.js"></script>
+    <script defer src="../js/vendor/klaro.js"></script>
+    <script defer src="../js/main.js"></script>
+    <script defer src="../js/aktuelles.js"></script>
+</head>
+<body>
+
+    <!-- =============================================
+         HEADER - Logo, Vereinsname, Social/Theme
+         ============================================= -->
+    <header>
+        <div class="logo-container">
+            <a href="../index.html">
+                <img src="../media/logos/favicon.png" alt="MCH Logo" class="header-logo">
+            </a>
+            <a href="https://www.dmv-motorsport.de/" target="_blank" rel="noopener noreferrer" title="Zur offiziellen DMV Website">
+                <img src="../media/logos/dmv.png" alt="DMV Logo" class="header-logo">
+            </a>
+        </div>
+
+        <a href="../index.html" class="home-link-text">
+            <div class="header-text">
+                <p class="header-title">Motorsport-Club <span class="accent-text">"Hohentwiel"</span> Singen e.V. im DMV</p>
+                <p>Motorsport aus Leidenschaft</p>
+            </div>
+        </a>
+
+        <div class="social-header">
+            <span class="social-text">Folgt uns auf Social Media:</span>
+            <a href="suche.html" class="search-header-btn" title="Suchen">
+                <i class="fa-solid fa-magnifying-glass"></i>
+            </a>
+            <button id="theme-toggle" class="theme-toggle-btn" title="Dark Mode umschalten">
+            <i class="fa-solid fa-moon"></i>
+            </button>
+            <a href="https://www.instagram.com/mch_singen/" target="_blank" rel="noopener noreferrer" class="insta-btn" title="Folgt uns auf Instagram!">
+                <i class="fa-brands fa-instagram"></i>
+            </a>
+        </div>
+    </header>
+
+    <!-- Hamburger-Button (fixed, via main.js gesteuert) -->
+    <button class="hamburger-btn" id="open-menu" aria-expanded="false" aria-controls="side-menu" aria-label="Menü öffnen">
+        <i class="fa-solid fa-bars"></i>
+    </button>
+
+    <!-- =============================================
+         HAUPTINHALT
+         ============================================= -->
+    <main>
+        <h1>
+            <i class="fa-solid fa-newspaper heading-icon heading-icon--blue"></i>
+            Aktuelle News &amp; Termine
+        </h1>
+        <p>Hier findest du die neuesten Ergebnisse, News und alle wichtigen Daten für die aktuelle Saison. Lade dir die Pläne einfach bequem herunter!</p>
+
+        <!-- ---- Sommerferienprogramm ---- -->
+        <h2>
+            <i class="fa-solid fa-sun heading-icon heading-icon--orange"></i>
+            Sommerferienprogramm 2026
+        </h2>
+        <div class="news-grid">
+            <div class="news-card news-card--highlight">
+                <div>
+                    <span class="news-date">08.09. - 09.09.2026</span>
+                    <h3>Ferienprogramm der Stadt Singen</h3>
+                    <p class="news-card-desc">
+                        Kinder &amp; Jugendliche können bei uns Kart fahren, den Trialsport kennenlernen
+                        und einen echten Motorsportverein erleben - keine Vorkenntnisse nötig!
+                    </p>
+                </div>
+                <div class="button-group">
+                    <a href="sommerferienprogramm.html" class="action-btn action-btn--orange">
+                        <span class="news-icon"><i class="fa-solid fa-circle-info"></i></span> Mehr Infos
+                    </a>
+                    <a href="https://www.unser-ferienprogramm.de/singen/veranstaltung.php?limit=20&id=7102"
+                       target="_blank" class="action-btn action-btn--gold">
+                        <span class="news-icon"><i class="fa-solid fa-arrow-up-right-from-square"></i></span> Zum Anmeldeportal
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-divider"></div>
+
+        <!-- ---- Aktuelle Wertungen ---- -->
+        <h2>
+            <i class="fa-solid fa-ranking-star heading-icon heading-icon--blue"></i>
+            Aktuelle Wertungen
+        </h2>
+        <div class="news-grid">
+            <div class="news-card">
+                <span class="news-badge news-badge-wertung">Wertung</span>
+                <div>
+                    <span class="news-date">Saison 2026</span>
+                    <h3>Aktuelle BKC-Wertung</h3>
+                    <p class="news-card-desc">Check hier die neuesten Ergebnisse im Bodensee Kart Cup.</p>
+                </div>
+                <a href="../media/dokumente/wertungen/bkcgesamtwertung_2026.pdf" target="_blank" class="news-link">
+                    <span class="news-icon"><i class="fa-solid fa-file-pdf"></i></span> Wertung (PDF)
+                </a>
+            </div>
+                        <div class="news-card">
+                <span class="news-badge news-badge-wertung">Wertung</span>
+                <div>
+                    <span class="news-date">Saison 2026</span>
+                    <h3>Aktuelle Trial-Wertung</h3>
+                    <p class="news-card-desc">Die aktuellsten Ergebnisse aus dem Trialsport.</p>
+                </div>
+                <a href="../media/dokumente/wertungen/trialgesamtwertung_2026.pdf" target="_blank" class="news-link">
+                    <span class="news-icon"><i class="fa-solid fa-file-pdf"></i></span> Wertung (PDF)
+                </a>
+            </div>
+
+        </div>
+
+        <div class="section-divider"></div>
+
+        <!-- ---- Termine 2025/2026 ---- -->
+        <h2>
+            <i class="fa-solid fa-calendar-days heading-icon heading-icon--blue"></i>
+            Termine 2025/2026
+        </h2>
+        <div class="news-grid">
+            <!-- Kart-Termine -->
+            <div class="news-card">
+                <span class="news-badge news-badge-termin">Termine</span>
+                <div>
+                    <span class="news-date">Saison 2026</span>
+                    <h3>BKC Termine (Kart)</h3>
+                    <p class="news-card-desc">Trainings- und Renntermine für die Kart-Abteilung.</p>
+                </div>
+                <div class="button-group">
+                    <a href="../media/dokumente/termine/trainingstermine2026.pdf" target="_blank" class="action-btn">
+                        <span class="news-icon"><i class="fa-solid fa-flag-checkered"></i></span> Termine (PDF)
+                    </a>
+                    <button onclick="ladeUndGeneriereICS(1)" class="action-btn">
+                        <span class="news-icon"><i class="fa-regular fa-calendar-plus"></i></span> Kalender Gruppe 1
+                    </button>
+                    <button onclick="ladeUndGeneriereICS(2)" class="action-btn">
+                        <span class="news-icon"><i class="fa-regular fa-calendar-plus"></i></span> Kalender Gruppe 2
+                    </button>
+                    <button onclick="ladeRenntermineICS()" class="action-btn">
+                        <span class="news-icon"><i class="fa-solid fa-trophy"></i></span> Renntermine speichern
+                    </button>
+                </div>
+            </div>
+
+            <!-- Trial-Termine -->
+            <div class="news-card">
+                <span class="news-badge news-badge-termin">Termine</span>
+                <div>
+                    <span class="news-date">Saison 2026</span>
+                    <h3>Trialsport Termine</h3>
+                    <p class="news-card-desc">Offizielle Meisterschaftsläufe im Trial.</p>
+                </div>
+                <div class="button-group">
+                    <a href="../media/dokumente/termine/termine_trial_2026.pdf" target="_blank" class="action-btn">
+                        <span class="news-icon"><i class="fa-solid fa-motorcycle"></i></span> Trial-Plan (PDF)
+                    </a>
+                    <button onclick="ladeTrialRenntermineICS()" class="action-btn">
+                        <span class="news-icon"><i class="fa-regular fa-calendar-plus"></i></span> Renntermine speichern
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- =============================================
+         FOOTER - wird per main.js dynamisch ersetzt
+         ============================================= -->
+    <footer>
+        <a href="../index.html" class="footer-logo-link" title="Zur Startseite">
+            <img src="../media/logos/favicon.png" alt="MCH Logo" class="footer-logo" loading="lazy">
+        </a>
+        <span class="footer-club-name">MCH Singen Motorsportclub "Hohentwiel" e.V. im DMV</span>
+        <ul class="footer-quick-nav">
+            <li><a href="kartsport.html">Kartsport</a></li>
+            <li><a href="trialsport.html">Trialsport</a></li>
+            <li><a href="ueber-uns.html">Über uns</a></li>
+            <li><a href="aktuelles.html">Aktuelles</a></li>
+            <li><a href="kontakt.html">Kontakt</a></li>
+        </ul>
+        <span class="footer-rule"></span>
+        <p>© 2026 MCH Singen Motorsportclub "Hohentwiel" e.V. im DMV Alle Rechte vorbehalten. | <a href="#" onclick="return klaro.show();" style="color: var(--text-light); text-decoration: underline;">Cookie-Einstellungen</a></p>
+        <p class="designer-credit">Created by <a href="https://www.instagram.com/dnl_kr">Daniel Krieger</a></p>
+    </footer>
+
+    <!-- =============================================
+         SIDEBAR - Navigationsmenü (via main.js)
+         ============================================= -->
+    <aside id="side-menu">
+        <a href="../index.html" class="sidebar-brand">
+            <img src="../media/logos/favicon.png" alt="MCH Logo" class="sidebar-logo">
+            <div class="sidebar-brand-info">
+                <span class="sidebar-brand-name">MCH Singen</span>
+                <span class="sidebar-brand-tagline">Motorsport aus Leidenschaft</span>
+            </div>
+        </a>
+        <button class="close-btn" id="close-menu">&times;</button>
+        
+        <div class="sidebar-search">
+            <form action="suche.html" method="GET" class="sidebar-search-row">
+                <input type="text" name="q" placeholder="Seite suchen...">
+                <button type="submit" title="Suchen"><i class="fa-solid fa-magnifying-glass"></i></button>
+            </form>
+        </div>
+        <nav>
+            <ul>
+                <li><a href="../index.html"><i class="fa-solid fa-house"></i> Startseite</a></li>
+                <li><a href="aktuelles.html" class="menu_current"><i class="fa-solid fa-calendar-days"></i> Aktuelle News &amp; Termine</a></li>
+                <li><a href="ueber-uns.html"><i class="fa-solid fa-users"></i> Über uns</a></li>
+                <li><a href="kartsport.html"><i class="fa-solid fa-flag-checkered"></i> Kartsport</a></li>
+                <li><a href="trialsport.html"><i class="fa-solid fa-motorcycle"></i> Trialsport</a></li>
+                <li><a href="sommerferienprogramm.html"><i class="fa-solid fa-sun"></i> Sommerferienprogramm</a></li>
+                <li><a href="statistiken.html"><i class="fa-solid fa-chart-line"></i> Statistiken</a></li>
+<li><a href="https://mch-singen.teamkleidung24.de/" target="_blank" rel="noopener noreferrer" class="shop-menu-link"><i class="fa-solid fa-cart-shopping"></i> MCH Vereins-Shop</a></li>
+                <li><a href="mitglied-werden.html"><i class="fa-solid fa-user-plus"></i> Mitglied werden</a></li>
+                <li><a href="sponsoren-links.html"><i class="fa-solid fa-handshake"></i> Sponsoren &amp; Links</a></li>
+                <li><a href="geschichte.html"><i class="fa-solid fa-book-open"></i> Geschichte des MCH</a></li>
+                <li><a href="faq.html"><i class="fa-solid fa-circle-question"></i> FAQ</a></li>
+                <li><a href="kontakt.html"><i class="fa-solid fa-envelope"></i> Kontakt &amp; Formular</a></li>
+                <li><a href="archiv.html"><i class="fa-solid fa-box-archive"></i> Archiv</a></li>
+                <li><a href="impressum-datenschutz.html"><i class="fa-solid fa-scale-balanced"></i> Impressum &amp; Datenschutz</a></li>
+            </ul>
+        </nav>
+    </aside>
+
+</body>
+</html>
