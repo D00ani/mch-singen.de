@@ -90,13 +90,26 @@ for s in ["alicke.jpg", "herby.jpg", "mofashion.jpg", "randegger.jpg",
 
 # --- Team-Fotos (ueber-uns): Handy-Originale (<name>.webp, ~1.5 MB) ->
 #     700px-Karten-Variante + JPEG-Fallback fuer <picture> ---
+# Personen-Zuschnitt (x0, y0, x1, y1 als Anteil der Bildmasse), damit alle
+# Gesichter gleich gross und gleich hoch sitzen wie bei Max (Referenzbild).
+# max: Referenz unveraendert; daniel: naeher fotografiert, kein Spielraum.
+TEAM_CROPS = {
+    "jochen":   (0.0914, 0.0911, 0.8371, 0.8360),
+    "alex":     (0.0743, 0.0986, 0.9771, 1.0),
+    "andi":     (0.1000, 0.1008, 0.8871, 0.8885),
+    "thorsten": (0.1786, 0.1726, 0.8600, 0.8542),
+}
 from PIL import ImageOps
 for n in ["jochen", "alex", "andi", "thorsten", "max", "daniel"]:
     src = os.path.join(ROOT, f"media/bilder/ueber-uns/{n}.webp")
     if not os.path.exists(src):
         continue
     im = ImageOps.exif_transpose(Image.open(src)).convert("RGB")
-    small = im.resize((700, round(im.height * 700 / im.width)), Image.LANCZOS)
+    if n in TEAM_CROPS:
+        x0, y0, x1, y1 = TEAM_CROPS[n]
+        im = im.crop((round(x0 * im.width), round(y0 * im.height),
+                      round(x1 * im.width), round(y1 * im.height)))
+    small = im.resize((700, 933), Image.LANCZOS)
     for ext, fmt, q in [("webp", "WEBP", 80), ("jpg", "JPEG", 85)]:
         out = os.path.join(ROOT, f"media/bilder/ueber-uns/{n}-700.{ext}")
         small.save(out, fmt, quality=q, **({"method": 6} if fmt == "WEBP" else {"optimize": True}))
