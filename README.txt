@@ -23,6 +23,8 @@ Texteditor (z. B. Notepad, Notepad++, VS Code).
 /js/vendor/               -> Eingebundene Bibliotheken (chart.js, klaro.js) - NICHT bearbeiten!
 /webfonts/                -> Schriftarten
 
+/tools/                   -> Hilfsskripte für die Performance-Optimierung (siehe Abschnitt 9!)
+
 /data/                    -> Textdateien und JSON für Timer, Countdown und Live-Daten
   timer.txt               -> Kart-Renntermine und Countdown
   timer_trial.txt         -> Trial-Termine und Countdown
@@ -146,8 +148,13 @@ den spitzen HTML-Klammern (z.B. <p>Dein Text</p>).
 
 BILDER: Lade das neue Bild in den passenden Unterordner unter /media/bilder/ hoch.
 Suche in der .html Datei nach dem <img src="..."> Code und ersetze den Pfad.
+HINWEIS: Die meisten Bilder werden zusätzlich als schnelles WebP-Format
+ausgeliefert (<picture>-Blöcke im HTML). Wenn du ein Bild ERSETZT (gleicher
+Dateiname), führe danach einmal aus:  python tools/optimize_images.py
+Das erzeugt die passenden .webp-Dateien neu (siehe Abschnitt 9).
 
 LOGOS: Das MCH-Logo (favicon.png) und das DMV-Logo (dmv.png) liegen unter /media/logos/.
+Im Header/Footer wird die kleine Version mch-logo-128.png verwendet (Ladezeit!).
 
 -------------------------------------------------------
 8. WICHTIGE HINWEISE ZU GITHUB PAGES
@@ -158,4 +165,28 @@ LOGOS: Das MCH-Logo (favicon.png) und das DMV-Logo (dmv.png) liegen unter /media
 - LADEZEIT: Wenn du etwas hochlädst, dauert es 1-3 Minuten, bis die Änderungen online sind.
 - BROWSER-CACHE: Drücke auf der Webseite Strg + F5 (oder Cmd + Shift + R am Mac),
   um das Laden der neuesten Version zu erzwingen!
+
+-------------------------------------------------------
+9. PERFORMANCE-BUILD (WICHTIG BEI CSS/JS-ÄNDERUNGEN!)
+-------------------------------------------------------
+Die Webseite lädt aus Geschwindigkeitsgründen NICHT die Original-Dateien,
+sondern minifizierte Versionen:
+  - css/bundle.min.css  = alle css/*.css Basis-Dateien zusammengefasst
+  - css/index.min.css, kartsport.min.css, live.min.css
+  - js/*.min.js         = minifizierte Kopien der js/*.js Dateien
+
+DAS BEDEUTET: Wenn du eine .css- oder .js-Datei änderst, ist die Änderung
+ERST online sichtbar, nachdem du einmal dieses Kommando ausgeführt hast:
+
+    python tools/build_assets.py
+
+(Einmalige Vorbereitung auf einem neuen PC: Python installieren, dann
+ "pip install csscompressor rjsmin Pillow" ausführen.)
+
+Bei neuen oder ersetzten BILDERN entsprechend:
+
+    python tools/optimize_images.py
+
+HTML-Dateien und /data/-Dateien kannst du wie gewohnt direkt ändern,
+dafür ist KEIN Build nötig.
 =======================================================

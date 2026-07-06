@@ -95,6 +95,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
         goTo(1, false);
         startAutoPlay();
+
+        // Performance: Nicht-sichtbare Slides sind lazy (entlasten den LCP-Pfad).
+        // Nach dem window-load werden sie vorgeladen, damit beim Weiterblättern
+        // kein leeres Bild aufblitzt.
+        const eagerLoadSlides = () => {
+            track.querySelectorAll('img[loading="lazy"]').forEach(img => { img.loading = 'eager'; });
+        };
+        if (document.readyState === 'complete') eagerLoadSlides();
+        else window.addEventListener('load', eagerLoadSlides, { once: true });
     }
 
 

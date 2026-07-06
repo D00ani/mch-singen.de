@@ -48,3 +48,24 @@ var klaroConfig = {
         }
     ]
 };
+
+// Barrierefreiheit-Fix: Der Klaro-Dialog referenziert per aria-labelledby ein
+// Element (id-cookie-title), das im Notice-Banner nicht existiert. Ohne
+// zugänglichen Namen scheitert der Lighthouse-Audit "dialog has accessible name".
+// Wir setzen daher direkt ein aria-label, sobald Klaro rendert.
+document.addEventListener('DOMContentLoaded', function () {
+    function fixKlaroDialogName() {
+        document.querySelectorAll('[role="dialog"]').forEach(function (dialog) {
+            var labelId = dialog.getAttribute('aria-labelledby');
+            var labelEl = labelId ? document.getElementById(labelId) : null;
+            if (!labelEl || !labelEl.textContent.trim()) {
+                dialog.removeAttribute('aria-labelledby');
+                dialog.setAttribute('aria-label', 'Cookie-Einstellungen');
+            }
+        });
+    }
+    // Klaro rendert asynchron ins DOM — Observer fängt Notice UND späteres Modal ab
+    var klaroObserver = new MutationObserver(fixKlaroDialogName);
+    klaroObserver.observe(document.body, { childList: true, subtree: true });
+    fixKlaroDialogName();
+});

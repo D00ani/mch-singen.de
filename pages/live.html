@@ -15,24 +15,30 @@
     <meta property="og:image" content="https://mch-singen.de/media/bilder/mch_pic.jpg">
     <title>Live Timing - MCH Singen Motorsportclub "Hohentwiel" e.V. im DMV</title>
     
-    <link rel="stylesheet" href="../css/style.css">
-    <link rel="stylesheet" href="../css/live.css">
-    <link rel="stylesheet" href="../css/all.min.css">
+    <!-- Fonts der sichtbaren Inhalte vorladen (Text + Ueberschriften) -->
+    <link rel="preload" href="../webfonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="../webfonts/outfit-latin.woff2" as="font" type="font/woff2" crossorigin>
+    <!-- Ein gebuendeltes Stylesheet statt style.css mit 9 @imports (10 Requests -> 1) -->
+    <link rel="stylesheet" href="../css/bundle.min.css">
+    <link rel="stylesheet" href="../css/live.min.css">
+    <!-- Font Awesome asynchron: blockiert das Rendering nicht mehr -->
+    <link rel="preload" href="../css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="../css/all.min.css"></noscript>
     
-    <script defer type="text/javascript" src="../js/klaro-config.js"></script>
+    <script defer type="text/javascript" src="../js/klaro-config.min.js"></script>
     <script defer type="text/javascript" src="../js/vendor/klaro.js"></script>
-    <script defer type="text/javascript" src="../js/main.js"></script>
-    <script defer type="text/javascript" src="../js/live.js"></script>
+    <script defer type="text/javascript" src="../js/main.min.js"></script>
+    <script defer type="text/javascript" src="../js/live.min.js"></script>
 </head>
 <body>
 
     <header>
         <div class="logo-container">
             <a href="../index.html">
-                <img src="../media/logos/favicon.png" alt="MCH Logo" class="header-logo">
+                <img src="../media/logos/mch-logo-128.png" alt="MCH Logo" class="header-logo" width="128" height="128">
             </a>
             <a href="https://www.dmv-motorsport.de/" target="_blank" rel="noopener noreferrer" title="Zur offiziellen DMV Website">
-                <img src="../media/logos/dmv.png" alt="DMV Logo" class="header-logo">
+                <img src="../media/logos/dmv.png" alt="DMV Logo" class="header-logo" width="400" height="400">
             </a>
         </div>
         
@@ -62,7 +68,7 @@
 
     <aside id="side-menu">
         <a href="../index.html" class="sidebar-brand">
-            <img src="../media/logos/favicon.png" alt="MCH Logo" class="sidebar-logo">
+            <img src="../media/logos/mch-logo-128.png" alt="MCH Logo" class="sidebar-logo" width="128" height="128">
             <div class="sidebar-brand-info">
                 <span class="sidebar-brand-name">MCH Singen</span>
                 <span class="sidebar-brand-tagline">Motorsport aus Leidenschaft</span>
@@ -148,7 +154,7 @@
 
     <footer>
         <a href="../index.html" class="footer-logo-link" title="Zur Startseite">
-            <img src="../media/logos/favicon.png" alt="MCH Logo" class="footer-logo" loading="lazy">
+            <img src="../media/logos/mch-logo-128.png" alt="MCH Logo" class="footer-logo" width="128" height="128" loading="lazy">
         </a>
         <span class="footer-club-name">MCH Singen Motorsportclub "Hohentwiel" e.V. im DMV</span>
         <ul class="footer-quick-nav">

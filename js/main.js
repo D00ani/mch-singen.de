@@ -216,7 +216,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <div class="footer-inner">
                 <div class="footer-col footer-brand">
                     <a href="${b}index.html" title="Zur Startseite">
-                        <img src="${b}media/logos/favicon.png" alt="MCH Logo" class="footer-logo" loading="lazy">
+                        <img src="${b}media/logos/mch-logo-128.png" alt="MCH Logo" class="footer-logo" width="128" height="128" loading="lazy">
                     </a>
                     <p class="footer-tagline">Motorsport aus Leidenschaft</p>
                     <p class="footer-desc">Der Motorsportclub "Hohentwiel" e.V. ist ein gemeinnütziger Verein in Singen - aktiver Kart- und Trialsport für Jung und Alt.</p>

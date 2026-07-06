@@ -5,6 +5,8 @@
     <link rel="apple-touch-icon" href="media/logos/favicon.png">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- LCP: erstes sichtbares Hero-Bild mit hoechster Prioritaet vorladen -->
+    <link rel="preload" as="image" type="image/webp" href="media/bilder/mch_pic-640.webp" imagesrcset="media/bilder/mch_pic-480.webp 480w, media/bilder/mch_pic-640.webp 640w" imagesizes="(min-width: 992px) 1100px, (min-width: 840px) 800px, 100vw" fetchpriority="high">
     <link rel="canonical" href="https://mch-singen.de/">
     <meta name="description" content="Motorsport aus Leidenschaft - Kart und Trial in Singen am Hohentwiel. Willkommen beim MCH Singen Motorsportclub!">
     <meta property="og:type" content="website">
@@ -40,24 +42,30 @@
         ]
     }
     </script>
-    <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="css/index.css">
-    <link rel="stylesheet" href="css/all.min.css">
+    <!-- Fonts der sichtbaren Inhalte vorladen (Text + Ueberschriften) -->
+    <link rel="preload" href="webfonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="webfonts/outfit-latin.woff2" as="font" type="font/woff2" crossorigin>
+    <!-- Ein gebuendeltes Stylesheet statt style.css mit 9 @imports (10 Requests -> 1) -->
+    <link rel="stylesheet" href="css/bundle.min.css">
+    <link rel="stylesheet" href="css/index.min.css">
+    <!-- Font Awesome asynchron: blockiert das Rendering nicht mehr -->
+    <link rel="preload" href="css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="css/all.min.css"></noscript>
     
-    <script defer type="text/javascript" src="js/klaro-config.js"></script>
+    <script defer type="text/javascript" src="js/klaro-config.min.js"></script>
     <script defer type="text/javascript" src="js/vendor/klaro.js"></script>
-    <script defer type="text/javascript" src="js/main.js"></script>
-    <script defer type="text/javascript" src="js/index.js"></script>
+    <script defer type="text/javascript" src="js/main.min.js"></script>
+    <script defer type="text/javascript" src="js/index.min.js"></script>
 </head>
 <body class="page-home">
 
     <header>
         <div class="logo-container">
             <a href="index.html">
-                <img src="media/logos/favicon.png" alt="MCH Logo" class="header-logo">
+                <img src="media/logos/mch-logo-128.png" alt="MCH Logo" class="header-logo" width="128" height="128">
             </a>
             <a href="https://www.dmv-motorsport.de/" target="_blank" rel="noopener noreferrer" title="Zur offiziellen DMV Website">
-                <img src="media/logos/dmv.png" alt="DMV Logo" class="header-logo">
+                <img src="media/logos/dmv.png" alt="DMV Logo" class="header-logo" width="400" height="400">
             </a>
         </div>
         
@@ -94,7 +102,10 @@
 
                 <!-- Klon von Bild 3 (am Anfang für rückwärts-Loop) -->
                 <a href="pages/trialsport.html" class="slide" aria-hidden="true" tabindex="-1">
-                    <img src="media/bilder/trial/trial_abteilung.jpg" alt="Motorrad-Trialsport beim MCH Singen Hohentwiel">
+                    <picture>
+                        <source type="image/webp" srcset="media/bilder/trial/trial_abteilung-480.webp 480w, media/bilder/trial/trial_abteilung-800.webp 800w, media/bilder/trial/trial_abteilung-1179.webp 1179w" sizes="(min-width: 992px) 1100px, (min-width: 840px) 800px, 100vw">
+                        <img src="media/bilder/trial/trial_abteilung.jpg" alt="Motorrad-Trialsport beim MCH Singen Hohentwiel" width="1179" height="1533" loading="lazy" decoding="async">
+                    </picture>
                     <div class="slide-caption-box">
                         <span>Zur Trial Abteilung</span>
                         <i class="fa-solid fa-arrow-right"></i>
@@ -103,7 +114,10 @@
 
                 <!-- Bild 1: Gesamter Verein -->
                 <a href="pages/ueber-uns.html" class="slide">
-                    <img src="media/bilder/mch_pic.jpg" alt="MCH Singen Motorsportclub Hohentwiel - Vereinsleben" fetchpriority="high" loading="eager">
+                    <picture>
+                        <source type="image/webp" srcset="media/bilder/mch_pic-480.webp 480w, media/bilder/mch_pic-640.webp 640w" sizes="(min-width: 992px) 1100px, (min-width: 840px) 800px, 100vw">
+                        <img src="media/bilder/mch_pic.jpg" alt="MCH Singen Motorsportclub Hohentwiel - Vereinsleben" fetchpriority="high" loading="eager" width="640" height="480" decoding="async">
+                    </picture>
                     <div class="slide-caption-box">
                         <span>Unseren Verein entdecken</span>
                         <i class="fa-solid fa-arrow-right"></i>
@@ -112,7 +126,10 @@
 
                 <!-- Bild 2: Kart Abteilung -->
                 <a href="pages/kartsport.html" class="slide">
-                    <img src="media/bilder/kartsport/kart_abteilung.jpg" alt="Kartslalom-Training beim MCH Singen Hohentwiel">
+                    <picture>
+                        <source type="image/webp" srcset="media/bilder/kartsport/kart_abteilung-480.webp 480w, media/bilder/kartsport/kart_abteilung-800.webp 800w, media/bilder/kartsport/kart_abteilung-1600.webp 1600w" sizes="(min-width: 992px) 1100px, (min-width: 840px) 800px, 100vw">
+                        <img src="media/bilder/kartsport/kart_abteilung.jpg" alt="Kartslalom-Training beim MCH Singen Hohentwiel" width="1600" height="1200" loading="lazy" decoding="async">
+                    </picture>
                     <div class="slide-caption-box">
                         <span>Zur Kart Abteilung</span>
                         <i class="fa-solid fa-arrow-right"></i>
@@ -121,7 +138,10 @@
 
                 <!-- Bild 3: Trial Abteilung -->
                 <a href="pages/trialsport.html" class="slide">
-                    <img src="media/bilder/trial/trial_abteilung.jpg" alt="Motorrad-Trialsport beim MCH Singen Hohentwiel">
+                    <picture>
+                        <source type="image/webp" srcset="media/bilder/trial/trial_abteilung-480.webp 480w, media/bilder/trial/trial_abteilung-800.webp 800w, media/bilder/trial/trial_abteilung-1179.webp 1179w" sizes="(min-width: 992px) 1100px, (min-width: 840px) 800px, 100vw">
+                        <img src="media/bilder/trial/trial_abteilung.jpg" alt="Motorrad-Trialsport beim MCH Singen Hohentwiel" width="1179" height="1533" loading="lazy" decoding="async">
+                    </picture>
                     <div class="slide-caption-box">
                         <span>Zur Trial Abteilung</span>
                         <i class="fa-solid fa-arrow-right"></i>
@@ -130,7 +150,10 @@
 
                 <!-- Klon von Bild 1 (am Ende für vorwärts-Loop) -->
                 <a href="pages/ueber-uns.html" class="slide" aria-hidden="true" tabindex="-1">
-                    <img src="media/bilder/mch_pic.jpg" alt="MCH Singen Motorsportclub Hohentwiel - Vereinsleben">
+                    <picture>
+                        <source type="image/webp" srcset="media/bilder/mch_pic-480.webp 480w, media/bilder/mch_pic-640.webp 640w" sizes="(min-width: 992px) 1100px, (min-width: 840px) 800px, 100vw">
+                        <img src="media/bilder/mch_pic.jpg" alt="MCH Singen Motorsportclub Hohentwiel - Vereinsleben" width="640" height="480" loading="lazy" decoding="async">
+                    </picture>
                     <div class="slide-caption-box">
                         <span>Unseren Verein entdecken</span>
                         <i class="fa-solid fa-arrow-right"></i>
@@ -329,7 +352,7 @@
 
     <footer>
         <a href="index.html" class="footer-logo-link" title="Zur Startseite">
-            <img src="media/logos/favicon.png" alt="MCH Logo" class="footer-logo" loading="lazy">
+            <img src="media/logos/mch-logo-128.png" alt="MCH Logo" class="footer-logo" width="128" height="128" loading="lazy">
         </a>
         <span class="footer-club-name">MCH Singen Motorsportclub "Hohentwiel" e.V. im DMV</span>
         <ul class="footer-quick-nav">
@@ -346,7 +369,7 @@
 
     <aside id="side-menu">
         <a href="index.html" class="sidebar-brand">
-            <img src="media/logos/favicon.png" alt="MCH Logo" class="sidebar-logo">
+            <img src="media/logos/mch-logo-128.png" alt="MCH Logo" class="sidebar-logo" width="128" height="128">
             <div class="sidebar-brand-info">
                 <span class="sidebar-brand-name">MCH Singen</span>
                 <span class="sidebar-brand-tagline">Motorsport aus Leidenschaft</span>
