@@ -790,3 +790,59 @@ body.dark-mode .cta-banner {
         padding: 15px 12px;
     }
 }
+
+
+/* =========================================
+   7. WETTERVORHERSAGE (Open-Meteo)
+   ========================================= */
+
+.weather-strip {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    max-width: 640px;
+    margin: 0 auto 25px auto;
+    padding: 12px 18px;
+    background: rgba(0, 71, 204, 0.05);
+    border: 1px solid rgba(0, 71, 204, 0.15);
+    border-radius: 12px;
+    text-align: left;
+    font-size: 0.95rem;
+}
+
+/* display:flex würde das hidden-Attribut sonst aushebeln */
+.weather-strip[hidden] {
+    display: none;
+}
+
+.weather-icon {
+    flex-shrink: 0;
+    font-size: 1.5rem;
+    color: var(--primary-blue);
+}
+
+.weather-text {
+    color: #555;
+}
+
+.weather-text strong {
+    color: #222;
+}
+
+/* Dark Mode */
+body.dark-mode .weather-strip {
+    background: rgba(30, 32, 55, 0.6);
+    border-color: rgba(255, 255, 255, 0.08);
+}
+
+body.dark-mode .weather-icon {
+    color: #4285F4;
+}
+
+body.dark-mode .weather-text {
+    color: #c8d0f0;
+}
+
+body.dark-mode .weather-text strong {
+    color: #e8ecff;
+}

@@ -367,6 +367,105 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     // ==========================================
+    // 6. WETTERVORHERSAGE (Open-Meteo)
+    // ==========================================
+    // Minimale Ein-Zeilen-Vorhersage für den nächsten Samstag in den
+    // Location-Boxen (Kart + Trial). Open-Meteo braucht keinen API-Key
+    // und setzt keine Cookies, daher ohne Consent ladbar (siehe
+    // Datenschutzerklärung, Abschnitt "Wettervorhersage"). Schlägt der
+    // Abruf fehl, bleibt die Leiste einfach ausgeblendet.
+    // vonStunde/bisStunde: nur Stundenwerte in diesem Fenster auswerten
+    // (Kart-Training Samstags 9:00–13:30 -> volle Stunden 9 bis 13 Uhr).
+    // Ohne Fenster werden die Tageswerte (Max/Min) angezeigt.
+    const weatherLocations = [
+        { id: 'weather-kart',  lat: 47.7729, lon: 8.8471, label: 'Trainingswetter',
+          vonStunde: 9, bisStunde: 13, zeitText: '9:00–13:30 Uhr' },
+        { id: 'weather-trial', lat: 47.6010, lon: 8.6810, label: 'Wetter' },
+    ];
+
+    // WMO-Wettercode -> [Font-Awesome-Icon, Beschreibung]
+    function weatherInfo(code) {
+        if (code === 0)                 return ['fa-sun',                 'sonnig'];
+        if (code <= 2)                  return ['fa-cloud-sun',           'heiter'];
+        if (code === 3)                 return ['fa-cloud',               'bedeckt'];
+        if (code === 45 || code === 48) return ['fa-smog',                'neblig'];
+        if (code >= 51 && code <= 57)   return ['fa-cloud-rain',          'Nieselregen'];
+        if (code >= 61 && code <= 67)   return ['fa-cloud-showers-heavy', 'Regen'];
+        if (code >= 71 && code <= 77)   return ['fa-snowflake',           'Schneefall'];
+        if (code >= 80 && code <= 82)   return ['fa-cloud-showers-heavy', 'Regenschauer'];
+        if (code === 85 || code === 86) return ['fa-snowflake',           'Schneeschauer'];
+        if (code >= 95)                 return ['fa-cloud-bolt',          'Gewitter'];
+        return ['fa-cloud', 'wechselhaft'];
+    }
+
+    weatherLocations.forEach(loc => {
+        const box = document.getElementById(loc.id);
+        if (!box) return;
+        let url = 'https://api.open-meteo.com/v1/forecast'
+            + `?latitude=${loc.lat}&longitude=${loc.lon}`
+            + '&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max'
+            + '&timezone=Europe%2FBerlin&forecast_days=7';
+        if (loc.vonStunde != null) {
+            url += '&hourly=temperature_2m,weather_code,precipitation_probability';
+        }
+        fetch(url)
+            .then(r => { if (!r.ok) throw new Error(); return r.json(); })
+            .then(data => {
+                const daily = data && data.daily;
+                if (!daily || !daily.time || !daily.time.length) return;
+
+                // Nächsten Samstag suchen (heute zählt mit; 7 Tage
+                // Vorhersage enthalten immer genau einen Samstag)
+                let i = daily.time.findIndex(iso =>
+                    new Date(iso + 'T12:00:00').getDay() === 6);
+                if (i < 0) i = 0;
+                const dayIso = daily.time[i];
+
+                // Standard: Tageswerte (Max/Min)
+                let code    = daily.weather_code[i];
+                let tempTxt = Math.round(daily.temperature_2m_max[i]) + '° / '
+                            + Math.round(daily.temperature_2m_min[i]) + '°';
+                let rain    = daily.precipitation_probability_max[i] ?? 0;
+                let zeitTxt = '';
+
+                // Mit Zeitfenster: nur die Stunden des Trainings auswerten
+                const hourly = data.hourly;
+                if (loc.vonStunde != null && hourly && hourly.time) {
+                    const idx = [];
+                    hourly.time.forEach((t, k) => {
+                        const h = parseInt(t.slice(11, 13), 10);
+                        if (t.slice(0, 10) === dayIso && h >= loc.vonStunde && h <= loc.bisStunde) idx.push(k);
+                    });
+                    if (idx.length) {
+                        const temps = idx.map(k => hourly.temperature_2m[k]);
+                        // Höchster WMO-Code im Fenster ~ "schlechtestes" Wetter
+                        code    = Math.max(...idx.map(k => hourly.weather_code[k]));
+                        rain    = Math.max(...idx.map(k => hourly.precipitation_probability[k] ?? 0));
+                        tempTxt = Math.round(Math.min(...temps)) + '° – '
+                                + Math.round(Math.max(...temps)) + '°';
+                        zeitTxt = ', ' + loc.zeitText;
+                    }
+                }
+
+                const [icon, text] = weatherInfo(code);
+                const date = new Date(dayIso + 'T12:00:00');
+                // Browser liefern je nach Version "Sa" oder "Sa." -> vereinheitlichen
+                let wd = date.toLocaleDateString('de-DE', { weekday: 'short' });
+                if (!wd.endsWith('.')) wd += '.';
+                const dateTxt = i === 0 ? 'heute'
+                    : wd + ' ' + date.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' });
+
+                box.innerHTML = `<i class="fa-solid ${icon} weather-icon" aria-hidden="true"></i>`
+                    + `<span class="weather-text"><strong>${loc.label} (${dateTxt}${zeitTxt}):</strong> `
+                    + `${text}, ${tempTxt} · Regenrisiko ${rain} %</span>`;
+                box.title = 'Wetterdaten: open-meteo.com';
+                box.hidden = false;
+            })
+            .catch(() => {});
+    });
+
+
+    // ==========================================
     // 4. STATS COUNTER ANIMATION
     // ==========================================
     const statNumbers = document.querySelectorAll('.stat-number[data-target]');
