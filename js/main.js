@@ -4,7 +4,20 @@
 // ==========================================
 
 document.addEventListener('DOMContentLoaded', () => {
-    
+
+    // --- 0. SKIP-LINK (Tastatur/Screenreader: direkt zum Inhalt springen) ---
+    (function initSkipLink() {
+        const main = document.querySelector('main');
+        if (!main) return;
+        if (!main.id) main.id = 'main-content';
+
+        const skipLink = document.createElement('a');
+        skipLink.className = 'skip-link';
+        skipLink.href = `#${main.id}`;
+        skipLink.textContent = 'Zum Inhalt springen';
+        document.body.prepend(skipLink);
+    })();
+
     // --- 1. SIDEBAR & NAVIGATION LOGIK ---
     const sideMenu = document.getElementById('side-menu');
     const openMenuBtn = document.getElementById('open-menu');

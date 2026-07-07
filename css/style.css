@@ -34,6 +34,65 @@
 
 h1, h2, h3 {
     font-family: var(--font-heading);
+    text-wrap: balance;
+}
+
+p {
+    text-wrap: pretty;
+}
+
+/* =========================================
+   ACCESSIBILITY: FOKUS-RINGE (Tastaturnavigation)
+   ========================================= */
+:focus-visible {
+    outline: 2px solid var(--primary-blue);
+    outline-offset: 2px;
+    border-radius: 4px;
+}
+
+/* Skip-Link: unsichtbar bis zum ersten Tab-Fokus */
+.skip-link {
+    position: absolute;
+    top: -50px;
+    left: 10px;
+    z-index: 9999;
+    background: var(--primary-blue);
+    color: #fff;
+    padding: 10px 18px;
+    border-radius: 0 0 8px 8px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: top 0.2s ease;
+}
+
+.skip-link:focus-visible {
+    top: 0;
+    outline-color: var(--accent);
+}
+
+/* Auf dunklen Markenflächen ist Blau kaum sichtbar -> Gold */
+header :focus-visible,
+footer :focus-visible,
+.image-slider :focus-visible,
+.countdown-wrapper :focus-visible {
+    outline-color: var(--accent);
+}
+
+/* Pressed-Feedback: Buttons/Links geben beim Klick sichtbar nach */
+button:not(.slider-btn):active,
+.cta-btn:active,
+.header-cta-btn:active,
+.quick-nav-item:active,
+.insta-btn:active,
+.search-header-btn:active,
+.footer-social-btn:active,
+.ci-social-btn:active {
+    transform: scale(0.97);
+}
+
+/* Slider-Pfeile sind vertikal zentriert (translateY) -> Zentrierung beim Press erhalten */
+.slider-btn:active {
+    transform: translateY(-50%) scale(0.93);
 }
 
 /* Custom Scrollbar */
@@ -125,6 +184,19 @@ body.transitions-ready .location-box {
     box-shadow: 0 10px 30px rgba(0,0,0,0.08);
     border-radius: 8px;
     border: 1px solid rgba(0, 71, 204, 0.08);
+}
+
+/* Ab sehr breiten Monitoren nicht weiter mit dem Viewport wachsen,
+   sondern als zentrierte Karte stehen bleiben. Der Hamburger-Button
+   ist fixed positioniert und muss daher rechnerisch mitwandern. */
+@media (min-width: 1900px) {
+    .container {
+        max-width: 1600px;
+    }
+
+    .hamburger-btn {
+        left: calc(50vw - 800px + 40px);
+    }
 }
 
 /* =========================================

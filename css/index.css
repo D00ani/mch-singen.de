@@ -294,13 +294,13 @@ body.dark-mode .section-divider {
     transition: all 0.28s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
-/* Farbige Gradient-Icons pro Sportart */
-.quick-nav-item:nth-child(1) .qni-icon { background: linear-gradient(135deg, #ff8c00, #ffcc00); }
-.quick-nav-item:nth-child(2) .qni-icon { background: linear-gradient(135deg, #0047cc, #7c3aed); }
-.quick-nav-item:nth-child(3) .qni-icon { background: linear-gradient(135deg, #0891b2, #06b6d4); }
-.quick-nav-item:nth-child(4) .qni-icon { background: linear-gradient(135deg, #d97706, #fbbf24); }
-.quick-nav-item:nth-child(5) .qni-icon { background: linear-gradient(135deg, #16a34a, #4ade80); }
-.quick-nav-item:nth-child(6) .qni-icon { background: linear-gradient(135deg, #dc2626, #f97316); }
+/* Icons in der Markenfarbe Blau — nur "Mitglied werden" hebt sich in Gold ab */
+.quick-nav-item:nth-child(1) .qni-icon { background: linear-gradient(135deg, var(--primary-blue), var(--dark-blue)); }
+.quick-nav-item:nth-child(2) .qni-icon { background: linear-gradient(135deg, #1a5ce8, var(--primary-blue)); }
+.quick-nav-item:nth-child(3) .qni-icon { background: linear-gradient(135deg, var(--primary-blue), #4285F4); }
+.quick-nav-item:nth-child(4) .qni-icon { background: linear-gradient(135deg, var(--dark-blue), var(--primary-blue)); }
+.quick-nav-item:nth-child(5) .qni-icon { background: linear-gradient(135deg, #ffcc00, #ff8c00); }
+.quick-nav-item:nth-child(6) .qni-icon { background: linear-gradient(135deg, #4285F4, #1a5ce8); }
 
 .quick-nav-item:hover {
     background: var(--primary-blue);
