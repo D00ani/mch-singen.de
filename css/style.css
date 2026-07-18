@@ -187,15 +187,10 @@ body.transitions-ready .location-box {
 }
 
 /* Ab sehr breiten Monitoren nicht weiter mit dem Viewport wachsen,
-   sondern als zentrierte Karte stehen bleiben. Der Hamburger-Button
-   ist fixed positioniert und muss daher rechnerisch mitwandern. */
+   sondern als zentrierte Karte stehen bleiben. */
 @media (min-width: 1900px) {
     .container {
         max-width: 1600px;
-    }
-
-    .hamburger-btn {
-        left: calc(50vw - 800px + 40px);
     }
 }
 
