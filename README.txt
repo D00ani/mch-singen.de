@@ -65,6 +65,14 @@ WICHTIGE REGELN für die timer.txt:
 1. Die Monate MÜSSEN zwingend auf ENGLISCH geschrieben werden! (June, July, etc.)
 2. Es dürfen KEINE Leerzeichen vor oder nach dem Semikolon (;) stehen.
 
+EINFACHER GEHT'S MIT DEM TOOL statt von Hand zu tippen:
+    python tools/neuer_termin.py
+(oder per Doppelklick auf neuer-termin.bat eine Ebene über mch-arbeit/)
+Fragt Kart/Trial ab, laesst bekannte Vereine/Orte per Nummer auswaehlen
+(Maps-Link wird automatisch uebernommen), prueft Datum/Uhrzeit auf
+Gueltigkeit, erkennt Duplikate und schlaegt den PDF-Dateinamen automatisch
+vor. Schreibt danach direkt in timer.txt bzw. timer_trial.txt.
+
 -------------------------------------------------------
 3. KURZAUSSCHREIBUNG (PDF) VERKNÜPFEN
 -------------------------------------------------------
