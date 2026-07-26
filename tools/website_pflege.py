@@ -8,6 +8,7 @@ Ausfuehren: python tools/website_pflege.py
 (oder per Doppelklick auf website-pflege.bat eine Ebene ueber mch-arbeit/)
 """
 import os
+import subprocess
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -54,6 +55,13 @@ def main():
             break
         _, funktion = module[wahl]
         funktion()
+
+    if jaehrliches_update.hat_aenderungen():
+        print("\n" + "=" * 60)
+        print("  Aenderungen werden automatisch veroeffentlicht:")
+        print("=" * 60)
+        subprocess.run(["git", "status", "--short"], cwd=jaehrliches_update.ROOT)
+        jaehrliches_update.commit_merge_push("Webseiten-Pflege: Aenderungen aktualisiert")
 
     print("\nBis zum naechsten Mal!")
 

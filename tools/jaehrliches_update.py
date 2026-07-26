@@ -52,6 +52,41 @@ def git(args, cwd):
     return subprocess.run(["git"] + args, cwd=cwd)
 
 
+def hat_aenderungen(cwd=ROOT):
+    ergebnis = subprocess.run(["git", "status", "--porcelain"], cwd=cwd, capture_output=True, text=True)
+    return bool(ergebnis.stdout.strip())
+
+
+def commit_merge_push(commit_message, cwd=ROOT, main_worktree=MAIN_WORKTREE):
+    """Committet alle Aenderungen in arbeit, merged nach main und pusht.
+    Gibt True zurueck, wenn erfolgreich gepusht wurde."""
+    if not hat_aenderungen(cwd):
+        print("\nKeine Aenderungen zu committen.")
+        return False
+
+    if git(["add", "-A"], cwd).returncode != 0:
+        print("\nFEHLER bei 'git add'.")
+        return False
+    if git(["commit", "-m", commit_message], cwd).returncode != 0:
+        print("\nFEHLER bei 'git commit' - siehe Meldung oben.")
+        return False
+
+    if not os.path.isdir(main_worktree):
+        print(f"\nFEHLER: {main_worktree} nicht gefunden - Merge/Push manuell durchfuehren.")
+        return False
+
+    if git(["merge", "arbeit", "--no-edit"], main_worktree).returncode != 0:
+        print("\nFEHLER beim Merge nach main - bitte manuell pruefen.")
+        return False
+    if git(["push", "origin", "main"], main_worktree).returncode != 0:
+        print("\nFEHLER beim Push - bitte manuell pruefen.")
+        return False
+    git(["merge", "main", "--no-edit"], cwd)
+
+    print("\nGepusht! GitHub Pages braucht 1-3 Minuten.")
+    return True
+
+
 def main():
     print("=" * 60)
     print("  Jaehrliches technisches Update")
@@ -83,27 +118,7 @@ def main():
         print("\nNicht gepusht. Aenderungen liegen unveraendert im Arbeitsordner (arbeit).")
         return
 
-    if git(["add", "-A"], ROOT).returncode != 0:
-        print("\nFEHLER bei 'git add'.")
-        return
-    commit = git(["commit", "-m", "Jaehrliches Update: Statistik, Bilder, Copyright-Jahr, Build"], ROOT)
-    if commit.returncode != 0:
-        print("\nNichts zu committen oder Fehler bei 'git commit' - siehe Meldung oben.")
-        return
-
-    if not os.path.isdir(MAIN_WORKTREE):
-        print(f"\nFEHLER: {MAIN_WORKTREE} nicht gefunden - Merge/Push manuell durchfuehren.")
-        return
-
-    if git(["merge", "arbeit", "--no-edit"], MAIN_WORKTREE).returncode != 0:
-        print("\nFEHLER beim Merge nach main - bitte manuell pruefen.")
-        return
-    if git(["push", "origin", "main"], MAIN_WORKTREE).returncode != 0:
-        print("\nFEHLER beim Push - bitte manuell pruefen.")
-        return
-    git(["merge", "main", "--no-edit"], ROOT)
-
-    print("\nFertig und gepusht! GitHub Pages braucht 1-3 Minuten.")
+    commit_merge_push("Jaehrliches Update: Statistik, Bilder, Copyright-Jahr, Build")
 
 
 if __name__ == "__main__":
