@@ -1,6 +1,5 @@
 User-agent: *
 Disallow: /pages/underconstruction.html
-Disallow: /pages/live.html
 Allow: /
 
 Sitemap: https://mch-singen.de/sitemap.xml
