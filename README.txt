@@ -213,4 +213,24 @@ Bei neuen oder ersetzten BILDERN entsprechend:
 
 HTML-Dateien und /data/-Dateien kannst du wie gewohnt direkt ändern,
 dafür ist KEIN Build nötig.
+
+-------------------------------------------------------
+10. JÄHRLICHES UPDATE (jahres-update.bat)
+-------------------------------------------------------
+Eine Ebene über /mch-arbeit/ und /mch-singen.de-main/ liegt
+jahres-update.bat. Einmal im Jahr per Doppelklick starten:
+
+1. Zeigt zuerst eine Checkliste der Dinge, die NICHT automatisch gehen
+   und echtes Saisonwissen brauchen (timer.txt, trainingstermine-Datei,
+   Vereinsmeister-Zeile in statistiken.html, Archiv-Eintrag) - vorher
+   erledigen, dann im Skript mit einer Taste bestätigen.
+2. Führt automatisch aus: update_statistik.py, optimize_images.py,
+   update_copyright_year.py (setzt "© <Jahr>" im Footer aller Seiten
+   auf das aktuelle Jahr) und build_assets.py.
+3. Zeigt die geänderten Dateien und fragt vor dem Commit/Push nach
+   Bestätigung (j/n) - committet dann in arbeit, merged nach main
+   und pusht.
+
+Das Skript liegt bewusst außerhalb beider Git-Ordner (ist also nicht
+Teil des Repos) und muss bei einem neuen PC neu angelegt werden.
 =======================================================
