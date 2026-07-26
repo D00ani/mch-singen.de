@@ -66,12 +66,16 @@ WICHTIGE REGELN für die timer.txt:
 2. Es dürfen KEINE Leerzeichen vor oder nach dem Semikolon (;) stehen.
 
 EINFACHER GEHT'S MIT DEM TOOL statt von Hand zu tippen:
-    python tools/neuer_termin.py
-(oder per Doppelklick auf neuer-termin.bat eine Ebene über mch-arbeit/)
-Fragt Kart/Trial ab, laesst bekannte Vereine/Orte per Nummer auswaehlen
-(Maps-Link wird automatisch uebernommen), prueft Datum/Uhrzeit auf
-Gueltigkeit, erkennt Duplikate und schlaegt den PDF-Dateinamen automatisch
-vor. Schreibt danach direkt in timer.txt bzw. timer_trial.txt.
+    python tools/termine_verwalten.py
+(oder per Doppelklick auf termine-verwalten.bat eine Ebene über mch-arbeit/)
+Fragt Kart/Trial ab, dann Hinzufuegen/Bearbeiten/Loeschen:
+  - Hinzufuegen: laesst bekannte Vereine/Orte per Nummer auswaehlen
+    (Maps-Link wird automatisch uebernommen), prueft Datum/Uhrzeit auf
+    Gueltigkeit, erkennt Duplikate und schlaegt den PDF-Dateinamen
+    automatisch vor.
+  - Bearbeiten/Loeschen: zeigt alle vorhandenen Termine nummeriert an,
+    Termin auswaehlen und Werte anpassen (Enter = behalten) oder loeschen.
+Schreibt danach direkt in timer.txt bzw. timer_trial.txt.
 
 -------------------------------------------------------
 3. KURZAUSSCHREIBUNG (PDF) VERKNÜPFEN
