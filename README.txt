@@ -128,6 +128,30 @@ Ein Skript auf der Webseite sorgt automatisch dafür, dass der Nachname der Fahr
 auf der fertigen Webseite nur mit einem Buchstaben abgekürzt wird (z. B. "Max M.").
 
 -------------------------------------------------------
+5b. CHART "DIESES JAHR (BISHER)" AUTOMATISCH AKTUALISIEREN
+-------------------------------------------------------
+Der Balken-Chart "Dieses Jahr (Bisher)" auf der Statistik-Seite (1./2./3.-Plätze
+von MCH Singen) muss NICHT mehr von Hand aus der PDF abgezählt werden.
+
+SO GEHT'S:
+1. Neue/aktualisierte Wertungs-PDF wie gewohnt hochladen nach:
+   /media/dokumente/wertungen/bkcgesamtwertung_<JAHR>.pdf
+2. Einmal ausführen:
+       python tools/update_statistik.py
+   Das Skript sucht in der PDF die Vereinswertungs-Tabelle, findet automatisch
+   die Zeile von "MCH Singen" (unabhängig davon, auf welchem Rang/in welcher
+   Zeile der Verein gerade steht) und schreibt die Zahlen nach
+   /data/statistik.json.
+3. Fertig - die Webseite liest diese Datei beim Aufruf der Statistik-Seite
+   automatisch ein. KEIN Build-Schritt nötig (nur eine JSON-Datei, kein JS/CSS).
+
+Einmalige Vorbereitung auf einem neuen PC: pip install pdfplumber
+
+Betrifft NUR den Chart "Dieses Jahr (Bisher)". Die Charts "Gesamt (seit 2016)"
+und "Saison 2025" sind feste Werte in js/statistiken.js und müssten dort von
+Hand geändert werden (siehe Abschnitt 9 für den nötigen Build-Schritt danach).
+
+-------------------------------------------------------
 6. JAHRESARCHIV ERWEITERN
 -------------------------------------------------------
 Am Ende einer Saison die Gesamtauswertung ins Archiv aufnehmen:

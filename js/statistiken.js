@@ -31,7 +31,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const FONT = "'Outfit', system-ui, sans-serif";
 
     const CHART_DEFS = [
-        { id: 'chartCurrent', data: [5, 6, 4] },
+        { id: 'chartCurrent', data: [5, 6, 4] }, // Fallback, falls data/statistik.json fehlt
         { id: 'chartGesamt',  data: [121, 112, 115] },
         { id: 'chart2025',    data: [14, 12, 23] },
     ];
@@ -160,19 +160,32 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // Chart erst wenn sichtbar initialisieren
-    const chartObserver = new IntersectionObserver((entries, obs) => {
-        entries.forEach(entry => {
-            if (!entry.isIntersecting) return;
-            const def = CHART_DEFS.find(c => c.id === entry.target.id);
-            if (def) { buildChart(def); obs.unobserve(entry.target); }
-        });
-    }, { threshold: 0.15 });
+    // "Dieses Jahr (Bisher)" automatisch aus /data/statistik.json aktualisieren
+    // (wird per tools/update_statistik.py aus der BKC-Vereinswertungs-PDF erzeugt)
+    fetch('../data/statistik.json')
+        .then(res => res.ok ? res.json() : null)
+        .then(stat => {
+            const current = CHART_DEFS.find(c => c.id === 'chartCurrent');
+            if (current && stat && stat.podium) {
+                current.data = [stat.podium.platz1, stat.podium.platz2, stat.podium.platz3];
+            }
+        })
+        .catch(() => {}) // kein Zugriff moeglich -> Fallback-Zahlen oben bleiben aktiv
+        .finally(() => {
+            // Chart erst wenn sichtbar initialisieren
+            const chartObserver = new IntersectionObserver((entries, obs) => {
+                entries.forEach(entry => {
+                    if (!entry.isIntersecting) return;
+                    const def = CHART_DEFS.find(c => c.id === entry.target.id);
+                    if (def) { buildChart(def); obs.unobserve(entry.target); }
+                });
+            }, { threshold: 0.15 });
 
-    CHART_DEFS.forEach(({ id }) => {
-        const el = document.getElementById(id);
-        if (el) chartObserver.observe(el);
-    });
+            CHART_DEFS.forEach(({ id }) => {
+                const el = document.getElementById(id);
+                if (el) chartObserver.observe(el);
+            });
+        });
 
     // Charts bei Dark-Mode-Umschalten neu rendern
     new MutationObserver(() => {

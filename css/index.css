@@ -23,14 +23,15 @@
 
 .hero-text-overlay h1 {
     color: #fff !important;
-    font-size: 2rem !important;
-    font-weight: 800 !important;
+    /* Fluid statt Breakpoint-Sprünge: 2rem (Mobil) bis 3.8rem (Desktop) */
+    font-size: clamp(2rem, 0.9rem + 4.6vw, 3.8rem) !important;
+    font-weight: 900 !important;
     margin: 0 !important;
     padding: 0 !important;
     border: none !important;
     text-shadow: 0 2px 14px rgba(0,0,0,0.45);
-    letter-spacing: -0.5px;
-    line-height: 1.1;
+    letter-spacing: -0.025em;
+    line-height: 1.05;
 }
 
 .hero-text-overlay p {
@@ -41,8 +42,16 @@
     letter-spacing: 0.5px;
 }
 
-@media (min-width: 600px) {
-    .hero-text-overlay h1 { font-size: 2.6rem !important; }
+/* Kleine Grußzeile über der H1 */
+.hero-text-overlay .hero-kicker {
+    color: var(--accent) !important;
+    margin: 0 0 10px 0 !important;
+    font-family: var(--font-display);
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2.5px;
+    text-shadow: 0 1px 6px rgba(0,0,0,0.5);
 }
 
 /* =========================================
@@ -196,7 +205,7 @@
 .welcome-section {
     max-width: 800px;
     margin: 0 auto 30px auto;
-    text-align: center;
+    text-align: left;
     color: var(--text-light);
     font-size: 1rem;
     line-height: 1.75;
@@ -206,6 +215,31 @@
     border-left: 4px solid #ffcc00;
     border-radius: 20px;
     box-shadow: 0 8px 32px rgba(0, 71, 204, 0.09), 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+/* Überschrift der Vereinsvorstellung (überschreibt main h2-Basisstil) */
+.welcome-section h2 {
+    margin: 0 0 14px 0;
+    padding: 0;
+    border: none;
+    font-size: 1.3rem;
+    font-weight: 800;
+    font-style: normal;
+    letter-spacing: -0.3px;
+    color: var(--text-main);
+}
+
+/* Lesbare Zeilenlängen (~65 Zeichen) */
+.welcome-section p {
+    max-width: 68ch;
+}
+
+.welcome-section p:last-child {
+    margin-bottom: 0;
+}
+
+body.dark-mode .welcome-section h2 {
+    color: #e8ecff;
 }
 
 /* ── Sektion-Trennlinie ── */
@@ -450,6 +484,13 @@ body.dark-mode .track-preview-container {
 .countdown-box .number {
     font-family: var(--font-display);
     letter-spacing: 0.05em;
+}
+
+/* PDF-Button-Wrapper: versteckt bis das JS ein Event mit PDF findet */
+.pdf-wrapper {
+    display: none;
+    text-align: center;
+    margin-top: 25px;
 }
 
 .sport-switcher {
@@ -764,20 +805,41 @@ body.dark-mode .cta-banner {
         max-width: 1100px;
     }
 
+    /* Vereinsvorstellung: Überschrift links, Text rechts —
+       verhindert 1100px lange Zeilen und lockert die Zentrierung auf */
+    .welcome-section {
+        display: grid;
+        grid-template-columns: 240px 1fr;
+        column-gap: 48px;
+        align-items: start;
+        padding: 38px 44px;
+    }
+
+    .welcome-section h2 {
+        grid-column: 1;
+        grid-row: 1 / span 2;
+        font-size: 1.6rem;
+        line-height: 1.2;
+    }
+
+    .welcome-section p {
+        grid-column: 2;
+    }
+
     .quick-nav {
         max-width: 1100px;
     }
 
-    /* 6.2 Größerer Hero-Text */
-    .hero-text-overlay h1 {
-        font-size: 3.8rem !important;
-        letter-spacing: -1.5px;
-    }
-
-    .hero-text-overlay p {
+    /* 6.2 Größerer Hero-Text (H1 skaliert fluid per clamp) */
+    .hero-text-overlay p:not(.hero-kicker) {
         font-size: 1.15rem !important;
         margin-top: 12px !important;
         letter-spacing: 0.8px;
+    }
+
+    .hero-text-overlay .hero-kicker {
+        font-size: 0.78rem;
+        letter-spacing: 3px;
     }
 
     /* 6.3 Sport-Switcher: Tab-Layout wie Mobil, aber breiter */

@@ -15,6 +15,8 @@
     <meta property="og:title" content="MCH Singen - Motorsportclub Hohentwiel e.V. im DMV">
     <meta property="og:description" content="Motorsport aus Leidenschaft - Kart und Trial in Singen am Hohentwiel. Willkommen beim MCH Singen Motorsportclub!">
     <meta property="og:image" content="https://mch-singen.de/media/bilder/mch_pic.jpg">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="theme-color" content="#0047cc">
     <title>MCH Singen Motorsportclub "Hohentwiel" e.V. im DMV</title>
     <script type="application/ld+json">
     {
@@ -172,22 +174,24 @@
             <div class="slider-dots"></div>
 
             <div class="hero-text-overlay">
-                <h1>Herzlich Willkommen</h1>
+                <p class="hero-kicker">Herzlich willkommen beim MCH Singen</p>
+                <h1>Motorsport aus Leidenschaft</h1>
                 <p>Kartslalom &amp; Trialsport in Singen am Hohentwiel</p>
             </div>
         </div>
         </div><!-- /.hero-wrapper -->
 
         <!-- Kurze Vereinsvorstellung -->
-        <div class="welcome-section reveal">
+        <section class="welcome-section reveal" aria-labelledby="welcome-heading">
+            <h2 id="welcome-heading">Wer wir sind</h2>
             <p>Der <strong>MCH Singen Motorsportclub "Hohentwiel" e.V. im DMV</strong> ist ein gemeinnütziger Verein mit Sitz in Singen am Hohentwiel. Wir bieten jung und alt die Möglichkeit, Motorsport aktiv zu erleben - ob beim Kartslalom, im Trialsport oder als Teil unserer Vereinsgemeinschaft.</p>
             <p>Ob Kartslalom-Training für den Nachwuchs, Motorrad-Trialsport oder einfach Lust auf Motorsport in der Region Bodensee/Hegau - bei uns in Singen-Hohentwiel findest du den passenden Einstieg. Schau bei einem Schnuppertraining vorbei oder werde gleich <a href="pages/mitglied-werden.html">Mitglied</a> in unserem Motorsportclub!</p>
-        </div>
+        </section>
 
         <div class="section-divider"></div>
 
         <!-- Schnellnavigation -->
-        <div class="quick-nav">
+        <nav class="quick-nav" aria-label="Schnellzugriff">
             <a href="pages/kartsport.html" class="quick-nav-item reveal reveal-delay-1">
                 <span class="qni-icon"><i class="fa-solid fa-flag-checkered"></i></span>
                 <span>Kartsport</span>
@@ -212,11 +216,11 @@
                 <span class="qni-icon"><i class="fa-solid fa-sun"></i></span>
                 <span>Ferienprogramm</span>
             </a>
-        </div>
+        </nav>
         <div class="section-divider"></div>
 
         <!-- Sport-Switcher: Countdown + Karte (Kart / Trial) -->
-        <div class="sport-switcher reveal" id="sport-switcher">
+        <section class="sport-switcher reveal" id="sport-switcher" aria-label="Termine und Trainingsorte">
 
             <!-- Tab-Leiste mit Pfeilen -->
             <div class="sport-tabs-bar">
@@ -265,8 +269,8 @@
                                 </div>
                             </div>
                             <div id="countdown-message-kart" class="countdown-msg"></div>
-                            <div id="pdf-wrapper-kart" style="text-align: center; margin-top: 25px; display:none;">
-                                <a id="pdf-link-kart" href="" class="action-btn countdown-pdf-btn" target="_blank">
+                            <div id="pdf-wrapper-kart" class="pdf-wrapper">
+                                <a id="pdf-link-kart" href="" class="action-btn countdown-pdf-btn" target="_blank" rel="noopener noreferrer">
                                     <i class="fa-solid fa-file-pdf"></i> Weitere Informationen
                                 </a>
                             </div>
@@ -285,7 +289,7 @@
                                     <button id="load-map-btn-kart" class="maps-load-btn">Karte laden &amp; anzeigen</button>
                                 </div>
                             </div>
-                            <a href="https://maps.app.goo.gl/yLzY7kE4Kz5X8Y8Z6" target="_blank" class="maps-btn">
+                            <a href="https://maps.app.goo.gl/yLzY7kE4Kz5X8Y8Z6" target="_blank" rel="noopener noreferrer" class="maps-btn">
                                 <i class="fa-solid fa-location-dot"></i> Größere Karte öffnen
                             </a>
                         </div>
@@ -319,8 +323,8 @@
                                 </div>
                             </div>
                             <div id="countdown-message-trial" class="countdown-msg"></div>
-                            <div id="pdf-wrapper-trial" style="text-align: center; margin-top: 25px; display:none;">
-                                <a id="pdf-link-trial" href="" class="action-btn countdown-pdf-btn" target="_blank">
+                            <div id="pdf-wrapper-trial" class="pdf-wrapper">
+                                <a id="pdf-link-trial" href="" class="action-btn countdown-pdf-btn" target="_blank" rel="noopener noreferrer">
                                     <i class="fa-solid fa-file-pdf"></i> Weitere Informationen
                                 </a>
                             </div>
@@ -339,7 +343,7 @@
                                     <button id="load-map-btn-trial" class="maps-load-btn">Karte laden &amp; anzeigen</button>
                                 </div>
                             </div>
-                            <a href="https://maps.google.com/?q=Kleinandelfingen,+Schweiz" target="_blank" class="maps-btn">
+                            <a href="https://maps.google.com/?q=Kleinandelfingen,+Schweiz" target="_blank" rel="noopener noreferrer" class="maps-btn">
                                 <i class="fa-solid fa-location-dot"></i> Größere Karte öffnen
                             </a>
                         </div>
@@ -348,7 +352,7 @@
 
                 </div>
             </div>
-        </div>
+        </section>
 
     </main>
 
@@ -363,9 +367,10 @@
             <li><a href="pages/ueber-uns.html">Über uns</a></li>
             <li><a href="pages/aktuelles.html">Aktuelles</a></li>
             <li><a href="pages/kontakt.html">Kontakt</a></li>
+            <li><a href="pages/impressum-datenschutz.html">Impressum &amp; Datenschutz</a></li>
         </ul>
         <span class="footer-rule"></span>
-        <p>© 2026 MCH Singen Motorsportclub "Hohentwiel" e.V. im DMV - Alle Rechte vorbehalten. | <a href="#" onclick="return klaro.show();">Cookie-Einstellungen</a></p>
+        <p>© 2026 MCH Singen Motorsportclub "Hohentwiel" e.V. im DMV - Alle Rechte vorbehalten. | <a href="pages/impressum-datenschutz.html" onclick="klaro.show(); return false;">Cookie-Einstellungen</a></p>
         <p class="designer-credit">Created by <a href="https://www.instagram.com/dnl_kr">Daniel Krieger</a></p>
     </footer>
 
