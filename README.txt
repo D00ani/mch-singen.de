@@ -67,7 +67,8 @@ WICHTIGE REGELN für die timer.txt:
 
 EINFACHER GEHT'S MIT DEM TOOL statt von Hand zu tippen:
     python tools/termine_verwalten.py
-(oder per Doppelklick auf termine-verwalten.bat eine Ebene über mch-arbeit/)
+(oder per Doppelklick auf website-pflege.bat eine Ebene über mch-arbeit/ ->
+Menüpunkt "Renntermine verwalten", siehe Abschnitt 10)
 Fragt Kart/Trial ab, dann Hinzufuegen/Bearbeiten/Loeschen:
   - Hinzufuegen: laesst bekannte Vereine/Orte per Nummer auswaehlen
     (Maps-Link wird automatisch uebernommen), prueft Datum/Uhrzeit auf
@@ -139,6 +140,15 @@ HINWEIS ZUM DATENSCHUTZ: Du kannst in der HTML-Datei den vollen Namen eintragen.
 Ein Skript auf der Webseite sorgt automatisch dafür, dass der Nachname der Fahrer
 auf der fertigen Webseite nur mit einem Buchstaben abgekürzt wird (z. B. "Max M.").
 
+EINFACHER GEHT'S MIT DEM TOOL statt HTML-Zeilen von Hand zu kopieren:
+    python tools/statistiken_pflege.py
+(oder per Doppelklick auf website-pflege.bat -> Menüpunkt "Statistiken-Seite
+pflegen", siehe Abschnitt 10)
+Verwaltet die beiden Wanderpokal-Tabellen (Jugend/Erwachsen) UND die drei
+"Vereinsbestleistungen"-Boxen weiter unten auf der Seite - jeweils
+Hinzufuegen/Bearbeiten/Loeschen ueber eine nummerierte Auswahl, ohne HTML
+anzufassen.
+
 -------------------------------------------------------
 5b. CHART "DIESES JAHR (BISHER)" AUTOMATISCH AKTUALISIEREN
 -------------------------------------------------------
@@ -175,6 +185,16 @@ Beispiel: /media/dokumente/archiv/2026/BKC_Gesamtauswertung_2026.pdf
 Schritt 2: In archiv.html verlinken
 Öffne /pages/archiv.html und ergänze oben in der Liste einen neuen Eintrag nach dem
 Muster der bestehenden Einträge.
+
+EINFACHER GEHT'S MIT DEM TOOL statt HTML von Hand zu ergaenzen:
+    python tools/archiv_pflege.py
+(oder per Doppelklick auf website-pflege.bat -> Menüpunkt "Jahresarchiv
+pflegen", siehe Abschnitt 10)
+Legt bei einer neuen Saison automatisch den Ordner media/dokumente/archiv/JAHR/
+an, erkennt eine bereits hochgeladene bkcgesamtwertung_JAHR.pdf aus
+media/dokumente/wertungen/ und bietet an, sie direkt als Archiv-PDF zu
+kopieren. Danach koennen weitere Eintraege pro Saison hinzugefuegt,
+bearbeitet oder geloescht werden.
 
 -------------------------------------------------------
 7. TEXTE UND BILDER AUSTAUSCHEN
@@ -227,22 +247,40 @@ HTML-Dateien und /data/-Dateien kannst du wie gewohnt direkt ändern,
 dafür ist KEIN Build nötig.
 
 -------------------------------------------------------
-10. JÄHRLICHES UPDATE (jahres-update.bat)
+10. WEBSEITEN-PFLEGE - EIN WERKZEUG FÜR ALLES (website-pflege.bat)
 -------------------------------------------------------
 Eine Ebene über /mch-arbeit/ und /mch-singen.de-main/ liegt
-jahres-update.bat. Einmal im Jahr per Doppelklick starten:
+website-pflege.bat - der EINE Startpunkt für die gesamte Wartung.
+Einfach per Doppelklick starten, dann im Menü wählen:
 
-1. Zeigt zuerst eine Checkliste der Dinge, die NICHT automatisch gehen
-   und echtes Saisonwissen brauchen (timer.txt, trainingstermine-Datei,
-   Vereinsmeister-Zeile in statistiken.html, Archiv-Eintrag) - vorher
-   erledigen, dann im Skript mit einer Taste bestätigen.
-2. Führt automatisch aus: update_statistik.py, optimize_images.py,
-   update_copyright_year.py (setzt "© <Jahr>" im Footer aller Seiten
-   auf das aktuelle Jahr) und build_assets.py.
-3. Zeigt die geänderten Dateien und fragt vor dem Commit/Push nach
-   Bestätigung (j/n) - committet dann in arbeit, merged nach main
-   und pusht.
+1) Renntermine (Kart/Trial) verwalten
+   -> tools/termine_verwalten.py (siehe Abschnitt 2)
+2) Statistiken-Seite pflegen (Vereinsmeister, Rekorde)
+   -> tools/statistiken_pflege.py (siehe Abschnitt 5)
+3) Jahresarchiv pflegen
+   -> tools/archiv_pflege.py (siehe Abschnitt 6)
+4) Jährliches technisches Update (Statistik/Bilder/Copyright/Build + Push)
+   -> tools/jaehrliches_update.py:
+   a. Zeigt zuerst eine Checkliste der Dinge, die NICHT automatisch gehen
+      und echtes Saisonwissen brauchen (Renntermine, Trainingstermine-
+      Datei, Vereinsmeister-Zeile, Archiv-Eintrag - dafür die Menüpunkte
+      1-3 nutzen) - vorher erledigen, dann bestätigen.
+   b. Führt automatisch aus: update_statistik.py, optimize_images.py,
+      update_copyright_year.py (setzt "© <Jahr>" im Footer aller Seiten
+      auf das aktuelle Jahr) und build_assets.py.
+   c. Zeigt die geänderten Dateien und fragt vor dem Commit/Push nach
+      Bestätigung (j/n) - committet dann in arbeit, merged nach main
+      und pusht.
 
-Das Skript liegt bewusst außerhalb beider Git-Ordner (ist also nicht
-Teil des Repos) und muss bei einem neuen PC neu angelegt werden.
+Nach jedem Menüpunkt kommt man wieder zurück ins Hauptmenü, bis man mit
+"0) Beenden" aufhört - so lassen sich in einem Durchgang z. B. neue
+Renntermine eintragen, die Statistik-Seite aktualisieren UND danach
+gebaut/gepusht werden.
+
+website-pflege.bat liegt bewusst außerhalb beider Git-Ordner (ist also
+nicht Teil des Repos) und muss bei einem neuen PC neu angelegt werden;
+die Python-Werkzeuge selbst liegen in /tools/ und sind versioniert.
+
+Einmalige Vorbereitung auf einem neuen PC: Python installieren, dann
+"pip install pdfplumber csscompressor rjsmin Pillow" ausführen.
 =======================================================
