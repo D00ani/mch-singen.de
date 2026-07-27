@@ -335,21 +335,387 @@ def groessen_neu_berechnen():
     print(f"\nGespeichert in {os.path.relpath(SPONSOREN_HTML, ROOT)}")
 
 
-def main():
-    print("=" * 60)
-    print("  Sponsoren pflegen")
-    print("=" * 60)
+# ------------------------------------------------------------------
+# Linklisten: "Befreundete Vereine" und "Nuetzliche Links"
+# ------------------------------------------------------------------
+
+LINKLISTEN = [
+    {"name": "Befreundete Vereine", "anker": "Befreundete Vereine"},
+    {"name": "Nuetzliche Links", "anker": "Nützliche Links"},
+]
+
+LINK_MUSTER = re.compile(
+    r'<li><a href="([^"]*)"[^>]*><i class="([^"]*)"></i>\s*(.*?)</a></li>'
+)
+
+# Haeufig gebrauchte Sinnbilder - freie Eingabe bleibt moeglich
+SINNBILDER = [
+    ("Zielflagge (Motorsport)", "fa-solid fa-flag-checkered"),
+    ("Flagge", "fa-solid fa-flag"),
+    ("Auto", "fa-solid fa-car"),
+    ("Motorrad", "fa-solid fa-motorcycle"),
+    ("Pokal", "fa-solid fa-trophy"),
+    ("Stadt/Gebaeude", "fa-solid fa-city"),
+    ("Diagramm (Ergebnisse)", "fa-solid fa-chart-line"),
+    ("Verein/Gruppe", "fa-solid fa-users"),
+    ("Kettenglied (allgemein)", "fa-solid fa-link"),
+    ("Zielscheibe", "fa-solid fa-crosshairs"),
+]
+
+
+def finde_liste(html, anker):
+    """Liefert (start, ende) des <ul>-Inhalts unter der passenden Ueberschrift."""
+    pos = html.find(anker)
+    if pos == -1:
+        raise ValueError(f"Abschnitt '{anker}' nicht gefunden.")
+    start = html.find("<ul class=\"link-card-grid\">", pos)
+    if start == -1:
+        raise ValueError(f"Liste unter '{anker}' nicht gefunden.")
+    start += len("<ul class=\"link-card-grid\">")
+    ende = html.find("</ul>", start)
+    return start, ende
+
+
+def finde_links(html, anker):
+    start, ende = finde_liste(html, anker)
+    inhalt = html[start:ende]
+    return [{"link": m.group(1), "sinnbild": m.group(2), "name": m.group(3).strip()}
+            for m in LINK_MUSTER.finditer(inhalt)], start, ende, inhalt
+
+
+def baue_link(eintrag, einrueckung=" " * 12):
+    extern = ' target="_blank" rel="noopener noreferrer"' if eintrag["link"].startswith("http") else ""
+    return (f'{einrueckung}<li><a href="{eintrag["link"]}"{extern}>'
+            f'<i class="{eintrag["sinnbild"]}"></i> {eintrag["name"]}</a></li>')
+
+
+def schreibe_links(html, start, ende, eintraege, inhalt):
+    einrueckung = " " * 12
+    treffer = re.search(r"[ \t]*<li>", inhalt)
+    if treffer:
+        einrueckung = treffer.group(0)[:-len("<li>")]
+    neu = "\r\n" + "\r\n".join(baue_link(e, einrueckung) for e in eintraege) + "\r\n" + " " * 8
+    h.schreibe_datei(SPONSOREN_HTML, html[:start] + neu + html[ende:])
+    print(f"\nGespeichert in {os.path.relpath(SPONSOREN_HTML, ROOT)}")
+
+
+def frage_sinnbild(vorgabe=None):
+    moeglichkeiten = [f"{name}  ({klasse.split()[-1]})" for name, klasse in SINNBILDER]
+    moeglichkeiten.append("Eigene Font-Awesome-Klasse eingeben")
+    if vorgabe:
+        moeglichkeiten.insert(0, f"Unveraendert lassen ({vorgabe.split()[-1]})")
+    wahl = h.waehle_option("Welches Sinnbild?", moeglichkeiten)
+    if vorgabe:
+        if wahl == 0:
+            return vorgabe
+        wahl -= 1
+    if wahl < len(SINNBILDER):
+        return SINNBILDER[wahl][1]
+    return h.frage("Font-Awesome-Klasse (z. B. 'fa-solid fa-star'): ")
+
+
+def link_hinzufuegen(liste):
+    html = lade_html()
+    eintraege, start, ende, inhalt = finde_links(html, liste["anker"])
+
+    eingaben = h.formular([
+        ("name", lambda _: h.frage("Name: ")),
+        ("link", lambda _: h.frage("Webadresse: ", h.LINK_VALIDIERER)),
+        ("sinnbild", lambda _: frage_sinnbild()),
+    ])
+    if eingaben is None:
+        print("Abgebrochen.")
+        return
+
+    neu = {"name": eingaben["name"], "link": eingaben["link"], "sinnbild": eingaben["sinnbild"]}
+    print(f"\nNeu: {neu['name']} -> {neu['link']}")
+    if not h.frage_ja("Hinzufuegen? (j/n): "):
+        print("Abgebrochen.")
+        return
+
+    stelle = len(eintraege)
+    if eintraege:
+        moeglichkeiten = [f"Ganz oben (vor '{eintraege[0]['name']}')"]
+        moeglichkeiten += [f"Nach '{e['name']}'" for e in eintraege]
+        stelle = h.waehle_option("An welcher Stelle?", moeglichkeiten)
+
+    eintraege.insert(stelle, neu)
+    schreibe_links(html, start, ende, eintraege, inhalt)
+
+
+def link_bearbeiten(liste):
+    html = lade_html()
+    eintraege, start, ende, inhalt = finde_links(html, liste["anker"])
+
+    index = h.waehle_aus_liste(eintraege, "bearbeiten", lambda e: f"{e['name']}  ->  {e['link']}")
+    if index is None:
+        return
+    alt = eintraege[index]
+
+    print(f"\nAktuell: {alt['name']} -> {alt['link']}")
+    print("Enter = aktuellen Wert behalten, x = ein Feld zurueck.\n")
+    eingaben = h.formular([
+        ("name", lambda _: h.frage_mit_default("Name", alt["name"])),
+        ("link", lambda _: h.frage_mit_default("Webadresse", alt["link"], h.LINK_VALIDIERER)),
+        ("sinnbild", lambda _: frage_sinnbild(alt["sinnbild"])),
+    ])
+    if eingaben is None:
+        print("Abgebrochen.")
+        return
+
+    print(f"\nNeu: {eingaben['name']} -> {eingaben['link']}")
+    if not h.frage_ja("Aendern? (j/n): "):
+        print("Abgebrochen.")
+        return
+
+    eintraege[index] = eingaben
+    schreibe_links(html, start, ende, eintraege, inhalt)
+
+
+def link_loeschen(liste):
+    html = lade_html()
+    eintraege, start, ende, inhalt = finde_links(html, liste["anker"])
+
+    index = h.waehle_aus_liste(eintraege, "loeschen", lambda e: f"{e['name']}  ->  {e['link']}")
+    if index is None:
+        return
+
+    print(f"\nLoeschen: {eintraege[index]['name']}")
+    if not h.frage_ja("Wirklich loeschen? (j/n): "):
+        print("Abgebrochen.")
+        return
+
+    del eintraege[index]
+    schreibe_links(html, start, ende, eintraege, inhalt)
+
+
+def linkliste_menue(liste):
+    while True:
+        try:
+            eintraege, _, _, _ = finde_links(lade_html(), liste["anker"])
+        except ValueError as fehler:
+            print(f"\nFehler: {fehler}")
+            return
+        print(f"\n{liste['name']}: {len(eintraege)} Eintraege")
+        for i, e in enumerate(eintraege, start=1):
+            print(f"  {i}) {e['name']}  ->  {e['link']}")
+
+        aktion = h.menue(f"{liste['name']}:", [
+            ("Eintrag hinzufuegen", lambda: link_hinzufuegen(liste)),
+            ("Eintrag bearbeiten", lambda: link_bearbeiten(liste)),
+            ("Eintrag entfernen", lambda: link_loeschen(liste)),
+        ])
+        if aktion is None:
+            return
+        h.fuehre_aus(aktion)
+
+
+# ------------------------------------------------------------------
+# Zahlen oben auf der Seite
+# ------------------------------------------------------------------
+
+ZAHL_MUSTER = re.compile(
+    r'(<span class="milestone-number">)(.*?)(</span>\s*'
+    r'<span class="milestone-text">)(.*?)(</span>)', re.DOTALL
+)
+
+
+def zahlen_bearbeiten():
+    html = lade_html()
+    treffer = list(ZAHL_MUSTER.finditer(html))
+    if not treffer:
+        print("\nKeine Zahlen gefunden.")
+        return
+
+    index = h.waehle_aus_liste(treffer, "bearbeiten", lambda m: f"{m.group(2)} - {m.group(4)}")
+    if index is None:
+        return
+    m = treffer[index]
+
+    print(f"\nAktuell: {m.group(2)} - {m.group(4)}")
+    print("Enter = aktuellen Wert behalten, x = ein Feld zurueck.\n")
+    eingaben = h.formular([
+        ("zahl", lambda _: h.frage_mit_default("Zahl (z. B. 100+)", m.group(2))),
+        ("text", lambda _: h.frage_mit_default("Beschriftung", m.group(4))),
+    ])
+    if eingaben is None:
+        print("Abgebrochen.")
+        return
+
+    print(f"\nNeu: {eingaben['zahl']} - {eingaben['text']}")
+    if not h.frage_ja("Aendern? (j/n): "):
+        print("Abgebrochen.")
+        return
+
+    ersatz = m.group(1) + eingaben["zahl"] + m.group(3) + eingaben["text"] + m.group(5)
+    h.schreibe_datei(SPONSOREN_HTML, html[:m.start()] + ersatz + html[m.end():])
+    print(f"\nGespeichert in {os.path.relpath(SPONSOREN_HTML, ROOT)}")
+
+
+# ------------------------------------------------------------------
+# Aufruf "Werde Sponsor"
+# ------------------------------------------------------------------
+
+VORTEIL_MUSTER = re.compile(
+    r'(<div class="sponsor-cta-benefit">\s*<i class="[^"]*"></i>\s*<strong>)(.*?)(</strong>\s*<p>)(.*?)(</p>\s*</div>)',
+    re.DOTALL
+)
+AUFRUF_TEXT_MUSTER = re.compile(
+    r'(<div class="sponsor-cta-box">.*?<p[^>]*>)(.*?)(</p>)', re.DOTALL
+)
+AUFRUF_KNOPF_MUSTER = re.compile(
+    r'(<a href="[^"]*" class="sponsor-cta-btn">\s*<i class="[^"]*"></i>)(.*?)(\s*</a>)', re.DOTALL
+)
+
+
+def aufruf_bearbeiten():
+    html = lade_html()
+
+    def einleitung_aendern():
+        m = AUFRUF_TEXT_MUSTER.search(html)
+        if not m:
+            print("\nEinleitungstext nicht gefunden.")
+            return
+        print(f"\nAktuell: {m.group(2).strip()}")
+        neu = h.frage_mit_default("\nNeuer Text", m.group(2).strip())
+        if neu == m.group(2).strip() or not h.frage_ja("Aendern? (j/n): "):
+            print("Abgebrochen.")
+            return
+        h.schreibe_datei(SPONSOREN_HTML,
+                         html[:m.start(2)] + neu + html[m.end(2):])
+        print(f"\nGespeichert in {os.path.relpath(SPONSOREN_HTML, ROOT)}")
+
+    def vorteile_aendern():
+        treffer = list(VORTEIL_MUSTER.finditer(html))
+        if not treffer:
+            print("\nKeine Vorteils-Kaesten gefunden.")
+            return
+        index = h.waehle_aus_liste(treffer, "bearbeiten",
+                                   lambda m: f"{m.group(2).strip()} - {m.group(4).strip()}")
+        if index is None:
+            return
+        m = treffer[index]
+        print(f"\nAktuell: {m.group(2).strip()}")
+        eingaben = h.formular([
+            ("titel", lambda _: h.frage_mit_default("Ueberschrift", m.group(2).strip())),
+            ("text", lambda _: h.frage_mit_default("Text", m.group(4).strip())),
+        ])
+        if eingaben is None or not h.frage_ja("Aendern? (j/n): "):
+            print("Abgebrochen.")
+            return
+        ersatz = m.group(1) + eingaben["titel"] + m.group(3) + eingaben["text"] + m.group(5)
+        h.schreibe_datei(SPONSOREN_HTML, html[:m.start()] + ersatz + html[m.end():])
+        print(f"\nGespeichert in {os.path.relpath(SPONSOREN_HTML, ROOT)}")
+
+    def knopf_aendern():
+        m = AUFRUF_KNOPF_MUSTER.search(html)
+        if not m:
+            print("\nSchaltflaeche nicht gefunden.")
+            return
+        print(f"\nAktuell: {m.group(2).strip()}")
+        neu = h.frage_mit_default("Beschriftung", m.group(2).strip())
+        if not h.frage_ja("Aendern? (j/n): "):
+            print("Abgebrochen.")
+            return
+        h.schreibe_datei(SPONSOREN_HTML, html[:m.start(2)] + " " + neu + html[m.end(2):])
+        print(f"\nGespeichert in {os.path.relpath(SPONSOREN_HTML, ROOT)}")
+
+    aktion = h.menue("Was am Aufruf aendern?", [
+        ("Einleitungstext", einleitung_aendern),
+        ("Einen der drei Vorteils-Kaesten", vorteile_aendern),
+        ("Beschriftung der Schaltflaeche", knopf_aendern),
+    ])
+    if aktion:
+        h.fuehre_aus(aktion)
+
+
+def logos_in_webp_umwandeln():
+    """Wandelt noch als JPG/PNG eingebundene Logos in WebP um und stellt die
+    Karten darauf um. Spart Ladezeit; WebP versteht heute jeder Browser."""
+    html = lade_html()
+    sponsoren = finde_sponsoren(html)
+
+    offen = [s for s in sponsoren if not s["bild"].lower().endswith(".webp")]
+    if not offen:
+        print("\nAlle Logos sind bereits WebP.")
+        return
+
+    print(f"\n{len(offen)} Logo(s) sind noch JPG/PNG:")
+    for sponsor in offen:
+        print(f"  {sponsor['name']:28} {os.path.basename(sponsor['bild'])}")
+    print("\nDas Werkzeug erzeugt die WebP-Fassung und bindet sie direkt ein.")
+    print("Die alten JPG/PNG-Dateien bleiben zunaechst liegen.")
+    if not h.frage_ja("Umwandeln? (j/n): "):
+        print("Abgebrochen.")
+        return
+
+    alte_dateien = []
+    for sponsor in sorted(offen, key=lambda s: -s["match"].start()):
+        quelle = os.path.normpath(os.path.join(ROOT, "pages", sponsor["bild"]))
+        if not os.path.isfile(quelle):
+            print(f"  Uebersprungen (Datei fehlt): {sponsor['name']}")
+            continue
+
+        webp_name = erzeuge_webp(quelle)
+        webp_relativ = f"../media/sponsoren/{webp_name}"
+        masse = bildmasse(webp_relativ) or bildmasse(sponsor["bild"])
+        breite, hoehe = anzeigegroesse(*masse)
+
+        # WebP wird zur Hauptdatei, die getrennte <source>-Zeile entfaellt
+        karte = baue_karte(sponsor["name"], sponsor["link"], webp_relativ, "", breite, hoehe)
+        m = sponsor["match"]
+        anfang = m.start()
+        while anfang > 0 and html[anfang - 1] in " \t":
+            anfang -= 1
+        html = html[:anfang] + karte + html[m.end():]
+        alte_dateien.append(quelle)
+        print(f"  {sponsor['name']}: jetzt {webp_name} ({breite}x{hoehe})")
+
+    h.schreibe_datei(SPONSOREN_HTML, html)
+    print(f"\nGespeichert in {os.path.relpath(SPONSOREN_HTML, ROOT)}")
+
+    if alte_dateien:
+        print(f"\n{len(alte_dateien)} alte Bilddatei(en) werden nicht mehr gebraucht:")
+        for pfad in alte_dateien:
+            print(f"  {os.path.relpath(pfad, ROOT)} ({os.path.getsize(pfad) // 1024} KB)")
+        if h.frage_ja("Jetzt loeschen? (j/n): "):
+            for pfad in alte_dateien:
+                os.remove(pfad)
+            print("Geloescht.")
+        else:
+            print("Bleiben liegen - koennen jederzeit von Hand geloescht werden.")
+
+
+def sponsoren_menue():
     while True:
         sponsoren = finde_sponsoren(lade_html())
-        print(f"\nAktuell eingebunden: {len(sponsoren)} Sponsoren")
+        print(f"\nEingebunden: {len(sponsoren)} Sponsoren")
         for i, sponsor in enumerate(sponsoren, start=1):
             print(f"  {i}) {beschreibe(sponsor)}")
 
-        aktion = h.menue("Was moechtest du tun?", [
+        aktion = h.menue("Sponsoren:", [
             ("Sponsor hinzufuegen (Logo einbinden)", sponsor_hinzufuegen),
             ("Sponsor bearbeiten (Name/Webseite)", sponsor_bearbeiten),
             ("Sponsor entfernen", sponsor_loeschen),
             ("Alle Logo-Groessen neu berechnen", groessen_neu_berechnen),
+            ("Logos in WebP umwandeln (schnelleres Laden)", logos_in_webp_umwandeln),
+        ])
+        if aktion is None:
+            return
+        h.fuehre_aus(aktion)
+
+
+def main():
+    print("=" * 60)
+    print("  Sponsoren-Seite pflegen")
+    print("=" * 60)
+    while True:
+        aktion = h.menue("Welchen Bereich der Seite?", [
+            ("Sponsoren (Logos)", sponsoren_menue),
+            ("Befreundete Vereine", lambda: linkliste_menue(LINKLISTEN[0])),
+            ("Nuetzliche Links", lambda: linkliste_menue(LINKLISTEN[1])),
+            ("Zahlen oben (Gegruendet, Mitglieder, ...)", zahlen_bearbeiten),
+            ("Aufruf 'Werde Sponsor'", aufruf_bearbeiten),
         ])
         if aktion is None:
             break

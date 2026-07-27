@@ -941,15 +941,6 @@ body:not(.dark-mode) main h1 {
     background-clip: text;
 }
 
-/* Gradient NICHT auf weiße Hero-Überschriften */
-body:not(.dark-mode) .page-hero h1,
-body:not(.dark-mode) .hero-text-overlay h1 {
-    background: none;
-    -webkit-background-clip: unset;
-    -webkit-text-fill-color: #fff;
-    background-clip: unset;
-}
-
 /* Karten: blauer Border beim Hover */
 body:not(.dark-mode) .news-card:hover,
 body:not(.dark-mode) .info-card:hover,

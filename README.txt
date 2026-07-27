@@ -325,17 +325,31 @@ Einfach per Doppelklick starten, dann im Menü wählen:
     Neue Meldung anlegen (Datum, Titel, Text, Kennzeichen, Link),
     bestehende ändern oder löschen - ohne HTML-Blöcke zu kopieren.
  5) Jahresarchiv pflegen                        -> Abschnitt 6
- 5b) Sponsoren pflegen
-    Logo-Datei nach /media/sponsoren/ legen (Dateiname klein, ohne Umlaute
-    und Leerzeichen), dann im Werkzeug auswählen. Es erzeugt die WebP-Fassung,
-    berechnet die Anzeigegröße und legt die Banden-Karte an der gewünschten
-    Stelle an. "Alle Logo-Größen neu berechnen" nach einem Logo-Tausch.
+ 5b) Sponsoren-Seite pflegen
+    Deckt die KOMPLETTE Seite sponsoren-links.html ab, kein HTML nötig:
+      - Sponsoren (Logos): hinzufügen, bearbeiten, entfernen
+      - Befreundete Vereine: Einträge samt Sinnbild verwalten
+      - Nützliche Links: dito
+      - Zahlen oben (Gegründet, Mitglieder, Events, Sportarten)
+      - Aufruf "Werde Sponsor": Einleitung, die drei Vorteils-Kästen,
+        Beschriftung der Schaltfläche
+
+    NEUEN SPONSOR ANLEGEN: Logo-Datei nach /media/sponsoren/ legen (Dateiname
+    klein, ohne Umlaute und Leerzeichen), dann im Werkzeug auswählen. Es
+    erzeugt die WebP-Fassung, berechnet die Anzeigegröße und legt die
+    Banden-Karte an der gewünschten Stelle an.
 
     ZUR ANZEIGEGRÖSSE: Die Logos haben sehr unterschiedliche Seitenverhältnisse.
     Würde man alle gleich hoch anzeigen, wirkten hochkante Logos halb so groß
     wie querformatige. Das Werkzeug rechnet deshalb für jedes Logo eine eigene
     Größe aus, sodass alle dieselbe FLÄCHE einnehmen - deswegen stehen in
     sponsoren-links.html bei jedem Logo andere width/height-Werte.
+    Nach einem Logo-Tausch "Alle Logo-Größen neu berechnen" aufrufen.
+
+    "Logos in WebP umwandeln" wandelt noch vorhandene JPG/PNG-Logos um und
+    bindet sie direkt ein (spart deutlich Ladezeit - bei den sieben Logos
+    waren es 532 KB vorher, 116 KB nachher). Die alten Dateien können dabei
+    gelöscht werden.
  6) Bilder aufnehmen (WebP + HTML-Block)        -> Abschnitt 7
  7) Webseite prüfen
     Findet tote Links, falsche Groß-/Kleinschreibung (die auf dem

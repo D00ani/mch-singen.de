@@ -81,10 +81,16 @@ results += webp("media/bilder/geschichte/formel3.jpg")
 results += webp("media/bilder/ueber-uns/platzhalter.jpg")
 results += webp("media/bilder/kartsport/mach1-kart.png")
 
-# --- Sponsoren (Anzeige max. 200px, @2x = 400px) ---
+# --- Sponsoren ---
+# Die Sponsorenlogos liegen inzwischen direkt als WebP vor und werden ueber
+# tools/sponsoren_pflege.py gepflegt (dort entstehen WebP-Fassung und
+# Anzeigegroesse automatisch). Hier werden nur noch eventuell verbliebene
+# JPG/PNG-Originale mitgenommen - fehlende Dateien einfach ueberspringen.
 for s in ["alicke.jpg", "herby.jpg", "mofashion.jpg", "randegger.jpg",
           "schlegel.jpg", "sparkasse.jpg", "daeschle.png"]:
     p = os.path.join("media/sponsoren", s)
+    if not os.path.isfile(os.path.join(ROOT, p)):
+        continue
     im = Image.open(os.path.join(ROOT, p))
     results += webp(p, [400] if im.width > 400 else None)
 
