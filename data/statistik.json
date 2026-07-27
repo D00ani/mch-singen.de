@@ -1,12 +1,30 @@
 {
   "saison": "2026",
   "quelle": "bkcgesamtwertung_2026.pdf",
-  "aktualisiert": "2026-07-26",
+  "aktualisiert": "2026-07-27",
   "rang": 1,
   "podium": {
     "platz1": 9,
     "platz2": 9,
     "platz3": 6
   },
-  "punkte": 51
+  "punkte": 51,
+  "charts": [
+    {
+      "id": "chartGesamt",
+      "data": [
+        121,
+        112,
+        115
+      ]
+    },
+    {
+      "id": "chart2025",
+      "data": [
+        14,
+        12,
+        23
+      ]
+    }
+  ]
 }

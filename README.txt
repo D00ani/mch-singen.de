@@ -23,12 +23,14 @@ Texteditor (z. B. Notepad, Notepad++, VS Code).
 /js/vendor/               -> Eingebundene Bibliotheken (chart.js, klaro.js) - NICHT bearbeiten!
 /webfonts/                -> Schriftarten
 
-/tools/                   -> Hilfsskripte für die Performance-Optimierung (siehe Abschnitt 9!)
+/tools/                   -> Alle Pflege- und Hilfsskripte (siehe Abschnitt 10!)
 
 /data/                    -> Textdateien und JSON für Timer, Countdown und Live-Daten
   timer.txt               -> Kart-Renntermine und Countdown
   timer_trial.txt         -> Trial-Termine und Countdown
   trainingstermine2026.txt -> Trainingstermine fürs Kalender-Download (jährlich aktualisieren)
+  trainingstermine2026_excel-export.txt -> unveränderter Excel-Export als Beleg
+  statistik.json          -> Zahlen der Diagramme auf der Statistik-Seite
   livedata.json           -> Live-Timing-Daten (wird von live.html genutzt)
 
 /media/                   -> Alle Medien-Dateien
@@ -115,13 +117,25 @@ Auf der Seite "Aktuelles" können Mitglieder Termine in ihren Handy-Kalender spe
 - TRAININGSTERMINE:
   Werden über eine eigene Textdatei gesteuert.
   Datei-Pfad: /data/trainingstermine2026.txt
-  Jedes Jahr diese Datei aktualisieren (Inhalt ersetzen, Dateiname mit neuem Jahr benennen,
-  dann auch in /js/aktuelles.js den Dateinamen anpassen).
 
-  Aufbau der Zeile: Tag;Monat;Jahr;Uhrzeit;Gruppe
+  Aufbau der Zeile: Tag;Monat;Jahr;Startzeit-Endzeit;Gruppe
   Beispiel: 15;Mai;2026;10:00-13:30;1
+  (Gruppe 3 = Termin gilt für BEIDE Gruppen)
 
   WICHTIG hierbei: Schreibe die Monate in dieser Datei auf DEUTSCH! (Mai, Juni, Juli etc.).
+
+  DAS MACHT DAS TOOL FÜR DICH - von Hand ist das fehleranfällig:
+      python tools/trainingstermine_import.py
+  (oder website-pflege.bat -> "Trainingstermine importieren")
+  Du legst einfach den Excel-Export als .txt in /data/ ab. Das Tool erkennt
+  die Trainingszeiten-Spalten, wandelt die Tab-Tabelle in obiges Format um,
+  repariert die Excel-Kodierung (Umlaute!), überspringt Zeilen ohne Gruppe
+  (Stammtische, Rennen) und passt den Dateinamen in /js/aktuelles.js an.
+  Der unveränderte Export bleibt als *_excel-export.txt liegen.
+
+  ACHTUNG (war bis Juli 2026 ein Fehler): Wird der Excel-Export ungewandelt
+  abgelegt, findet die Webseite KEINE Termine und der Kalender-Download
+  liefert eine leere Datei - ohne sichtbare Fehlermeldung.
 
 -------------------------------------------------------
 5. STATISTIKEN PFLEGEN (Vereinsmeister etc.)
@@ -144,10 +158,19 @@ EINFACHER GEHT'S MIT DEM TOOL statt HTML-Zeilen von Hand zu kopieren:
     python tools/statistiken_pflege.py
 (oder per Doppelklick auf website-pflege.bat -> Menüpunkt "Statistiken-Seite
 pflegen", siehe Abschnitt 10)
-Verwaltet die beiden Wanderpokal-Tabellen (Jugend/Erwachsen) UND die drei
-"Vereinsbestleistungen"-Boxen weiter unten auf der Seite - jeweils
-Hinzufuegen/Bearbeiten/Loeschen ueber eine nummerierte Auswahl, ohne HTML
-anzufassen.
+Deckt ALLE Bereiche der Statistik-Seite ab, jeweils mit nummerierter Auswahl
+zum Hinzufügen/Bearbeiten/Löschen, ohne HTML anzufassen:
+  - Tabelle "Unsere Top-Platzierungen" (inkl. Fett-Hervorhebung der Platzierung)
+  - Wanderpokal-Sieger Jugend und Erwachsen
+  - Die "Vereinsbestleistungen"-Boxen
+  - Die Meilenstein-Zahlen oben (Gegründet, Aktive Fahrer, Pokale, Mitglieder)
+  - Die Diagramm-Werte und deren Überschriften
+
+ZU DEN DIAGRAMMEN: Die Zahlen stehen seit Juli 2026 in /data/statistik.json
+und NICHT mehr in js/statistiken.js. Dadurch ist nach einer Änderung KEIN
+Build-Schritt mehr nötig. Das Diagramm "Dieses Jahr (Bisher)" wird weiterhin
+automatisch aus der Wertungs-PDF berechnet (Abschnitt 5b) und lässt sich
+deshalb nicht von Hand ändern.
 
 -------------------------------------------------------
 5b. CHART "DIESES JAHR (BISHER)" AUTOMATISCH AKTUALISIEREN
@@ -205,9 +228,18 @@ den spitzen HTML-Klammern (z.B. <p>Dein Text</p>).
 BILDER: Lade das neue Bild in den passenden Unterordner unter /media/bilder/ hoch.
 Suche in der .html Datei nach dem <img src="..."> Code und ersetze den Pfad.
 HINWEIS: Die meisten Bilder werden zusätzlich als schnelles WebP-Format
-ausgeliefert (<picture>-Blöcke im HTML). Wenn du ein Bild ERSETZT (gleicher
-Dateiname), führe danach einmal aus:  python tools/optimize_images.py
-Das erzeugt die passenden .webp-Dateien neu (siehe Abschnitt 9).
+ausgeliefert (<picture>-Blöcke im HTML).
+
+  NEUES Bild aufnehmen -> das Tool nimmt dir die Arbeit ab:
+      python tools/bilder_pflege.py
+  (oder website-pflege.bat -> "Bilder aufnehmen")
+  Es zeigt alle Bilder ohne WebP-Fassung, fragt nach dem Verwendungszweck
+  (Kopfbereich/Textbereich/Vorschaubild/Logo), erzeugt die passenden Größen
+  und gibt den fertigen <picture>-Block zum Einfügen aus.
+
+  BESTEHENDES Bild ERSETZT (gleicher Dateiname) -> wie bisher:
+      python tools/optimize_images.py
+  Das erzeugt die vorhandenen .webp-Fassungen neu (siehe Abschnitt 9).
 
 LOGOS: Das MCH-Logo (favicon.png) und das DMV-Logo (dmv.png) liegen unter /media/logos/.
 Im Header/Footer wird die kleine Version mch-logo-128.png verwendet (Ladezeit!).
@@ -253,29 +285,41 @@ Eine Ebene über /mch-arbeit/ und /mch-singen.de-main/ liegt
 website-pflege.bat - der EINE Startpunkt für die gesamte Wartung.
 Einfach per Doppelklick starten, dann im Menü wählen:
 
-1) Renntermine (Kart/Trial) verwalten
-   -> tools/termine_verwalten.py (siehe Abschnitt 2)
-2) Statistiken-Seite pflegen (Vereinsmeister, Rekorde)
-   -> tools/statistiken_pflege.py (siehe Abschnitt 5)
-3) Jahresarchiv pflegen
-   -> tools/archiv_pflege.py (siehe Abschnitt 6)
-4) Jährliches technisches Update (Statistik/Bilder/Copyright/Build + Push)
-   -> tools/jaehrliches_update.py:
-   a. Zeigt zuerst eine Checkliste der Dinge, die NICHT automatisch gehen
-      und echtes Saisonwissen brauchen (Renntermine, Trainingstermine-
-      Datei, Vereinsmeister-Zeile, Archiv-Eintrag - dafür die Menüpunkte
-      1-3 nutzen) - vorher erledigen, dann bestätigen.
-   b. Führt automatisch aus: update_statistik.py, optimize_images.py,
-      update_copyright_year.py (setzt "© <Jahr>" im Footer aller Seiten
-      auf das aktuelle Jahr) und build_assets.py.
-   c. Zeigt die geänderten Dateien und fragt vor dem Commit/Push nach
-      Bestätigung (j/n) - committet dann in arbeit, merged nach main
-      und pusht.
+ 1) Renntermine (Kart/Trial) verwalten          -> Abschnitt 2
+ 2) Trainingstermine importieren (Excel-Export) -> Abschnitt 4
+ 3) Statistiken-Seite pflegen                   -> Abschnitt 5
+    (Top-Platzierungen, Vereinsmeister, Rekorde, Meilensteine, Diagramme)
+ 4) News-Karten auf "Aktuelles" pflegen
+    Neue Meldung anlegen (Datum, Titel, Text, Kennzeichen, Link),
+    bestehende ändern oder löschen - ohne HTML-Blöcke zu kopieren.
+ 5) Jahresarchiv pflegen                        -> Abschnitt 6
+ 6) Bilder aufnehmen (WebP + HTML-Block)        -> Abschnitt 7
+ 7) Webseite prüfen
+    Findet tote Links, falsche Groß-/Kleinschreibung (die auf dem
+    GitHub-Server Bilder verschwinden lässt!), vergessene Build-Schritte
+    und noch nicht hochgeladene Kurzausschreibungen.
+ 8) Saisonwechsel-Assistent
+    Führt beim Jahreswechsel Schritt für Schritt durch alles: Archiv,
+    Diagramm einfrieren, Vereinsmeister, Trainings- und Renntermine,
+    technisches Update. Jeder Schritt lässt sich überspringen.
+ 9) Technisches Update (Statistik/Bilder/Copyright/Build + Push)
+    Führt aus: update_statistik.py, optimize_images.py,
+    update_copyright_year.py (setzt "© <Jahr>" im Footer aller Seiten)
+    und build_assets.py.
+10) Letzte Änderung rückgängig machen
+    Vor jeder Änderung legt das Werkzeug automatisch eine Sicherung an
+    (Ordner .pflege-sicherungen/, bleibt lokal). Damit lässt sich ein
+    Vertipper zurückholen - auch nachdem er schon gepusht wurde.
 
-Nach jedem Menüpunkt kommt man wieder zurück ins Hauptmenü, bis man mit
-"0) Beenden" aufhört - so lassen sich in einem Durchgang z. B. neue
-Renntermine eintragen, die Statistik-Seite aktualisieren UND danach
-gebaut/gepusht werden.
+VERÖFFENTLICHEN PASSIERT AUTOMATISCH: Beim Beenden mit "0" prüft das
+Werkzeug die Seite, aktualisiert die Datumsangaben in sitemap.xml und
+veröffentlicht dann alles Geänderte (Commit in arbeit -> Merge nach main
+-> Push). Werden beim Prüfen Fehler gefunden, wird vorher gefragt, ob
+trotzdem veröffentlicht werden soll.
+
+Nach jedem Menüpunkt kommt man wieder zurück ins Hauptmenü - so lassen
+sich in einem Durchgang z. B. Renntermine eintragen, die Statistik-Seite
+aktualisieren und eine News-Karte anlegen, bevor alles zusammen online geht.
 
 website-pflege.bat liegt bewusst außerhalb beider Git-Ordner (ist also
 nicht Teil des Repos) und muss bei einem neuen PC neu angelegt werden;

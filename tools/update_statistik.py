@@ -118,14 +118,25 @@ def main():
     rang, platz1, platz2, platz3, punkte = ergebnis
     saison_treffer = re.search(r"(\d{4})", os.path.basename(pdf_pfad))
 
-    daten = {
+    # Bestehende Datei einlesen, damit von Hand gepflegte Werte (z. B. die
+    # Diagramme unter "charts", siehe tools/statistiken_pflege.py) erhalten
+    # bleiben - hier werden nur die aus der PDF berechneten Felder ersetzt.
+    daten = {}
+    if os.path.isfile(OUTPUT_PATH):
+        try:
+            with open(OUTPUT_PATH, encoding="utf-8") as f:
+                daten = json.load(f)
+        except (json.JSONDecodeError, OSError):
+            daten = {}
+
+    daten.update({
         "saison": saison_treffer.group(1) if saison_treffer else None,
         "quelle": os.path.basename(pdf_pfad),
         "aktualisiert": date.today().isoformat(),
         "rang": rang,
         "podium": {"platz1": platz1, "platz2": platz2, "platz3": platz3},
         "punkte": punkte,
-    }
+    })
 
     os.makedirs(os.path.dirname(OUTPUT_PATH), exist_ok=True)
     with open(OUTPUT_PATH, "w", encoding="utf-8", newline="\n") as f:

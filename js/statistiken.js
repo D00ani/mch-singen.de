@@ -30,8 +30,11 @@ document.addEventListener("DOMContentLoaded", () => {
     // --- DIAGRAMME ---
     const FONT = "'Outfit', system-ui, sans-serif";
 
+    // Fallback-Werte, falls data/statistik.json nicht erreichbar ist.
+    // Gepflegt werden die Zahlen ueber tools/statistiken_pflege.py in der JSON -
+    // dadurch ist bei einer Aenderung KEIN Build-Schritt noetig.
     const CHART_DEFS = [
-        { id: 'chartCurrent', data: [5, 6, 4] }, // Fallback, falls data/statistik.json fehlt
+        { id: 'chartCurrent', data: [5, 6, 4] },
         { id: 'chartGesamt',  data: [121, 112, 115] },
         { id: 'chart2025',    data: [14, 12, 23] },
     ];
@@ -160,15 +163,22 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // "Dieses Jahr (Bisher)" automatisch aus /data/statistik.json aktualisieren
-    // (wird per tools/update_statistik.py aus der BKC-Vereinswertungs-PDF erzeugt)
+    // Alle Diagramm-Werte aus /data/statistik.json laden:
+    //   podium -> "Dieses Jahr (Bisher)", erzeugt aus der BKC-Wertungs-PDF
+    //             (tools/update_statistik.py)
+    //   charts -> die uebrigen Diagramme, gepflegt per tools/statistiken_pflege.py
     fetch('../data/statistik.json')
         .then(res => res.ok ? res.json() : null)
         .then(stat => {
+            if (!stat) return;
             const current = CHART_DEFS.find(c => c.id === 'chartCurrent');
-            if (current && stat && stat.podium) {
+            if (current && stat.podium) {
                 current.data = [stat.podium.platz1, stat.podium.platz2, stat.podium.platz3];
             }
+            (stat.charts || []).forEach(({ id, data }) => {
+                const def = CHART_DEFS.find(c => c.id === id);
+                if (def && Array.isArray(data) && data.length === 3) def.data = data;
+            });
         })
         .catch(() => {}) // kein Zugriff moeglich -> Fallback-Zahlen oben bleiben aktiv
         .finally(() => {
