@@ -325,6 +325,17 @@ Einfach per Doppelklick starten, dann im Menü wählen:
     Neue Meldung anlegen (Datum, Titel, Text, Kennzeichen, Link),
     bestehende ändern oder löschen - ohne HTML-Blöcke zu kopieren.
  5) Jahresarchiv pflegen                        -> Abschnitt 6
+ 5b) Sponsoren pflegen
+    Logo-Datei nach /media/sponsoren/ legen (Dateiname klein, ohne Umlaute
+    und Leerzeichen), dann im Werkzeug auswählen. Es erzeugt die WebP-Fassung,
+    berechnet die Anzeigegröße und legt die Banden-Karte an der gewünschten
+    Stelle an. "Alle Logo-Größen neu berechnen" nach einem Logo-Tausch.
+
+    ZUR ANZEIGEGRÖSSE: Die Logos haben sehr unterschiedliche Seitenverhältnisse.
+    Würde man alle gleich hoch anzeigen, wirkten hochkante Logos halb so groß
+    wie querformatige. Das Werkzeug rechnet deshalb für jedes Logo eine eigene
+    Größe aus, sodass alle dieselbe FLÄCHE einnehmen - deswegen stehen in
+    sponsoren-links.html bei jedem Logo andere width/height-Werte.
  6) Bilder aufnehmen (WebP + HTML-Block)        -> Abschnitt 7
  7) Webseite prüfen
     Findet tote Links, falsche Groß-/Kleinschreibung (die auf dem

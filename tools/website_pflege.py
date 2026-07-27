@@ -23,6 +23,7 @@ import news_pflege
 import pflege_hilfen as h
 import pruefe_seite
 import saisonwechsel
+import sponsoren_pflege
 import statistiken_pflege
 import termine_verwalten
 import trainingstermine_import
@@ -34,6 +35,7 @@ MENUEPUNKTE = [
     ("Statistiken-Seite pflegen (Platzierungen, Vereinsmeister, Rekorde, Zahlen)", statistiken_pflege.main),
     ("News-Karten auf 'Aktuelles' pflegen", news_pflege.main),
     ("Jahresarchiv pflegen", archiv_pflege.main),
+    ("Sponsoren pflegen", sponsoren_pflege.main),
     ("Bilder aufnehmen (WebP + HTML-Block)", bilder_pflege.main),
     ("Webseite pruefen (tote Links, Schreibweise, Build)", pruefe_seite.main),
     ("Saisonwechsel-Assistent (fuehrt durch den Jahreswechsel)", saisonwechsel.main),
