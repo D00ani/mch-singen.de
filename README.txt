@@ -100,6 +100,38 @@ Wichtig beim Dateinamen (GitHub-Server sind streng):
   - Den erwarteten Dateinamen für jedes Rennen findest du in /data/timer.txt
     (letztes Feld jeder Zeile, nach dem 7. Semikolon)
 
+-------------------------------------------------------
+3b. MEDIEN RICHTIG VERLINKEN (PDFs, Bilder)
+-------------------------------------------------------
+Drei Stolpersteine - die Werkzeuge korrigieren sie inzwischen automatisch
+und sagen dir, was sie geändert haben:
+
+1. IMMER Schrägstriche "/", NIE Backslashes "\"
+   Der Windows-Explorer zeigt "\", das Web kennt nur "/".
+       \media\dokumente\datei.pdf     -> kaputt
+       ../media/dokumente/datei.pdf   -> richtig
+
+2. Der Anfang hängt davon ab, WO die Datei steht, in der der Link steht:
+       Seiten in /pages/ (aktuelles.html, archiv.html, ...):  ../media/...
+       index.html und 404.html (Hauptverzeichnis):            media/...
+   Das "../" heißt "einen Ordner nach oben" - von /pages/ aus muss man
+   erst hoch, bevor man /media/ findet.
+
+3. AUSNAHME /data/timer.txt und timer_trial.txt: dort OHNE "../"
+       ...;media/dokumente/kurzausschreibungacengen2026.pdf
+   Grund: Der Countdown läuft nur auf index.html, und das Skript setzt den
+   Pfad unverändert als Link ein.
+
+WOHIN GEHÖRT WAS:
+   Wertungen    -> /media/dokumente/wertungen/
+   Terminpläne  -> /media/dokumente/termine/
+   Jahresarchiv -> /media/dokumente/archiv/<JAHR>/
+   Bilder       -> /media/bilder/<thema>/
+
+Externe Links (auf fremde Webseiten) bekommen zusätzlich
+target="_blank" rel="noopener noreferrer" - das setzen die Werkzeuge
+ebenfalls von allein.
+
 NEUES RENNEN EINTRAGEN (wenn ein Termin noch nicht in der timer.txt steht):
   Zeile am Ende ergänzen nach dem Schema aus Abschnitt 2.
   Den PDF-Pfad als 8. Feld eintragen. Sobald du die Datei hochlädst, erscheint

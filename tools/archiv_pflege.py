@@ -69,8 +69,7 @@ def zeige_lis(lis):
 
 def pruefe_pdf_existiert(relativer_pfad_von_seite):
     """relativer_pfad_von_seite ist relativ zu /pages/, z. B. ../media/dokumente/archiv/2026/x.pdf"""
-    absoluter_pfad = os.path.normpath(os.path.join(ROOT, "pages", relativer_pfad_von_seite))
-    return os.path.isfile(absoluter_pfad)
+    return h.medienpfad_pruefen(relativer_pfad_von_seite, praefix="../")
 
 
 def baue_li(href, text, einrueckung):
@@ -93,15 +92,15 @@ def baue_details_block(jahr, lis, einrueckung="                "):
 
 def frage_neuen_li_eintrag(jahr):
     print("\nNeuer Eintrag fuer dieses Jahr (z. B. 'BKC Gesamtwertung 2026 (PDF)'):")
-    beschreibung = frage("  Beschreibungstext: ")
-
     vorschlag = f"../media/dokumente/archiv/{jahr}/BKC_Gesamtauswertung_{jahr}.pdf"
-    pfad = frage_mit_default("  Pfad zur PDF (relativ zu /pages/)", vorschlag)
 
-    if not pruefe_pdf_existiert(pfad):
-        print(f"  ACHTUNG: Datei nicht gefunden unter media/dokumente/... - Pfad wird trotzdem eingetragen,")
-        print("  Link bleibt aber tot, bis die Datei tatsaechlich dort hochgeladen wird.")
-    return pfad, beschreibung
+    eingaben = h.formular([
+        ("beschreibung", lambda _: frage("  Beschreibungstext: ")),
+        ("pfad", lambda _: h.frage_medienpfad("  Pfad zur PDF", default=vorschlag)),
+    ])
+    if eingaben is None:
+        raise h.Zurueck()
+    return eingaben["pfad"], eingaben["beschreibung"]
 
 
 def kopiere_wertungs_pdf_falls_vorhanden(jahr):
@@ -246,7 +245,7 @@ def eintrag_verwalten():
             href, text = lis[li_idx]
             eingaben = h.formular([
                 ("text", lambda _: frage_mit_default("Beschreibungstext", text)),
-                ("href", lambda _: frage_mit_default("Pfad zur PDF", href)),
+                ("href", lambda _: h.frage_medienpfad("Pfad zur PDF", default=href)),
                 ("bestaetigt", lambda _: h.frage_ja("Aendern? (j/n): ")),
             ])
             if eingaben is None or not eingaben["bestaetigt"]:

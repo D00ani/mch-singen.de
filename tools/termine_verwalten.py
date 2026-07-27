@@ -171,14 +171,22 @@ def frage_pdf(verein, ort, jahr, zeilen, ausser_index=None):
         eingabe = frage("Uebernehmen? (Enter = ja, eigenen Pfad eingeben, oder n = keine PDF): ", pflicht=False)
         if eingabe.lower() in ("n", "nein"):
             return ""
-        pdf_link = eingabe if eingabe else letzter_link
+        roh = eingabe if eingabe else letzter_link
     else:
         vorschlag = f"kurzausschreibung{slug(verein)}{slug(ort)}{jahr}.pdf"
         print(f"\nVorgeschlagener PDF-Dateiname: {vorschlag}")
         eingabe = frage("PDF-Pfad uebernehmen? (Enter = ja, eigenen Pfad eingeben, oder n = noch keine PDF): ", pflicht=False)
         if eingabe.lower() in ("n", "nein"):
             return ""
-        pdf_link = eingabe if eingabe else f"media/dokumente/{vorschlag}"
+        roh = eingabe if eingabe else f"media/dokumente/{vorschlag}"
+
+    # In timer.txt stehen die Pfade ab dem Hauptverzeichnis (ohne '../'),
+    # weil der Countdown auf index.html laeuft.
+    pdf_link, korrekturen = h.normalisiere_medienpfad(roh, praefix="")
+    for hinweis in korrekturen:
+        print(f"  Korrigiert: {hinweis}")
+    if korrekturen:
+        print(f"  -> {pdf_link}")
 
     if pdf_link and not re.fullmatch(r"[a-z0-9/_.\-]+", pdf_link):
         print("  ACHTUNG: Der Pfad enthaelt Grossbuchstaben, Umlaute oder Sonderzeichen -")
@@ -244,7 +252,8 @@ def termin_bearbeiten(zieldatei):
         ("verein", lambda _: frage_mit_default("Verein-Kuerzel", alt_verein)),
         ("ort", lambda _: frage_mit_default("Ort", alt_ort)),
         ("link", lambda _: frage_mit_default("Maps-Link", alt_link, h.LINK_VALIDIERER)),
-        ("pdf", lambda _: frage_mit_default("PDF-Pfad ('-' = leeren)", alt_pdf, leer_erlaubt=True)),
+        ("pdf", lambda _: h.normalisiere_medienpfad(
+            frage_mit_default("PDF-Pfad ('-' = leeren)", alt_pdf, leer_erlaubt=True), praefix="")[0]),
     ])
     if eingaben is None:
         print("Abgebrochen.")

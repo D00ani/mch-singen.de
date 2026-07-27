@@ -128,7 +128,7 @@ def karte_bearbeiten():
         if h.frage_ja("Einen Link aendern? (j/n): "):
             nummer = h.waehle_option("Welchen Link?", karte["links"])
             alt = karte["links"][nummer]
-            neu = h.frage_mit_default("Neues Ziel", alt)
+            neu = h.frage_medienpfad("Neues Ziel", default=alt)
             if neu != alt:
                 block = block.replace(f'href="{alt}"', f'href="{neu}"', 1)
 
@@ -166,7 +166,8 @@ def karte_hinzufuegen():
         ("datum", lambda _: h.frage("Datum/Zeitraum (z. B. 'Saison 2026' oder 'Sa, 08.08.2026'): ")),
         ("titel", lambda _: h.frage("Titel: ")),
         ("beschreibung", lambda _: h.frage("Beschreibung: ")),
-        ("link_ziel", lambda _: h.frage("Link-Ziel (leer = kein Link): ", pflicht=False)),
+        ("link_ziel", lambda _: h.frage_medienpfad(
+            "Link-Ziel (leer = kein Link, z. B. ../media/dokumente/datei.pdf)", pflicht=False)),
         ("link_text", lambda werte: h.frage("Link-Beschriftung: ") if werte["link_ziel"] else ""),
     ])
     if eingaben is None:

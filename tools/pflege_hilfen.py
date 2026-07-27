@@ -165,6 +165,95 @@ def fuehre_aus(funktion, *args, **kwargs):
 
 
 # ------------------------------------------------------------------
+# Pfade zu Medien (PDFs, Bilder)
+# ------------------------------------------------------------------
+
+MEDIEN_ORDNER = "media/"
+EXTERNE_ANFAENGE = ("http://", "https://", "//", "mailto:", "tel:", "#", "data:")
+
+
+def normalisiere_medienpfad(eingabe, praefix="../"):
+    """Macht aus einer Eingabe einen web-tauglichen Medienpfad.
+
+    Korrigiert die drei Stolpersteine dieses Projekts:
+      - Backslashes aus dem Windows-Explorer  ->  Schraegstriche
+      - fuehrender Schraegstrich (/media/...) ->  entfernt
+      - fehlendes bzw. falsches '../'         ->  passend zum Speicherort
+
+    praefix: '../' fuer Seiten in /pages/, '' fuer index.html und
+    data/timer.txt (dort werden Pfade ab dem Hauptverzeichnis geschrieben).
+
+    Gibt (pfad, korrekturen) zurueck - korrekturen ist eine Liste der
+    vorgenommenen Aenderungen zum Anzeigen.
+    """
+    pfad = (eingabe or "").strip().replace("\\", "/")
+    korrekturen = []
+
+    if not pfad or pfad.startswith(EXTERNE_ANFAENGE):
+        return pfad, korrekturen
+
+    if "\\" in (eingabe or ""):
+        korrekturen.append("Backslashes durch Schraegstriche ersetzt")
+
+    entschlackt = re.sub(r"/{2,}", "/", pfad)
+    if entschlackt != pfad:
+        korrekturen.append("doppelte Schraegstriche entfernt")
+        pfad = entschlackt
+
+    # Fuehrende ../ und / abtrennen, damit der Pfad neu aufgebaut werden kann
+    kern = pfad.lstrip("/")
+    while kern.startswith("../"):
+        kern = kern[3:]
+
+    # Nur Medienpfade umbauen - Verweise auf andere Seiten (z. B.
+    # "sommerferienprogramm.html") bleiben unangetastet.
+    if not kern.startswith(MEDIEN_ORDNER):
+        return pfad, korrekturen
+
+    neu = praefix + kern
+    if neu != pfad:
+        if praefix and not pfad.startswith("../"):
+            korrekturen.append("'../' ergaenzt (Unterseiten liegen in /pages/)")
+        elif not praefix and pfad.startswith("../"):
+            korrekturen.append("'../' entfernt (Pfad gilt ab dem Hauptverzeichnis)")
+        elif pfad.startswith("/"):
+            korrekturen.append("fuehrenden Schraegstrich entfernt")
+        pfad = neu
+
+    return pfad, korrekturen
+
+
+def medienpfad_pruefen(pfad, praefix="../"):
+    """Existiert die Datei? praefix bestimmt, worauf sich der Pfad bezieht."""
+    if not pfad or pfad.startswith(EXTERNE_ANFAENGE):
+        return True
+    basis = os.path.join(ROOT, "pages") if praefix else ROOT
+    return os.path.isfile(os.path.normpath(os.path.join(basis, pfad)))
+
+
+def frage_medienpfad(text, default=None, praefix="../", pflicht=True):
+    """Fragt einen Medienpfad ab, raeumt ihn auf und meldet Auffaelligkeiten."""
+    while True:
+        roh = (frage_mit_default(text, default) if default is not None
+               else frage(f"{text}: ", pflicht=pflicht))
+        pfad, korrekturen = normalisiere_medienpfad(roh, praefix)
+
+        for hinweis in korrekturen:
+            print(f"  Korrigiert: {hinweis}")
+        if korrekturen:
+            print(f"  -> {pfad}")
+
+        if pfad and not pfad.startswith(EXTERNE_ANFAENGE):
+            if not re.fullmatch(r"[a-z0-9/_.\-]+", pfad):
+                print("  ACHTUNG: Grossbuchstaben, Umlaute oder Sonderzeichen im Pfad -")
+                print("  der GitHub-Server unterscheidet Gross-/Kleinschreibung streng!")
+            if not medienpfad_pruefen(pfad, praefix):
+                print("  Hinweis: Diese Datei gibt es noch nicht - der Link bleibt tot,")
+                print("  bis du sie hochlaedst.")
+        return pfad
+
+
+# ------------------------------------------------------------------
 # Dateien lesen/schreiben (Zeilenenden bleiben erhalten)
 # ------------------------------------------------------------------
 
