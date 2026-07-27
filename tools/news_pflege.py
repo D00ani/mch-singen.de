@@ -98,28 +98,35 @@ def karte_bearbeiten():
     print(f"\nAktuell: {beschreibe(karte)}")
     if karte["beschreibung"]:
         print(f"Text: {karte['beschreibung']}")
-    print("\nEnter = aktuellen Wert behalten.\n")
+    print("\nEnter = aktuellen Wert behalten, x = ein Feld zurueck.\n")
+
+    felder = []
+    if karte["datum"] is not None:
+        felder.append(("datum", lambda _: h.frage_mit_default("Datum/Zeitraum", karte["datum"])))
+    if karte["titel"] is not None:
+        felder.append(("titel", lambda _: h.frage_mit_default("Titel", karte["titel"])))
+    if karte["beschreibung"] is not None:
+        felder.append(("beschreibung", lambda _: h.frage_mit_default("Beschreibung", karte["beschreibung"])))
+
+    eingaben = h.formular(felder) if felder else {}
+    if eingaben is None:
+        print("Abgebrochen.")
+        return
 
     block = karte["block"]
-    if karte["datum"] is not None:
-        neu = h.frage_mit_default("Datum/Zeitraum", karte["datum"])
-        block = ersetze_inhalt(block, r'<span class="news-date">(.*?)</span>', neu)
-    if karte["titel"] is not None:
-        neu = h.frage_mit_default("Titel", karte["titel"])
-        block = ersetze_inhalt(block, r"<h3>(.*?)</h3>", neu)
-    if karte["beschreibung"] is not None:
-        neu = h.frage_mit_default("Beschreibung", karte["beschreibung"])
-        block = ersetze_inhalt(block, r'<p class="news-card-desc">(.*?)</p>', neu)
+    if "datum" in eingaben:
+        block = ersetze_inhalt(block, r'<span class="news-date">(.*?)</span>', eingaben["datum"])
+    if "titel" in eingaben:
+        block = ersetze_inhalt(block, r"<h3>(.*?)</h3>", eingaben["titel"])
+    if "beschreibung" in eingaben:
+        block = ersetze_inhalt(block, r'<p class="news-card-desc">(.*?)</p>', eingaben["beschreibung"])
 
     if karte["links"]:
         print("\nLinks in dieser Karte:")
         for i, link in enumerate(karte["links"], start=1):
             print(f"  {i}) {link}")
         if h.frage_ja("Einen Link aendern? (j/n): "):
-            nummer = int(h.frage(
-                f"Welchen? (1-{len(karte['links'])}): ",
-                lambda a: None if a.isdigit() and 1 <= int(a) <= len(karte["links"]) else "Ungueltige Auswahl."
-            )) - 1
+            nummer = h.waehle_option("Welchen Link?", karte["links"])
             alt = karte["links"][nummer]
             neu = h.frage_mit_default("Neues Ziel", alt)
             if neu != alt:
@@ -150,29 +157,27 @@ def karte_hinzufuegen():
         if karte["abschnitt"] not in abschnitte:
             abschnitte.append(karte["abschnitt"])
 
-    print("\nIn welchen Abschnitt soll die Karte?")
-    for i, abschnitt in enumerate(abschnitte, start=1):
-        print(f"  {i}) {abschnitt}")
-    wahl = int(h.frage(
-        f"Auswahl (1-{len(abschnitte)}): ",
-        lambda a: None if a.isdigit() and 1 <= int(a) <= len(abschnitte) else "Ungueltige Auswahl."
-    )) - 1
-    abschnitt = abschnitte[wahl]
+    eingaben = h.formular([
+        ("abschnitt", lambda _: abschnitte[
+            h.waehle_option("In welchen Abschnitt soll die Karte?", abschnitte)]),
+        ("badge", lambda _: BADGES[
+            h.waehle_option("Kennzeichen (farbiges Etikett oben in der Karte):",
+                            BADGES, lambda eintrag: eintrag[0])]),
+        ("datum", lambda _: h.frage("Datum/Zeitraum (z. B. 'Saison 2026' oder 'Sa, 08.08.2026'): ")),
+        ("titel", lambda _: h.frage("Titel: ")),
+        ("beschreibung", lambda _: h.frage("Beschreibung: ")),
+        ("link_ziel", lambda _: h.frage("Link-Ziel (leer = kein Link): ", pflicht=False)),
+        ("link_text", lambda werte: h.frage("Link-Beschriftung: ") if werte["link_ziel"] else ""),
+    ])
+    if eingaben is None:
+        print("Abgebrochen.")
+        return
 
-    print("\nKennzeichen (farbiges Etikett oben in der Karte):")
-    for i, (name, _) in enumerate(BADGES, start=1):
-        print(f"  {i}) {name}")
-    badge_wahl = int(h.frage(
-        f"Auswahl (1-{len(BADGES)}): ",
-        lambda a: None if a.isdigit() and 1 <= int(a) <= len(BADGES) else "Ungueltige Auswahl."
-    )) - 1
-    badge_name, badge_klasse = BADGES[badge_wahl]
-
-    datum = h.frage("Datum/Zeitraum (z. B. 'Saison 2026' oder 'Sa, 08.08.2026'): ")
-    titel = h.frage("Titel: ")
-    beschreibung = h.frage("Beschreibung: ")
-    link_ziel = h.frage("Link-Ziel (leer = kein Link): ", pflicht=False)
-    link_text = h.frage("Link-Beschriftung: ") if link_ziel else ""
+    abschnitt = eingaben["abschnitt"]
+    badge_name, badge_klasse = eingaben["badge"]
+    datum, titel = eingaben["datum"], eingaben["titel"]
+    beschreibung = eingaben["beschreibung"]
+    link_ziel, link_text = eingaben["link_ziel"], eingaben["link_text"]
 
     einrueckung = " " * 12
     teile = [f'{einrueckung}<div class="news-card">']
@@ -251,7 +256,7 @@ def main():
         ])
         if aktion is None:
             break
-        aktion()
+        h.fuehre_aus(aktion)
     print("\nFertig.")
 
 

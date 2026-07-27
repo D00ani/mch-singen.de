@@ -311,6 +311,13 @@ Einfach per Doppelklick starten, dann im Menü wählen:
     (Ordner .pflege-sicherungen/, bleibt lokal). Damit lässt sich ein
     Vertipper zurückholen - auch nachdem er schon gepusht wurde.
 
+MIT "x" IMMER EINEN SCHRITT ZURÜCK: An JEDER Eingabestelle bringt dich
+ein "x" einen Schritt zurück - im Menü eine Ebene höher, in einem Formular
+zu der Frage davor (die falsche Eingabe wird verworfen und neu gestellt).
+"x" in der ersten Frage bricht die Aktion ab, ohne etwas zu speichern.
+Man kann sich also nie "verrennen" und muss ein Formular nicht mehr zu
+Ende ausfüllen, nur weil man sich vertippt hat.
+
 VERÖFFENTLICHEN PASSIERT AUTOMATISCH: Beim Beenden mit "0" prüft das
 Werkzeug die Seite, aktualisiert die Datumsangaben in sitemap.xml und
 veröffentlicht dann alles Geänderte (Commit in arbeit -> Merge nach main

@@ -105,15 +105,14 @@ def beschreibe_zeile(zeile):
     return " | ".join(ohne_hervorhebung(z)[0] for z in zeile)
 
 
+def bestaetige_neue_zeile(spalten, werte):
+    """Letzter Schritt eines Formulars - mit 'x' geht es zurueck ins letzte Feld."""
+    print(f"\nNeue Zeile: {beschreibe_zeile([werte[s] for s in spalten])}")
+    return h.frage_ja("Oben in die Tabelle einfuegen? (j/n): ")
+
+
 def waehle_tabelle():
-    print("\nWelche Tabelle?")
-    for i, t in enumerate(TABELLEN, start=1):
-        print(f"  {i}) {t['name']}")
-    wahl = h.frage(
-        f"Auswahl (1-{len(TABELLEN)}): ",
-        lambda a: None if a.isdigit() and 1 <= int(a) <= len(TABELLEN) else "Ungueltige Auswahl."
-    )
-    return TABELLEN[int(wahl) - 1]
+    return TABELLEN[h.waehle_option("Welche Tabelle?", TABELLEN, lambda t: t["name"])]
 
 
 def tabelle_laden(tabelle):
@@ -135,17 +134,23 @@ def tabelle_hinzufuegen():
         print("  (noch keine)")
 
     print("\nNeuer Eintrag:")
-    werte = []
-    for position, spalte in enumerate(tabelle["spalten"]):
-        wert = h.frage(f"  {spalte}: ")
-        if position == tabelle["hervorhebbar"] and h.frage_ja("  Fett hervorheben? (j/n): "):
-            wert = f"<strong>{wert}</strong>"
-        werte.append(wert)
 
-    print(f"\nNeue Zeile: {beschreibe_zeile(werte)}")
-    if not h.frage_ja("Oben in die Tabelle einfuegen? (j/n): "):
+    def feld(spalte, position):
+        def abfrage(_):
+            wert = h.frage(f"  {spalte}: ")
+            if position == tabelle["hervorhebbar"] and h.frage_ja("  Fett hervorheben? (j/n): "):
+                wert = f"<strong>{wert}</strong>"
+            return wert
+        return abfrage
+
+    eingaben = h.formular(
+        [(spalte, feld(spalte, position)) for position, spalte in enumerate(tabelle["spalten"])]
+        + [("bestaetigt", lambda w: bestaetige_neue_zeile(tabelle["spalten"], w))]
+    )
+    if eingaben is None or not eingaben["bestaetigt"]:
         print("Abgebrochen.")
         return
+    werte = [eingaben[spalte] for spalte in tabelle["spalten"]]
 
     neue_zeile = baue_zeile(werte, einrueckung)
     erster_umbruch = tbody_inhalt.find("\r\n")
@@ -167,25 +172,35 @@ def tabelle_bearbeiten():
         return
 
     print(f"\nAktuell: {beschreibe_zeile(zeilen[index])}")
-    print("Enter = aktuellen Wert behalten.\n")
-    neue_werte = []
-    for position, spalte in enumerate(tabelle["spalten"]):
-        alt_roh = zeilen[index][position] if position < len(zeilen[index]) else ""
-        alt, war_fett = ohne_hervorhebung(alt_roh)
-        neu = h.frage_mit_default(f"  {spalte}", alt)
-        if war_fett:
-            neu = f"<strong>{neu}</strong>"
-        elif position == tabelle["hervorhebbar"] and neu != alt and h.frage_ja("  Fett hervorheben? (j/n): "):
-            neu = f"<strong>{neu}</strong>"
-        neue_werte.append(neu)
+    print("Enter = aktuellen Wert behalten, x = ein Feld zurueck.\n")
 
-    print(f"\nAlt: {beschreibe_zeile(zeilen[index])}")
-    print(f"Neu: {beschreibe_zeile(neue_werte)}")
-    if not h.frage_ja("Aendern? (j/n): "):
+    def feld(spalte, position):
+        def abfrage(_):
+            alt_roh = zeilen[index][position] if position < len(zeilen[index]) else ""
+            alt, war_fett = ohne_hervorhebung(alt_roh)
+            neu = h.frage_mit_default(f"  {spalte}", alt)
+            if war_fett:
+                return f"<strong>{neu}</strong>"
+            if position == tabelle["hervorhebbar"] and neu != alt and h.frage_ja("  Fett hervorheben? (j/n): "):
+                return f"<strong>{neu}</strong>"
+            return neu
+        return abfrage
+
+    def bestaetigen(werte):
+        neue = [werte[spalte] for spalte in tabelle["spalten"]]
+        print(f"\nAlt: {beschreibe_zeile(zeilen[index])}")
+        print(f"Neu: {beschreibe_zeile(neue)}")
+        return h.frage_ja("Aendern? (j/n): ")
+
+    eingaben = h.formular(
+        [(spalte, feld(spalte, position)) for position, spalte in enumerate(tabelle["spalten"])]
+        + [("bestaetigt", bestaetigen)]
+    )
+    if eingaben is None or not eingaben["bestaetigt"]:
         print("Abgebrochen.")
         return
 
-    zeilen[index] = neue_werte
+    zeilen[index] = [eingaben[spalte] for spalte in tabelle["spalten"]]
     schreibe_tbody(html, start, ende, zeilen, einrueckung, tbody_inhalt)
 
 
@@ -241,21 +256,30 @@ def rekord_boxen_bearbeiten():
     box = boxen[index]
 
     print(f"\nAktuell: {box['titel']}")
-    neuer_titel = h.frage_mit_default("Titel", box["titel"])
-    neue_felder = []
-    for label, wert in box["felder"]:
-        neues_label = h.frage_mit_default("  Feldname", label)
-        neuer_wert = h.frage_mit_default("  Wert", wert)
-        neue_felder.append((neues_label, neuer_wert))
+    print("Enter = aktuellen Wert behalten, x = ein Feld zurueck.\n")
+
+    felder = [("titel", lambda _: h.frage_mit_default("Titel", box["titel"]))]
+    for nummer, (label, wert) in enumerate(box["felder"]):
+        felder.append((f"label{nummer}", lambda _, l=label: h.frage_mit_default("  Feldname", l)))
+        felder.append((f"wert{nummer}", lambda _, w=wert: h.frage_mit_default("  Wert", w)))
+
+    def bestaetigen(werte):
+        paare = [(werte[f"label{n}"], werte[f"wert{n}"]) for n in range(len(box["felder"]))]
+        print(f"\nNeu: {werte['titel']} - " + ", ".join(f"{l}: {w}" for l, w in paare))
+        return h.frage_ja("Aendern? (j/n): ")
+
+    felder.append(("bestaetigt", bestaetigen))
+    eingaben = h.formular(felder)
+    if eingaben is None or not eingaben["bestaetigt"]:
+        print("Abgebrochen.")
+        return
+
+    neuer_titel = eingaben["titel"]
+    neue_felder = [(eingaben[f"label{n}"], eingaben[f"wert{n}"]) for n in range(len(box["felder"]))]
 
     m = box["match"]
     neuer_inhalt = "<br>".join(f"<strong>{label}:</strong> {wert}" for label, wert in neue_felder)
     ersatz = m.group(1) + m.group(2) + neuer_titel + m.group(4) + neuer_inhalt + m.group(6)
-
-    print(f"\nNeu: {neuer_titel} - " + ", ".join(f"{l}: {w}" for l, w in neue_felder))
-    if not h.frage_ja("Aendern? (j/n): "):
-        print("Abgebrochen.")
-        return
 
     h.schreibe_datei(STATISTIKEN_HTML, html[:m.start()] + ersatz + html[m.end():])
     print(f"\nGespeichert in {os.path.relpath(STATISTIKEN_HTML, ROOT)}")
@@ -293,21 +317,31 @@ def meilensteine_bearbeiten():
     alter_suffix = suffix_treffer.group(1) if suffix_treffer else ""
 
     print(f"\nAktuell: {beschreibung(m)}")
-    neue_zahl = h.frage_mit_default("Zahl", m.group(2), h.ZAHL_VALIDIERER)
-    neuer_suffix = h.frage_mit_default("Zusatz hinter der Zahl ('-' = keiner)", alter_suffix or "-",
-                                       leer_erlaubt=True)
-    if neuer_suffix == "-":
-        neuer_suffix = ""
+    print("Enter = aktuellen Wert behalten, x = ein Feld zurueck.\n")
+
+    def bestaetigen(werte):
+        zusatz = "" if werte["suffix"] == "-" else werte["suffix"]
+        print(f"\nNeu: {werte['zahl']}{zusatz}")
+        return h.frage_ja("Aendern? (j/n): ")
+
+    eingaben = h.formular([
+        ("zahl", lambda _: h.frage_mit_default("Zahl", m.group(2), h.ZAHL_VALIDIERER)),
+        ("suffix", lambda _: h.frage_mit_default("Zusatz hinter der Zahl ('-' = keiner)",
+                                                 alter_suffix or "-", leer_erlaubt=True)),
+        ("bestaetigt", bestaetigen),
+    ])
+    if eingaben is None or not eingaben["bestaetigt"]:
+        print("Abgebrochen.")
+        return
+
+    neue_zahl = eingaben["zahl"]
+    neuer_suffix = "" if eingaben["suffix"] == "-" else eingaben["suffix"]
 
     attribute = re.sub(r'\s*data-suffix="[^"]*"', "", m.group(3))
     if neuer_suffix:
         attribute += f' data-suffix="{neuer_suffix}"'
 
     ersatz = m.group(1) + neue_zahl + '"' + attribute + m.group(4) + m.group(5) + m.group(6)
-    print(f"\nNeu: {neue_zahl}{neuer_suffix}")
-    if not h.frage_ja("Aendern? (j/n): "):
-        print("Abgebrochen.")
-        return
 
     h.schreibe_datei(STATISTIKEN_HTML, html[:m.start()] + ersatz + html[m.end():])
     print(f"\nGespeichert in {os.path.relpath(STATISTIKEN_HTML, ROOT)}")
@@ -372,24 +406,35 @@ def diagramme_bearbeiten():
         return
 
     ueberschrift = chart_ueberschrift(html, diagramm["id"])
+    inhalt_start = inhalt_ende = alter_titel = None
     if ueberschrift:
         inhalt_start, inhalt_ende, alter_titel = ueberschrift
-        neuer_titel = h.frage_mit_default("\nUeberschrift", alter_titel)
-    else:
-        neuer_titel = alter_titel = None
 
     alte_werte = charts.get(diagramm["id"], {}).get("data", [0, 0, 0])
     print(f"\nAktuelle Werte: 1. Platz {alte_werte[0]}, 2. Platz {alte_werte[1]}, 3. Platz {alte_werte[2]}")
-    neue_werte = [
-        int(h.frage_mit_default(f"{platz}. Platz", str(alte_werte[position]), h.ZAHL_VALIDIERER))
-        for position, platz in enumerate((1, 2, 3))
-    ]
+    print("Enter = aktuellen Wert behalten, x = ein Feld zurueck.")
 
-    print(f"\nNeu: {neuer_titel or diagramm['name']} - 1./2./3. Platz = "
-          f"{neue_werte[0]}/{neue_werte[1]}/{neue_werte[2]}")
-    if not h.frage_ja("Aendern? (j/n): "):
+    felder = []
+    if ueberschrift:
+        felder.append(("titel", lambda _: h.frage_mit_default("\nUeberschrift", alter_titel)))
+    for position, platz in enumerate((1, 2, 3)):
+        felder.append((f"platz{platz}", lambda _, p=position, n=platz:
+                       h.frage_mit_default(f"{n}. Platz", str(alte_werte[p]), h.ZAHL_VALIDIERER)))
+
+    def bestaetigen(werte):
+        titel = werte.get("titel") or diagramm["name"]
+        print(f"\nNeu: {titel} - 1./2./3. Platz = "
+              f"{werte['platz1']}/{werte['platz2']}/{werte['platz3']}")
+        return h.frage_ja("Aendern? (j/n): ")
+
+    felder.append(("bestaetigt", bestaetigen))
+    eingaben = h.formular(felder)
+    if eingaben is None or not eingaben["bestaetigt"]:
         print("Abgebrochen.")
         return
+
+    neuer_titel = eingaben.get("titel")
+    neue_werte = [int(eingaben[f"platz{platz}"]) for platz in (1, 2, 3)]
 
     liste = [c for c in daten.get("charts", []) if c["id"] != diagramm["id"]]
     liste.append({"id": diagramm["id"], "data": neue_werte})
@@ -418,7 +463,7 @@ def tabellen_menue():
         if aktion is None:
             return
         try:
-            aktion()
+            h.fuehre_aus(aktion)
         except ValueError as fehler:
             print(f"\nFehler: {fehler}")
 
@@ -437,7 +482,7 @@ def main():
         if aktion is None:
             break
         try:
-            aktion()
+            h.fuehre_aus(aktion)
         except ValueError as fehler:
             print(f"\nFehler: {fehler}")
     print("\nFertig.")

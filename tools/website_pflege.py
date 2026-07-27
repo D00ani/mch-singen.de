@@ -72,13 +72,15 @@ def main():
     print("  MCH Singen - Webseiten-Pflege")
     print("=" * 60)
 
+    print("\nTipp: Mit 'x' kommst du an jeder Stelle einen Schritt zurueck.")
+
     while True:
         aktion = _hauptmenue()
         if aktion is None:
             break
-        aktion()
+        h.fuehre_aus(aktion)
 
-    veroeffentlichen()
+    h.fuehre_aus(veroeffentlichen)
     print("\nBis zum naechsten Mal!")
 
 
@@ -89,7 +91,10 @@ def _hauptmenue():
     print("   0) Beenden")
 
     gueltig = {str(i) for i in range(1, len(MENUEPUNKTE) + 1)} | {"0"}
-    wahl = h.frage("\nAuswahl: ", lambda a: None if a in gueltig else "Ungueltige Auswahl.")
+    try:
+        wahl = h.frage("\nAuswahl: ", lambda a: None if a in gueltig else "Ungueltige Auswahl.")
+    except h.Zurueck:
+        return None  # 'x' im Hauptmenue = beenden
     return None if wahl == "0" else MENUEPUNKTE[int(wahl) - 1][1]
 
 

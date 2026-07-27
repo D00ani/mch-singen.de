@@ -17,8 +17,12 @@ JN_VALIDIERER = lambda a: None if a.lower() in ("j", "n") else "Bitte j oder n."
 
 
 def frage(text, validierer=None):
+    """Wie im uebrigen Werkzeug: 'x' bedeutet einen Schritt zurueck. Hier wird
+    das wie ein 'n' behandelt, damit nichts ungewollt veroeffentlicht wird."""
     while True:
         antwort = input(text).strip()
+        if antwort.lower() == "x":
+            return "n"
         if validierer:
             fehler = validierer(antwort)
             if fehler:

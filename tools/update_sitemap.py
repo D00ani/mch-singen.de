@@ -130,7 +130,11 @@ def pruefe_und_aktualisiere(automatisch=False):
             print(f"  {eintrag}")
 
     if neuer_inhalt != inhalt:
-        h.schreibe_datei(SITEMAP, neuer_inhalt)
+        # Laeuft die Pflege automatisch beim Veroeffentlichen, gehoert sie NICHT
+        # in den Rueckgaengig-Verlauf - sonst wuerde "letzte Aenderung
+        # rueckgaengig" die Sitemap zuruecksetzen statt der inhaltlichen
+        # Aenderung, die der Nutzer gerade gemacht hat.
+        h.schreibe_datei(SITEMAP, neuer_inhalt, sichern=not automatisch)
         print(f"\nGespeichert: {os.path.relpath(SITEMAP, ROOT)}")
         return True
     return False

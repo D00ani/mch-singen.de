@@ -66,10 +66,13 @@ def main():
         print(f"  {erklaerung}")
         print("-" * 60)
 
-        antwort = h.frage(
-            "  [j] jetzt erledigen  [u] ueberspringen  [b] beenden: ",
-            lambda a: None if a.lower() in ("j", "u", "b") else "Bitte j, u oder b."
-        ).lower()
+        try:
+            antwort = h.frage(
+                "  [j] jetzt erledigen  [u] ueberspringen  [b] beenden: ",
+                lambda a: None if a.lower() in ("j", "u", "b") else "Bitte j, u oder b."
+            ).lower()
+        except h.Zurueck:
+            antwort = "b"  # 'x' verlaesst den Assistenten
 
         if antwort == "b":
             print("\nAssistent beendet. Die uebrigen Schritte kannst du spaeter")
@@ -80,15 +83,20 @@ def main():
             continue
 
         try:
-            funktion()
+            h.fuehre_aus(funktion)
         except ValueError as fehler:
             print(f"\nFehler: {fehler}")
         except KeyboardInterrupt:
             print("\nSchritt abgebrochen.")
 
-        if nummer < len(SCHRITTE) and not h.frage_ja("\nWeiter zum naechsten Schritt? (j/n): "):
-            print("\nAssistent beendet.")
-            return
+        if nummer < len(SCHRITTE):
+            try:
+                if not h.frage_ja("\nWeiter zum naechsten Schritt? (j/n): "):
+                    print("\nAssistent beendet.")
+                    return
+            except h.Zurueck:
+                print("\nAssistent beendet.")
+                return
 
     print("\n" + "=" * 60)
     print("  Saisonwechsel abgeschlossen.")

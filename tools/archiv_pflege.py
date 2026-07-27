@@ -10,16 +10,17 @@ import re
 import shutil
 import sys
 
-if sys.stdout.encoding and sys.stdout.encoding.lower() != "utf-8":
-    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+import pflege_hilfen as h
+
+ROOT = h.ROOT
 ARCHIV_PATH = os.path.join(ROOT, "pages", "archiv.html")
 ARCHIV_MEDIA_DIR = os.path.join(ROOT, "media", "dokumente", "archiv")
 WERTUNGEN_DIR = os.path.join(ROOT, "media", "dokumente", "wertungen")
 
-JN_VALIDIERER = lambda a: None if a.lower() in ("j", "n") else "Bitte j oder n."
-JAHR_VALIDIERER = lambda a: None if a.isdigit() and len(a) == 4 else "Muss eine 4-stellige Jahreszahl sein."
+JN_VALIDIERER = h.JN_VALIDIERER
+JAHR_VALIDIERER = h.JAHR_VALIDIERER
 
 LISTE_ANKER = '<div style="margin-top: 30px;">'
 DETAILS_MUSTER = re.compile(
@@ -32,35 +33,16 @@ LI_MUSTER = re.compile(
 )
 
 
-def frage(text, validierer=None, pflicht=True):
-    while True:
-        antwort = input(text).strip()
-        if not antwort:
-            if pflicht:
-                print("  -> Darf nicht leer sein.")
-                continue
-            return antwort
-        if validierer:
-            fehler = validierer(antwort)
-            if fehler:
-                print(f"  -> {fehler}")
-                continue
-        return antwort
-
-
-def frage_mit_default(text, default):
-    antwort = input(f"{text} [{default}]: ").strip()
-    return antwort if antwort else default
+frage = h.frage
+frage_mit_default = h.frage_mit_default
 
 
 def lade_html():
-    with open(ARCHIV_PATH, "r", encoding="utf-8", newline="") as f:
-        return f.read()
+    return h.lies_datei(ARCHIV_PATH)
 
 
 def speichere_html(inhalt):
-    with open(ARCHIV_PATH, "w", encoding="utf-8", newline="") as f:
-        f.write(inhalt)
+    h.schreibe_datei(ARCHIV_PATH, inhalt)
 
 
 def parse_jahre(html):
@@ -71,9 +53,13 @@ def parse_jahre(html):
     return jahre
 
 
+def beschreibe_jahr(jahr_eintrag):
+    return f"Saison {jahr_eintrag['jahr']} ({len(jahr_eintrag['lis'])} Eintrag/Eintraege)"
+
+
 def zeige_jahre(jahre):
     for i, j in enumerate(jahre, start=1):
-        print(f"  {i}) Saison {j['jahr']} ({len(j['lis'])} Eintrag/Eintraege)")
+        print(f"  {i}) {beschreibe_jahr(j)}")
 
 
 def zeige_lis(lis):
@@ -190,11 +176,9 @@ def jahr_loeschen():
         print("\nKeine Archiv-Jahre vorhanden.")
         return
 
-    zeige_jahre(jahre)
-    idx = int(frage(
-        f"\nWelche Saison komplett loeschen? (1-{len(jahre)}): ",
-        lambda a: None if a.isdigit() and 1 <= int(a) <= len(jahre) else "Ungueltige Auswahl."
-    )) - 1
+    idx = h.waehle_aus_liste(jahre, "komplett loeschen", beschreibe_jahr)
+    if idx is None:
+        return
     jahr = jahre[idx]["jahr"]
 
     print(f"\nLoeschen: Saison {jahr} (alle {len(jahre[idx]['lis'])} Eintraege, HTML-Box)")
@@ -227,11 +211,9 @@ def eintrag_verwalten():
         print("\nKeine Archiv-Jahre vorhanden. Zuerst eine Saison anlegen.")
         return
 
-    zeige_jahre(jahre)
-    idx = int(frage(
-        f"\nWelche Saison? (1-{len(jahre)}): ",
-        lambda a: None if a.isdigit() and 1 <= int(a) <= len(jahre) else "Ungueltige Auswahl."
-    )) - 1
+    idx = h.waehle_aus_liste(jahre, "bearbeiten", beschreibe_jahr)
+    if idx is None:
+        return
     jahr_eintrag = jahre[idx]
     jahr = jahr_eintrag["jahr"]
     lis = list(jahr_eintrag["lis"])
@@ -239,35 +221,38 @@ def eintrag_verwalten():
     print(f"\nEintraege in Saison {jahr}:")
     zeige_lis(lis)
 
-    print("\n1) Eintrag hinzufuegen\n2) Eintrag bearbeiten\n3) Eintrag loeschen\n0) Zurueck")
-    wahl = frage("Was moechtest du tun? (0-3): ", lambda a: None if a in ("0", "1", "2", "3") else "Bitte 0-3 eingeben.")
-
-    if wahl == "0":
+    HINZUFUEGEN, BEARBEITEN, LOESCHEN = 0, 1, 2
+    try:
+        wahl = h.waehle_option("Was moechtest du tun?", [
+            "Eintrag hinzufuegen", "Eintrag bearbeiten", "Eintrag loeschen",
+        ])
+    except h.Zurueck:
         return
-    elif wahl == "1":
+
+    if wahl == HINZUFUEGEN:
         lis.append(frage_neuen_li_eintrag(jahr))
-    elif wahl in ("2", "3"):
+    else:
         if not lis:
             print("\nKeine Eintraege vorhanden.")
             return
-        li_idx = int(frage(
-            f"Welcher Eintrag? (1-{len(lis)}): ",
-            lambda a: None if a.isdigit() and 1 <= int(a) <= len(lis) else "Ungueltige Auswahl."
-        )) - 1
-        if wahl == "3":
+        li_idx = h.waehle_option("Welcher Eintrag?", lis, lambda e: f"{e[1]}  ->  {e[0]}")
+        if wahl == LOESCHEN:
             print(f"\nLoeschen: {lis[li_idx][1]}")
-            if frage("Wirklich loeschen? (j/n): ", JN_VALIDIERER).lower() != "j":
+            if not h.frage_ja("Wirklich loeschen? (j/n): "):
                 print("Abgebrochen.")
                 return
             del lis[li_idx]
         else:
             href, text = lis[li_idx]
-            neuer_text = frage_mit_default("Beschreibungstext", text)
-            neuer_href = frage_mit_default("Pfad zur PDF", href)
-            if frage("Aendern? (j/n): ", JN_VALIDIERER).lower() != "j":
+            eingaben = h.formular([
+                ("text", lambda _: frage_mit_default("Beschreibungstext", text)),
+                ("href", lambda _: frage_mit_default("Pfad zur PDF", href)),
+                ("bestaetigt", lambda _: h.frage_ja("Aendern? (j/n): ")),
+            ])
+            if eingaben is None or not eingaben["bestaetigt"]:
                 print("Abgebrochen.")
                 return
-            lis[li_idx] = (neuer_href, neuer_text)
+            lis[li_idx] = (eingaben["href"], eingaben["text"])
 
     neuer_block = baue_details_block(jahr, lis)
     m = jahr_eintrag["match"]
@@ -281,22 +266,20 @@ def main():
     print("  Jahresarchiv pflegen")
     print("=" * 60)
     while True:
-        html = lade_html()
         print("\nVorhandene Saisons:")
-        zeige_jahre(parse_jahre(html))
-        print("\n1) Neue Saison anlegen\n2) Eintraege einer Saison verwalten\n3) Ganze Saison loeschen\n0) Beenden")
-        wahl = frage("Was moechtest du tun? (0-3): ", lambda a: None if a in ("0", "1", "2", "3") else "Bitte 0-3 eingeben.")
+        zeige_jahre(parse_jahre(lade_html()))
+
+        aktion = h.menue("Was moechtest du tun?", [
+            ("Neue Saison anlegen", jahr_hinzufuegen),
+            ("Eintraege einer Saison verwalten", eintrag_verwalten),
+            ("Ganze Saison loeschen", jahr_loeschen),
+        ])
+        if aktion is None:
+            break
         try:
-            if wahl == "0":
-                break
-            elif wahl == "1":
-                jahr_hinzufuegen()
-            elif wahl == "2":
-                eintrag_verwalten()
-            else:
-                jahr_loeschen()
-        except ValueError as e:
-            print(f"\nFehler: {e}")
+            h.fuehre_aus(aktion)
+        except ValueError as fehler:
+            print(f"\nFehler: {fehler}")
     print("\nFertig.")
 
 

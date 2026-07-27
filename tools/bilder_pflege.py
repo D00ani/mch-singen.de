@@ -124,17 +124,14 @@ def bild_aufnehmen():
         print(f"\nGroesse: {bild.width}x{bild.height} Pixel, "
               f"{os.path.getsize(quelle) // 1024} KB")
 
-    print("\nWofuer wird das Bild verwendet?")
-    for i, verwendung in enumerate(VERWENDUNGEN, start=1):
-        breiten = "unveraendert" if verwendung["breiten"] == [None] else \
-            ", ".join(f"{b}px" for b in verwendung["breiten"])
-        print(f"  {i}) {verwendung['name']}")
-        print(f"     -> {breiten} ({verwendung['hinweis']})")
-    wahl = int(h.frage(
-        f"Auswahl (1-{len(VERWENDUNGEN)}): ",
-        lambda a: None if a.isdigit() and 1 <= int(a) <= len(VERWENDUNGEN) else "Ungueltige Auswahl."
-    )) - 1
-    verwendung = VERWENDUNGEN[wahl]
+    def beschreibe_verwendung(eintrag):
+        breiten = "unveraendert" if eintrag["breiten"] == [None] else \
+            ", ".join(f"{b}px" for b in eintrag["breiten"])
+        return f"{eintrag['name']}\n     -> {breiten} ({eintrag['hinweis']})"
+
+    verwendung = VERWENDUNGEN[
+        h.waehle_option("Wofuer wird das Bild verwendet?", VERWENDUNGEN, beschreibe_verwendung)
+    ]
 
     if not h.frage_ja(f"\nWebP-Fassung(en) fuer {os.path.relpath(quelle, ROOT)} erzeugen? (j/n): "):
         print("Abgebrochen.")
@@ -163,8 +160,11 @@ def main():
     print("  Bilder aufnehmen")
     print("=" * 60)
     while True:
-        bild_aufnehmen()
-        if not h.frage_ja("\nNoch ein Bild aufnehmen? (j/n): "):
+        h.fuehre_aus(bild_aufnehmen)
+        try:
+            if not h.frage_ja("\nNoch ein Bild aufnehmen? (j/n): "):
+                break
+        except h.Zurueck:
             break
     print("\nFertig.")
 
