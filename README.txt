@@ -350,6 +350,24 @@ Einfach per Doppelklick starten, dann im Menü wählen:
     bindet sie direkt ein (spart deutlich Ladezeit - bei den sieben Logos
     waren es 532 KB vorher, 116 KB nachher). Die alten Dateien können dabei
     gelöscht werden.
+ 5c) Vorstand & Trainer pflegen
+    Personen auf "Über uns" hinzufügen, bearbeiten oder entfernen.
+    Beim Bearbeiten werden gezielt einzelne Felder ersetzt - Besonderheiten
+    einzelner Karten (Instagram-Verlinkung, Spruch statt E-Mail, besonderer
+    Bildausschnitt) bleiben dabei erhalten. Wird ein Name geändert, zieht das
+    Werkzeug ihn an allen drei Stellen mit (Bildbeschriftung, Überschrift,
+    Bildbeschreibung).
+    Für ein neues Foto: Datei nach /media/bilder/ueber-uns/ legen.
+
+ 5d) Fragen & Antworten (FAQ) pflegen
+    Frage und Antwort eingeben - fertig, kein HTML nötig. Für Hervorhebungen
+    und Links gibt es eine einfache Schreibweise:
+        **wichtig**                   -> wichtig (fett)
+        [Kartsport](kartsport.html)   -> Link auf die Kartsport-Seite
+    Beim Bearbeiten wird bestehendes HTML in dieselbe Schreibweise
+    zurückverwandelt, es geht also nichts verloren. Verweist ein Link auf
+    eine Seite, die es nicht gibt, warnt das Werkzeug sofort.
+
  6) Bilder aufnehmen (WebP + HTML-Block)        -> Abschnitt 7
  7) Webseite prüfen
     Findet tote Links, falsche Groß-/Kleinschreibung (die auf dem
