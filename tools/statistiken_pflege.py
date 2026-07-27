@@ -105,10 +105,16 @@ def beschreibe_zeile(zeile):
     return " | ".join(ohne_hervorhebung(z)[0] for z in zeile)
 
 
+def zeilen_schluessel(zeile):
+    """Sortierwert einer Tabellenzeile - die erste Spalte ist bei allen
+    Tabellen das Jahr bzw. das Datum."""
+    return h.datum_schluessel(ohne_hervorhebung(zeile[0])[0] if zeile else "")
+
+
 def bestaetige_neue_zeile(spalten, werte):
     """Letzter Schritt eines Formulars - mit 'x' geht es zurueck ins letzte Feld."""
     print(f"\nNeue Zeile: {beschreibe_zeile([werte[s] for s in spalten])}")
-    return h.frage_ja("Oben in die Tabelle einfuegen? (j/n): ")
+    return h.frage_ja("In die Tabelle einsortieren? (j/n): ")
 
 
 def waehle_tabelle():
@@ -152,15 +158,15 @@ def tabelle_hinzufuegen():
         return
     werte = [eingaben[spalte] for spalte in tabelle["spalten"]]
 
-    neue_zeile = baue_zeile(werte, einrueckung)
-    erster_umbruch = tbody_inhalt.find("\r\n")
-    if erster_umbruch == -1:
-        neuer_inhalt = "\r\n" + neue_zeile + tbody_inhalt
-    else:
-        neuer_inhalt = (tbody_inhalt[:erster_umbruch + 2] + neue_zeile + "\r\n"
-                        + tbody_inhalt[erster_umbruch + 2:])
-    h.schreibe_datei(STATISTIKEN_HTML, html[:start] + neuer_inhalt + html[ende:])
-    print(f"\nGespeichert in {os.path.relpath(STATISTIKEN_HTML, ROOT)}")
+    # Nach Jahr bzw. Datum einsortieren (neueste zuerst), statt einfach
+    # oben anzuhaengen.
+    position = h.einfuege_position(
+        [zeilen_schluessel(z) for z in zeilen], zeilen_schluessel(werte), absteigend=True
+    )
+    h.melde_einsortierung(position, len(zeilen))
+
+    zeilen.insert(position, werte)
+    schreibe_tbody(html, start, ende, zeilen, einrueckung, tbody_inhalt)
 
 
 def tabelle_bearbeiten():

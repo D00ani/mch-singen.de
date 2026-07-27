@@ -63,6 +63,20 @@ def zeige_zeilen(zeilen):
             print(f"  {i}) {z}")
 
 
+def termin_schluessel(zeile):
+    """Sortierwert einer timer.txt-Zeile: Jahr, Monat, Tag, Uhrzeit."""
+    teile = zeile.split(";")
+    if len(teile) < 4:
+        return (0, 0, 0, "")
+    monat = MONAT_ALIASE.get(teile[1].strip().lower())
+    return (
+        int(teile[2]) if teile[2].strip().isdigit() else 0,
+        monat[0] if monat else 0,
+        int(teile[0]) if teile[0].strip().isdigit() else 0,
+        teile[3].strip(),
+    )
+
+
 def beschreibe_termin(zeile):
     teile = zeile.split(";")
     if len(teile) >= 6:
@@ -224,7 +238,13 @@ def termin_hinzufuegen(zieldatei, mehrere_orte_erwartet):
         print("Abgebrochen, nichts gespeichert.")
         return
 
-    zeilen.append(zeile)
+    # Chronologisch einsortieren, damit die Datei der Saison folgt
+    position = h.einfuege_position(
+        [termin_schluessel(z) for z in zeilen], termin_schluessel(zeile), absteigend=False
+    )
+    h.melde_einsortierung(position, len(zeilen))
+
+    zeilen.insert(position, zeile)
     speichere_zeilen(zieldatei, zeilen)
     print(f"\nGespeichert in {os.path.relpath(zieldatei, ROOT)}")
 

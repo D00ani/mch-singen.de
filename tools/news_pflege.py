@@ -208,11 +208,30 @@ def karte_hinzufuegen():
         print("Abgebrochen.")
         return
 
-    # Direkt vor die erste bestehende Karte dieses Abschnitts setzen
-    erste = next(k for k in karten if k["abschnitt"] == abschnitt)
-    zeilenanfang = html.rfind("\r\n", 0, erste["start"])
-    einfuegepunkt = zeilenanfang + 2 if zeilenanfang != -1 else erste["start"]
-    h.schreibe_datei(AKTUELLES_HTML, html[:einfuegepunkt] + neuer_block + "\r\n" + html[einfuegepunkt:])
+    # Das Datum ist bei News Freitext ("Saison 2026", "Sa, 08.08. & So, 09.08.")
+    # und laesst sich nicht zuverlaessig sortieren - deshalb waehlt der Nutzer
+    # die Stelle selbst, sobald es im Abschnitt schon Karten gibt.
+    im_abschnitt = [k for k in karten if k["abschnitt"] == abschnitt]
+    stelle = 0
+    if len(im_abschnitt) > 1:
+        moeglichkeiten = [f"Ganz oben (vor '{im_abschnitt[0]['titel']}')"]
+        moeglichkeiten += [f"Nach '{k['titel']}'" for k in im_abschnitt]
+        stelle = h.waehle_option("An welcher Stelle im Abschnitt?", moeglichkeiten)
+
+    if stelle == 0:
+        bezug, davor = im_abschnitt[0], True
+    else:
+        bezug, davor = im_abschnitt[stelle - 1], False
+
+    if davor:
+        zeilenanfang = html.rfind("\r\n", 0, bezug["start"])
+        einfuegepunkt = zeilenanfang + 2 if zeilenanfang != -1 else bezug["start"]
+        neues_html = html[:einfuegepunkt] + neuer_block + "\r\n" + html[einfuegepunkt:]
+    else:
+        einfuegepunkt = bezug["ende"]
+        neues_html = html[:einfuegepunkt] + "\r\n" + neuer_block + html[einfuegepunkt:]
+
+    h.schreibe_datei(AKTUELLES_HTML, neues_html)
     print(f"\nGespeichert in {os.path.relpath(AKTUELLES_HTML, ROOT)}")
 
 

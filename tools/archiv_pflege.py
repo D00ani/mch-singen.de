@@ -159,11 +159,29 @@ def jahr_hinzufuegen():
         print("Abgebrochen.")
         return
 
-    pos = html.find(LISTE_ANKER)
-    if pos == -1:
-        raise ValueError("Anker fuer die Archiv-Liste nicht gefunden.")
-    einfuege_pos = html.find("\r\n", pos) + 2
-    neues_html = html[:einfuege_pos] + neuer_block + "\r\n\r\n" + html[einfuege_pos:]
+    # Nach Jahr einsortieren (neueste Saison oben), statt immer vorne anzuhaengen
+    position = h.einfuege_position(
+        [(int(j["jahr"]),) for j in jahre], (int(jahr),), absteigend=True
+    )
+    h.melde_einsortierung(position, len(jahre))
+
+    if position < len(jahre):
+        # Vor die Saison setzen, die danach kommt - samt deren Einrueckung
+        anker = jahre[position]["match"].start()
+        while anker > 0 and html[anker - 1] in " \t":
+            anker -= 1
+        neues_html = html[:anker] + neuer_block + "\r\n\r\n" + html[anker:]
+    elif jahre:
+        # Hinter die letzte Saison setzen
+        ende_letzte = jahre[-1]["match"].end()
+        neues_html = html[:ende_letzte] + "\r\n\r\n" + neuer_block + html[ende_letzte:]
+    else:
+        pos = html.find(LISTE_ANKER)
+        if pos == -1:
+            raise ValueError("Anker fuer die Archiv-Liste nicht gefunden.")
+        einfuege_pos = html.find("\r\n", pos) + 2
+        neues_html = html[:einfuege_pos] + neuer_block + "\r\n\r\n" + html[einfuege_pos:]
+
     speichere_html(neues_html)
     print(f"\nGespeichert in {os.path.relpath(ARCHIV_PATH, ROOT)}")
 

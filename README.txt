@@ -349,6 +349,19 @@ zu der Frage davor (die falsche Eingabe wird verworfen und neu gestellt).
 "x" in der ersten Frage bricht die Aktion ab, ohne etwas zu speichern.
 Man kann sich also nie "verrennen" und muss ein Formular nicht mehr zu
 Ende ausfüllen, nur weil man sich vertippt hat.
+(Nebenwirkung: Ein einzelnes "x" lässt sich dadurch nicht als Wert
+eingeben - bei einem Namen o. ä. einfach "X." schreiben.)
+
+NEUE EINTRÄGE WERDEN AUTOMATISCH EINSORTIERT - sie landen nicht mehr
+einfach oben, sondern an der Stelle, wo sie hingehören. Das Werkzeug sagt
+dir vorher, wo der Eintrag landet ("Wird an Position 5 von 9 einsortiert"):
+  - Wanderpokal-Sieger und Top-Platzierungen: neuestes Jahr zuerst
+    (trägst du 2021 nach, rutscht es unter 2022)
+  - Jahresarchiv: neueste Saison oben
+  - Renntermine: chronologisch nach Datum und Uhrzeit
+  - News-Karten: hier steht im Datum Freitext ("Saison 2026"), das lässt
+    sich nicht zuverlässig sortieren - deshalb fragt das Werkzeug, an
+    welcher Stelle des Abschnitts die Karte stehen soll.
 
 VERÖFFENTLICHEN PASSIERT AUTOMATISCH: Beim Beenden mit "0" prüft das
 Werkzeug die Seite, aktualisiert die Datumsangaben in sitemap.xml und

@@ -165,6 +165,61 @@ def fuehre_aus(funktion, *args, **kwargs):
 
 
 # ------------------------------------------------------------------
+# Einsortieren
+# ------------------------------------------------------------------
+
+MONATE_DE_NR = {
+    "januar": 1, "februar": 2, "märz": 3, "maerz": 3, "april": 4, "mai": 5, "juni": 6,
+    "juli": 7, "august": 8, "september": 9, "oktober": 10, "november": 11, "dezember": 12,
+    "january": 1, "february": 2, "march": 3, "may": 5, "june": 6, "july": 7,
+    "october": 10, "december": 12,
+}
+
+
+def monat_nummer(text):
+    return MONATE_DE_NR.get(text.strip().lower())
+
+
+def datum_schluessel(text):
+    """Macht aus verschiedenen Datumsschreibweisen einen vergleichbaren Wert:
+       "15. Mai 2025" -> (2025, 5, 15)
+       "2026"         -> (2026, 13, 32)  = irgendwann in dem Jahr, sortiert
+                                           innerhalb des Jahres nach vorne
+    """
+    text = (text or "").strip()
+    voll = re.search(r"(\d{1,2})\.\s*([A-Za-zÄÖÜäöüß]+)\s*(\d{4})", text)
+    if voll:
+        monat = monat_nummer(voll.group(2))
+        if monat:
+            return (int(voll.group(3)), monat, int(voll.group(1)))
+    jahr = re.search(r"(\d{4})", text)
+    if jahr:
+        return (int(jahr.group(1)), 13, 32)
+    return (0, 0, 0)
+
+
+def einfuege_position(schluessel_liste, neuer_schluessel, absteigend=True):
+    """Liefert den Index, an dem ein neuer Eintrag stehen muss, damit die
+    Reihenfolge stimmt (absteigend = neueste zuerst)."""
+    for position, vorhandener in enumerate(schluessel_liste):
+        if (neuer_schluessel > vorhandener) if absteigend else (neuer_schluessel < vorhandener):
+            return position
+    return len(schluessel_liste)
+
+
+def melde_einsortierung(position, gesamt):
+    """Sagt dem Nutzer, wo der Eintrag landet."""
+    if gesamt == 0:
+        print("  Wird als erster Eintrag angelegt.")
+    elif position == 0:
+        print("  Wird ganz oben eingefuegt.")
+    elif position >= gesamt:
+        print("  Wird ganz unten angehaengt.")
+    else:
+        print(f"  Wird an Position {position + 1} von {gesamt + 1} einsortiert.")
+
+
+# ------------------------------------------------------------------
 # Pfade zu Medien (PDFs, Bilder)
 # ------------------------------------------------------------------
 
