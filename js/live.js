@@ -2,27 +2,34 @@
     
     // --- 1. ZUSTAND SPEICHERN ---
     let activeClass = "Klasse 3"; // Start-Klasse
-    let activeRun = "TL";         // Start-Lauf
+    let activeRun = "1. WL";      // Start-Lauf
     let isGesamt = false;         // Gesamtergebnis-Modus
     
     let liveData = [];            // Zwischenspeicher für die JSON-Daten
-    
+    let lastUpdate = "";          // Uhrzeit des letzten Abgleichs mit der Zeitmessung
+
     const gridContainer = document.getElementById('live-grid');
     const headerBar = document.getElementById('live-header-bar');
+    const eventDate = document.querySelector('.event-date');
 
     // --- 2. KLICK-LOGIK FÜR DIE BUTTONS ---
     const classButtons = document.querySelectorAll('#class-filters .btn-filter');
     const runButtons = document.querySelectorAll('#run-filters .btn-filter');
     const allBtn = document.querySelector('.btn-filter[data-type="all"]');
 
+    // Sobald der Besucher selbst filtert, wird nicht mehr automatisch
+    // umgeschaltet (siehe waehleBelegteAnsicht weiter unten).
+    let nutzerHatGewaehlt = false;
+
     classButtons.forEach(btn => {
         btn.addEventListener('click', function() {
             classButtons.forEach(b => b.classList.remove('active'));
             if(allBtn) allBtn.classList.remove('active');
             this.classList.add('active');
-            
+
             activeClass = this.innerText.trim();
             isGesamt = false;
+            nutzerHatGewaehlt = true;
             renderTable();
         });
     });
@@ -32,9 +39,10 @@
             runButtons.forEach(b => b.classList.remove('active'));
             if(allBtn) allBtn.classList.remove('active');
             this.classList.add('active');
-            
+
             activeRun = this.innerText.trim();
             isGesamt = false;
+            nutzerHatGewaehlt = true;
             renderTable();
         });
     });
@@ -44,25 +52,66 @@
             classButtons.forEach(b => b.classList.remove('active'));
             runButtons.forEach(b => b.classList.remove('active'));
             this.classList.add('active');
-            
+
             isGesamt = true;
+            nutzerHatGewaehlt = true;
             renderTable();
         });
     }
 
     // --- 3. HILFSFUNKTION: ZEIT IN MILLISEKUNDEN UMRECHNEN ---
-    // Macht aus "01:00,39" eine echte Zahl (60390), mit der der Browser sortieren kann
+    // Macht aus "01:00,39" eine echte Zahl (60390), mit der der Browser sortieren kann.
+    // Alles, was keine Zeit ist (leer oder "ADW" bei Ausschluss), kommt ans Ende.
+    const ZEIT_MUSTER = /^(\d{1,3}):([0-5]?\d),(\d{1,2})$/;
     function parseTimeToMs(timeStr) {
-        if (!timeStr || timeStr.trim() === "") return 999999999; // Ohne Zeit ganz nach hinten
-        try {
-            let parts = timeStr.split(',');
-            let ms = parts.length > 1 ? parseInt(parts[1]) * 10 : 0; // ,39 wird zu 390ms
-            let minSec = parts[0].split(':');
-            let m = parseInt(minSec[0]) || 0;
-            let s = parseInt(minSec[1]) || 0;
-            return (m * 60 * 1000) + (s * 1000) + ms;
-        } catch(e) {
-            return 999999999;
+        let treffer = ZEIT_MUSTER.exec((timeStr || "").trim());
+        if (!treffer) return 999999999;
+        let m = parseInt(treffer[1], 10);
+        let s = parseInt(treffer[2], 10);
+        let hundertstel = parseInt(treffer[3].padEnd(2, '0'), 10);
+        return (m * 60 * 1000) + (s * 1000) + (hundertstel * 10);
+    }
+
+    // Namen und Vereine kommen aus der Zeitmessung und werden dort von Hand
+    // getippt - vor dem Einsetzen ins HTML also entschaerfen.
+    function escapeHtml(wert) {
+        return String(wert === undefined || wert === null ? "" : wert)
+            .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;");
+    }
+
+    const vereinfacht = t => (t || "").replace(/\s+/g, '').toUpperCase();
+
+    // Beim ersten Laden auf eine Ansicht springen, in der auch wirklich Zeiten
+    // stehen. Sonst landet der Besucher auf der Voreinstellung (Klasse 3 / TL)
+    // und sieht eine leere Tabelle, obwohl das Rennen längst läuft.
+    function waehleBelegteAnsicht() {
+        if (nutzerHatGewaehlt || isGesamt || liveData.length === 0) return;
+
+        const hatDaten = (klasse, lauf) => liveData.some(d =>
+            vereinfacht(d.klasse) === vereinfacht(klasse) &&
+            vereinfacht(d.lauf) === vereinfacht(lauf));
+
+        if (hatDaten(activeClass, activeRun)) {
+            nutzerHatGewaehlt = true;   // Voreinstellung passt, nicht mehr eingreifen
+            return;
+        }
+
+        for (const laufBtn of runButtons) {
+            for (const klasseBtn of classButtons) {
+                const lauf = laufBtn.innerText.trim();
+                const klasse = klasseBtn.innerText.trim();
+                if (!hatDaten(klasse, lauf)) continue;
+
+                runButtons.forEach(b => b.classList.remove('active'));
+                classButtons.forEach(b => b.classList.remove('active'));
+                laufBtn.classList.add('active');
+                klasseBtn.classList.add('active');
+                activeRun = lauf;
+                activeClass = klasse;
+                nutzerHatGewaehlt = true;
+                return;
+            }
         }
     }
 
@@ -75,27 +124,29 @@
         }
 
         // A) Daten filtern (Robust gegen fehlende Leerzeichen, z.B. "1.WL" vs "1. WL")
-        let filteredData = liveData;
+        let filteredData;
         if (!isGesamt) {
-            let normalizedActiveRun = activeRun.replace(/\s+/g, '').toUpperCase();
-            let normalizedActiveClass = activeClass.replace(/\s+/g, '').toUpperCase();
+            let normalizedActiveRun = vereinfacht(activeRun);
+            let normalizedActiveClass = vereinfacht(activeClass);
 
-            filteredData = liveData.filter(d => {
-                let jsonLauf = (d.lauf || "").replace(/\s+/g, '').toUpperCase();
-                let jsonKlasse = (d.klasse || "").replace(/\s+/g, '').toUpperCase();
-                return jsonKlasse === normalizedActiveClass && jsonLauf === normalizedActiveRun;
-            });
-            
-            // Schöner Name für den blauen Balken (aus TL wird Trainingslauf etc.)
+            filteredData = liveData.filter(d =>
+                vereinfacht(d.klasse) === normalizedActiveClass &&
+                vereinfacht(d.lauf) === normalizedActiveRun);
+
+            // Schöner Name für den blauen Balken (aus 1. WL wird 1. Wertungslauf)
             let titleLauf = activeRun;
-            if (activeRun === "TL") titleLauf = "Trainingslauf";
             if (activeRun === "1. WL") titleLauf = "1. Wertungslauf";
             if (activeRun === "2. WL") titleLauf = "2. Wertungslauf";
-            
+
             headerBar.innerText = `${titleLauf} | ${activeClass}`;
         } else {
+            // Das Gesamtergebnis ist ein eigener Lauf ("Gesamt" = beide
+            // Wertungsläufe zusammen), nicht einfach alle Zeilen auf einmal -
+            // sonst stünden Einzel- und Gesamtzeiten wild gemischt in einer Tabelle.
+            filteredData = liveData.filter(d => vereinfacht(d.lauf) === "GESAMT");
             headerBar.innerText = `Gesamtergebnis (Alle Klassen)`;
         }
+        if (lastUpdate) headerBar.innerText += `  ·  Stand ${lastUpdate}`;
 
         // B) AUTOMATISCHES SORTIEREN & PLATZIERUNG KORRIGIEREN
         // Nach Gesamtzeit sortieren (schnellste Zeit zuerst)
@@ -130,15 +181,15 @@
             html += `
                 <div class="driver-row">
                     <div class="driver-cell" style="text-align: center; font-weight: bold;">${driver.platz}</div>
-                    <div class="driver-cell" style="text-align: center;">${driver.startnummer}</div>
+                    <div class="driver-cell" style="text-align: center;">${escapeHtml(driver.startnummer)}</div>
                     <div class="driver-cell">
-                        <div class="driver-name">${driver.name}</div>
-                        <div class="driver-club">${driver.club}</div>
+                        <div class="driver-name">${escapeHtml(driver.name)}</div>
+                        <div class="driver-club">${escapeHtml(driver.club)}</div>
                     </div>
                     <div class="driver-cell time-cell">
-                        ${driver.zeit_raw}<br>
-                        ${driver.fehler && driver.fehler !== "" ? driver.fehler + '<br>' : ''}
-                        ${driver.zeit_total}
+                        ${escapeHtml(driver.zeit_raw)}<br>
+                        ${driver.fehler ? escapeHtml(driver.fehler) + '<br>' : ''}
+                        ${escapeHtml(driver.zeit_total)}
                     </div>
                 </div>
             `;
@@ -147,7 +198,7 @@
             html += `
                 <div class="gap-row">
                     <div class="gap-cell" style="grid-column: 1 / 3;">
-                        ${String(driver.platz) === "1" ? '00:00,00<br><br><br>' : `${driver.diff_first || ''}<br>${driver.diff_prev || ''}<br><br>`}
+                        ${String(driver.platz) === "1" ? '00:00,00<br><br><br>' : `${escapeHtml(driver.diff_first)}<br>${escapeHtml(driver.diff_prev)}<br><br>`}
                     </div>
                     <div class="gap-empty" style="grid-column: 3 / 5;"></div>
                 </div>
@@ -158,13 +209,20 @@
     }
 
     // --- 5. DATEN VOM SERVER LADEN (Der "Puls") ---
+    // data/livedata.json wird von tools/livetiming_sync.py aus der Datenbank
+    // der Zeitmessung erzeugt und bei jeder Änderung neu veröffentlicht.
     async function fetchLiveData() {
         try {
             // Das "?t=" am Ende umgeht den Browser-Cache, damit immer die neuste Datei geladen wird
             const response = await fetch(`../data/livedata.json?t=${new Date().getTime()}`);
             if (response.ok) {
                 const data = await response.json();
-                liveData = data.results;
+                liveData = Array.isArray(data.results) ? data.results : [];
+                lastUpdate = data.last_update || "";
+                // Renntag aus den Daten übernehmen, damit im Kopf nicht das
+                // Datum einer vergangenen Veranstaltung stehen bleibt
+                if (eventDate && data.datum) eventDate.innerText = data.datum;
+                waehleBelegteAnsicht();
                 renderTable(); // Tabelle sofort mit neuen Daten zeichnen
             }
         } catch (error) {

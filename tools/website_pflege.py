@@ -20,6 +20,7 @@ import archiv_pflege
 import bilder_pflege
 import faq_pflege
 import jaehrliches_update
+import livetiming_sync
 import news_pflege
 import pflege_hilfen as h
 import pruefe_seite
@@ -32,6 +33,7 @@ import trainingstermine_import
 import update_sitemap
 
 MENUEPUNKTE = [
+    ("Live-Timing: Zeiten der Zeitmessung auf die Seite bringen", livetiming_sync.main),
     ("Renntermine (Kart/Trial) verwalten", termine_verwalten.main),
     ("Trainingstermine importieren (Excel-Export)", trainingstermine_import.main),
     ("Statistiken-Seite pflegen (Platzierungen, Vereinsmeister, Rekorde, Zahlen)", statistiken_pflege.main),

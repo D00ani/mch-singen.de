@@ -317,6 +317,7 @@ Eine Ebene über /mch-arbeit/ und /mch-singen.de-main/ liegt
 website-pflege.bat - der EINE Startpunkt für die gesamte Wartung.
 Einfach per Doppelklick starten, dann im Menü wählen:
 
+ 0) Live-Timing: Zeiten der Zeitmessung auf die Seite bringen -> Abschnitt 11
  1) Renntermine (Kart/Trial) verwalten          -> Abschnitt 2
  2) Trainingstermine importieren (Excel-Export) -> Abschnitt 4
  3) Statistiken-Seite pflegen                   -> Abschnitt 5
@@ -422,4 +423,64 @@ die Python-Werkzeuge selbst liegen in /tools/ und sind versioniert.
 
 Einmalige Vorbereitung auf einem neuen PC: Python installieren, dann
 "pip install pdfplumber csscompressor rjsmin Pillow" ausführen.
+
+-------------------------------------------------------
+11. LIVE-TIMING AM RENNTAG (live-timing.bat)
+-------------------------------------------------------
+Die Live-Seite (pages/live.html) zeigt die Zeiten, die das Programm
+"Zeitmessung_Kart" misst. Dazwischen sitzt das Werkzeug
+tools/livetiming_sync.py. Es LIEST nur - an der Zeitmessung und ihrer
+Datenbank wird NICHTS verändert.
+
+SO LÄUFT ES:
+  Zeitmessung speichert einen Lauf
+    -> in ihre Access-Datenbank Zeitmessung_Kart_Data.accdb
+    -> livetiming_sync.py liest sie alle paar Sekunden
+    -> schreibt data/livedata.json
+    -> committet + merged + pusht die Datei, sobald sich etwas ändert
+    -> live.html holt sich die Datei alle 3 Sekunden neu
+
+AM RENNTAG:
+  1. Zeitmessung ganz normal starten und Starter erfassen.
+  2. live-timing.bat per Doppelklick starten (liegt neben
+     website-pflege.bat), dann "1) Live-Timing starten".
+  3. Laufen lassen. Beenden mit Strg+C - der letzte Stand wird dabei
+     noch veröffentlicht.
+
+BEIM ERSTEN MAL: Menüpunkt "Einstellungen" öffnen und den Pfad zur Datei
+Zeitmessung_Kart_Data.accdb eintragen. Das Werkzeug sucht sie sonst
+selbst - erst in der App.config der Zeitmessung, dann im Ordner
+Zeitmessung_Kart/Zeitmessung_Kart_Data/ neben den Webseiten-Ordnern.
+Die Einstellungen landen in tools/livetiming.config.json (bleibt lokal,
+weil der Pfad auf jedem Rechner anders ist).
+
+"Status / Selbsttest" zeigt, ob die Datenbank lesbar ist, welche Renntage
+darin stehen und wie viele Ergebnisse für den gewählten Tag herauskommen -
+gut zum Ausprobieren VOR dem Rennen.
+
+WAS AUF DER SEITE LANDET:
+  LaufNr 1 in der Datenbank -> Knopf "1. WL"
+  LaufNr 2                  -> Knopf "2. WL"
+  LaufNr 0                  -> Knopf "Gesamtergebnis"
+  Klasse "1a"               -> "Klasse 1a"
+Platzierung und Rückstände (auf Erste(n) und auf Vordermann) rechnet das
+Werkzeug selbst aus. Wird ein Lauf wiederholt, zählt automatisch der
+neueste Eintrag. Starter ohne gültige Zeit ("ADW") stehen hinten.
+
+TRAININGSLÄUFE GIBT ES HIER NICHT: Die Zeitmessung schreibt nur
+Einführungsrunde + 1./2. Wertungslauf pro Starter in die Ergebnistabelle.
+Das freie Training landet nur in ihrer History-Liste, ohne Startnummer und
+Klasse - daraus lässt sich keine Tabelle bauen. Deshalb gibt es auf der
+Live-Seite keinen "TL"-Knopf mehr.
+
+WENN ETWAS KLEMMT:
+  - "Datenbank nicht gefunden" -> Pfad in den Einstellungen prüfen.
+  - Zeitmessung darf die Datenbank geöffnet haben, das stört nicht.
+    Fällt sie kurz aus, läuft das Werkzeug weiter und der zuletzt
+    veröffentlichte Stand bleibt stehen.
+  - Es wird bewusst NUR data/livedata.json veröffentlicht. Angefangene
+    Änderungen an anderen Dateien bleiben liegen und gehen nicht raus.
+  - Zwischen zwei Veröffentlichungen liegen mindestens 60 Sekunden
+    (einstellbar), damit GitHub nicht bremst. GitHub Pages braucht danach
+    wie immer 1-3 Minuten.
 =======================================================

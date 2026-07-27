@@ -4,3 +4,7 @@ __pycache__/
 # Automatische Sicherungen der Pflege-Werkzeuge (nur lokal, gehoeren nicht
 # ins Repo und schon gar nicht auf die veroeffentlichte Webseite)
 .pflege-sicherungen/
+
+# Einstellungen des Live-Timings: enthalten den Pfad zur Datenbank der
+# Zeitmessung und sind damit von Rechner zu Rechner verschieden
+tools/livetiming.config.json
