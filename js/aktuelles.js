@@ -18,9 +18,69 @@ const monateMap = {
     "October": "10", "December": "12"
 };
 
+// Der Kalender-Standard (RFC 5545) verlangt CRLF als Zeilenende. Outlook und
+// Apple Kalender lehnen Dateien mit reinem \n teilweise ab.
+const ICS_ZEILENENDE = "\r\n";
+
 // ---- ICS-Header erzeugen ----
 function icsHeader() {
-    return "BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//MCH Singen//DE\nCALSCALE:GREGORIAN\n";
+    return [
+        "BEGIN:VCALENDAR",
+        "VERSION:2.0",
+        "PRODID:-//MCH Singen//Terminkalender//DE",
+        "CALSCALE:GREGORIAN",
+        "METHOD:PUBLISH",
+        "",
+    ].join(ICS_ZEILENENDE);
+}
+
+// Sonderzeichen in Text-Feldern maskieren. Ohne das zerlegt z. B.
+// "Kleinandelfingen, Schweiz" den Eintrag am Komma.
+function icsText(wert) {
+    return String(wert ?? "")
+        .replace(/\\/g, "\\\\")
+        .replace(/;/g, "\\;")
+        .replace(/,/g, "\\,")
+        .replace(/\r?\n/g, "\\n");
+}
+
+// Zeitstempel der Erzeugung (UTC), ist laut Standard Pflicht
+function icsZeitstempel() {
+    return new Date().toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
+}
+
+// Jeder Termin braucht eine eindeutige Kennung, sonst ueberschreiben
+// Kalender-Programme Eintraege gegenseitig oder lehnen den Import ab.
+function icsKennung(bestandteile) {
+    const sauber = bestandteile.join("-").replace(/[^A-Za-z0-9\-]/g, "");
+    return `${sauber}@mch-singen.de`;
+}
+
+// Endzeit aus Startzeit + Dauer in Stunden berechnen
+function icsEndzeit(jahr, monat, tag, startHHMM, dauerStunden) {
+    const stunde = parseInt(startHHMM.slice(0, 2), 10);
+    const minute = parseInt(startHHMM.slice(2, 4), 10);
+    const ende = new Date(Date.UTC(+jahr, +monat - 1, +tag, stunde + dauerStunden, minute));
+    const zz = n => String(n).padStart(2, '0');
+    return `${ende.getUTCFullYear()}${zz(ende.getUTCMonth() + 1)}${zz(ende.getUTCDate())}`
+         + `T${zz(ende.getUTCHours())}${zz(ende.getUTCMinutes())}00`;
+}
+
+// Einen vollstaendigen Termin-Block bauen
+function icsTermin({ kennung, titel, start, ende, ort, beschreibung, url }) {
+    const zeilen = [
+        "BEGIN:VEVENT",
+        `UID:${kennung}`,
+        `DTSTAMP:${icsZeitstempel()}`,
+        `DTSTART:${start}`,
+        `DTEND:${ende}`,
+        `SUMMARY:${icsText(titel)}`,
+    ];
+    if (ort)          zeilen.push(`LOCATION:${icsText(ort)}`);
+    if (beschreibung) zeilen.push(`DESCRIPTION:${icsText(beschreibung)}`);
+    if (url)          zeilen.push(`URL:${url}`);
+    zeilen.push("END:VEVENT", "");
+    return zeilen.join(ICS_ZEILENENDE);
 }
 
 // ---- Trainingstermine (Kart-Gruppen) als ICS herunterladen ----
@@ -44,12 +104,16 @@ async function ladeUndGeneriereICS(zielGruppe) {
 
             // Gruppe 3 = beide Gruppen
             if (gruppe == zielGruppe || gruppe == "3") {
-                ics += `BEGIN:VEVENT\n` +
-                       `SUMMARY:MCH Training Gruppe ${gruppe}\n` +
-                       `DTSTART:${jahr}${monat}${tag}T${start}00\n` +
-                       `DTEND:${jahr}${monat}${tag}T133000\n` +
-                       `LOCATION:Münchriedstraße 10, Singen\n` +
-                       `END:VEVENT\n`;
+                // Endzeit steht in der Datei hinter dem Bindestrich (z. B. 09:00-11:30)
+                const endeRoh = (p[3].split('-')[1] ?? '').trim().replace(':', '');
+                ics += icsTermin({
+                    kennung: icsKennung(['training', jahr, monat, tag, start, gruppe]),
+                    titel:   `MCH Training Gruppe ${gruppe}`,
+                    start:   `${jahr}${monat}${tag}T${start}00`,
+                    ende:    endeRoh ? `${jahr}${monat}${tag}T${endeRoh}00`
+                                     : icsEndzeit(jahr, monat, tag, start, 2),
+                    ort:     'Münchriedstraße 10, Singen',
+                });
             }
         });
 
@@ -81,14 +145,15 @@ async function ladeRenntermineICS() {
             const ort      = p[5]?.trim() ?? "Unbekannt";
             const mapsLink = p[6]?.trim() ?? "";
 
-            ics += `BEGIN:VEVENT\n` +
-                   `SUMMARY:Rennen beim ${verein} ${ort}\n` +
-                   `DTSTART:${jahr}${monat}${tag}T${zeit}00\n` +
-                   `LOCATION:${ort}\n`;
-            if (mapsLink) {
-                ics += `DESCRIPTION:Google Maps: ${mapsLink}\nURL:${mapsLink}\n`;
-            }
-            ics += "END:VEVENT\n";
+            ics += icsTermin({
+                kennung:      icsKennung(['kart', jahr, monat, tag, verein, ort]),
+                titel:        `Rennen beim ${verein} ${ort}`,
+                start:        `${jahr}${monat}${tag}T${zeit}00`,
+                ende:         icsEndzeit(jahr, monat, tag, zeit, 8),
+                ort:          ort,
+                beschreibung: mapsLink ? `Google Maps: ${mapsLink}` : '',
+                url:          mapsLink,
+            });
         });
 
         ics += "END:VCALENDAR";
@@ -119,14 +184,15 @@ async function ladeTrialRenntermineICS() {
             const ort      = p[5]?.trim() ?? "Unbekannt";
             const mapsLink = p[6]?.trim() ?? "";
 
-            ics += `BEGIN:VEVENT\n` +
-                   `SUMMARY:Trial-Lauf ${verein} ${ort}\n` +
-                   `DTSTART:${jahr}${monat}${tag}T${zeit}00\n` +
-                   `LOCATION:${ort}\n`;
-            if (mapsLink) {
-                ics += `DESCRIPTION:Google Maps: ${mapsLink}\nURL:${mapsLink}\n`;
-            }
-            ics += "END:VEVENT\n";
+            ics += icsTermin({
+                kennung:      icsKennung(['trial', jahr, monat, tag, verein, ort]),
+                titel:        `Trial-Lauf ${verein} ${ort}`,
+                start:        `${jahr}${monat}${tag}T${zeit}00`,
+                ende:         icsEndzeit(jahr, monat, tag, zeit, 8),
+                ort:          ort,
+                beschreibung: mapsLink ? `Google Maps: ${mapsLink}` : '',
+                url:          mapsLink,
+            });
         });
 
         ics += "END:VCALENDAR";
