@@ -104,51 +104,62 @@
         </nav>
     </aside>
 
-    <main  style="padding-top: 20px;">
+    <main>
+        <h1><i class="fa-solid fa-stopwatch heading-icon heading-icon--blue"></i> Live-Ergebnisse</h1>
+        <p>Die Zeiten kommen direkt von der Zeitnahme an der Strecke und aktualisieren
+           sich hier von selbst. Über die Knöpfe wählst du Klasse und Lauf.</p>
+
         <div class="live-wrapper">
-            
+
             <div class="event-header-card">
-                <div class="event-title">Bodensee Kart Cup<br>MCH Singen e.V.</div>
-                <div class="event-date">07.06.2026</div>
-            </div>
-
-            <div class="filter-group">
-                <div class="filter-label">Alle<br><span>(Zurücksetzen)</span></div>
-                <div class="filter-buttons">
-                    <button class="btn-filter" data-type="all">Gesamtergebnis</button>
+                <p class="event-title">Bodensee Kart Cup &middot; MCH Singen e.V.</p>
+                <div class="event-meta">
+                    <span class="event-date">07.06.2026</span>
+                    <span class="live-status" id="live-status">Warte auf Zeitnahme</span>
                 </div>
             </div>
 
-            <div class="filter-group">
-                <div class="filter-label">Klassen</div>
-                <div class="filter-buttons" id="class-filters">
-                    <button class="btn-filter">Klasse 1e</button>
-                    <button class="btn-filter">Klasse 1d</button>
-                    <button class="btn-filter">Klasse 1c</button>
-                    <button class="btn-filter">Klasse 1b</button>
-                    <button class="btn-filter">Klasse 1a</button>
-                    <button class="btn-filter">Klasse 2</button>
-                    <button class="btn-filter active">Klasse 3</button>
-                    <button class="btn-filter">Klasse 4</button>
-                    <button class="btn-filter">Klasse 5</button>
+            <div class="live-filters">
+                <div class="filter-row">
+                    <span class="filter-label" id="label-klasse">Klasse</span>
+                    <div class="filter-buttons" id="class-filters" role="group" aria-labelledby="label-klasse">
+                        <button type="button" class="btn-filter">Klasse 1e</button>
+                        <button type="button" class="btn-filter">Klasse 1d</button>
+                        <button type="button" class="btn-filter">Klasse 1c</button>
+                        <button type="button" class="btn-filter">Klasse 1b</button>
+                        <button type="button" class="btn-filter">Klasse 1a</button>
+                        <button type="button" class="btn-filter">Klasse 2</button>
+                        <button type="button" class="btn-filter active">Klasse 3</button>
+                        <button type="button" class="btn-filter">Klasse 4</button>
+                        <button type="button" class="btn-filter">Klasse 5</button>
+                    </div>
+                </div>
+
+                <div class="filter-row">
+                    <span class="filter-label" id="label-lauf">Lauf</span>
+                    <div class="filter-buttons" id="run-filters" role="group" aria-labelledby="label-lauf">
+                        <button type="button" class="btn-filter active">1. WL</button>
+                        <button type="button" class="btn-filter">2. WL</button>
+                    </div>
+                    <div class="filter-buttons filter-buttons--total">
+                        <button type="button" class="btn-filter btn-filter--total" data-type="all">Gesamtergebnis</button>
+                    </div>
                 </div>
             </div>
 
-            <div class="filter-group" style="align-items: center;">
-                <div class="filter-label">Lauf</div>
-                <div class="filter-buttons" id="run-filters">
-                    <button class="btn-filter active">1. WL</button>
-                    <button class="btn-filter">2. WL</button>
-                </div>
-            </div>
-
-            <!-- HIER STARTET DER DYNAMISCHE BEREICH -->
+            <!-- HIER STARTET DER DYNAMISCHE BEREICH (js/live.js) -->
             <div class="results-header-bar" id="live-header-bar">Warte auf Live-Daten...</div>
-            
-            <div class="result-grid" id="live-grid">
+
+            <div class="result-grid" id="live-grid" aria-live="polite">
                 <!-- Wird vom JavaScript automatisch gefüllt -->
             </div>
-            
+
+            <p class="live-hint">
+                <i class="fa-solid fa-circle-info"></i>
+                <span>Gewertet wird die Gesamtzeit: Fahrzeit plus Strafsekunden für Pylonen
+                      und Fahrfehler. Das Gesamtergebnis fasst beide Wertungsläufe zusammen.</span>
+            </p>
+
         </div>
     </main>
 

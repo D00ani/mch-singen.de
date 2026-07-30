@@ -239,10 +239,6 @@
     /* =====================
        LIVE / STATISTIKEN
        ===================== */
-    .live-actions { flex-direction: column; }
-    .driver-info div { font-size: 1.2rem; }
-    .class-title { font-size: 1rem; }
-
     /* Header-Nav auf Mobile ausblenden (Sidebar übernimmt Navigation) */
     .header-nav {
         display: none;

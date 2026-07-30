@@ -11,6 +11,7 @@
     const gridContainer = document.getElementById('live-grid');
     const headerBar = document.getElementById('live-header-bar');
     const eventDate = document.querySelector('.event-date');
+    const liveStatus = document.getElementById('live-status');
 
     // --- 2. KLICK-LOGIK FÜR DIE BUTTONS ---
     const classButtons = document.querySelectorAll('#class-filters .btn-filter');
@@ -72,6 +73,23 @@
         return (m * 60 * 1000) + (s * 1000) + (hundertstel * 10);
     }
 
+    // Aus 60390 wird wieder "01:00,39"
+    function msToZeit(ms) {
+        const hundertstel = Math.round(Math.abs(ms) / 10);
+        const m = Math.floor(hundertstel / 6000);
+        const s = Math.floor(hundertstel / 100) % 60;
+        const h = hundertstel % 100;
+        return String(m).padStart(2, '0') + ':' +
+               String(s).padStart(2, '0') + ',' +
+               String(h).padStart(2, '0');
+    }
+
+    // Strafsekunden kommen als "(12)" aus der Zeitnahme - lesbarer als "+12 s"
+    function strafeLesbar(fehler) {
+        const zahl = /^\((\d+)\)$/.exec(String(fehler || "").trim());
+        return zahl ? `+${zahl[1]} s` : String(fehler || "");
+    }
+
     // Namen und Vereine kommen aus der Zeitmessung und werden dort von Hand
     // getippt - vor dem Einsetzen ins HTML also entschaerfen.
     function escapeHtml(wert) {
@@ -115,16 +133,30 @@
         }
     }
 
+    // Zustandsmeldung statt leerer Tabelle
+    function zeigeHinweis(titel, text, icon) {
+        gridContainer.innerHTML = `
+            <div class="live-empty">
+                <i class="fa-solid ${icon}"></i>
+                <h2>${titel}</h2>
+                <p>${text}</p>
+            </div>`;
+    }
+
     // --- 4. TABELLE BAUEN (HTML GENERIEREN) ---
     function renderTable() {
         if (!liveData || liveData.length === 0) {
-            headerBar.innerText = "Keine Daten verfügbar / Warte auf Signal...";
-            gridContainer.innerHTML = "";
+            headerBar.innerHTML = `Live-Timing`;
+            zeigeHinweis("Noch keine Zeiten",
+                "Sobald die Zeitnahme an der Strecke läuft, erscheinen die Ergebnisse " +
+                "hier von selbst - die Seite muss nicht neu geladen werden.",
+                "fa-stopwatch");
             return;
         }
 
         // A) Daten filtern (Robust gegen fehlende Leerzeichen, z.B. "1.WL" vs "1. WL")
         let filteredData;
+        let titel;
         if (!isGesamt) {
             let normalizedActiveRun = vereinfacht(activeRun);
             let normalizedActiveClass = vereinfacht(activeClass);
@@ -138,15 +170,14 @@
             if (activeRun === "1. WL") titleLauf = "1. Wertungslauf";
             if (activeRun === "2. WL") titleLauf = "2. Wertungslauf";
 
-            headerBar.innerText = `${titleLauf} | ${activeClass}`;
+            titel = `${titleLauf} &middot; ${activeClass}`;
         } else {
             // Das Gesamtergebnis ist ein eigener Lauf ("Gesamt" = beide
             // Wertungsläufe zusammen), nicht einfach alle Zeilen auf einmal -
             // sonst stünden Einzel- und Gesamtzeiten wild gemischt in einer Tabelle.
             filteredData = liveData.filter(d => vereinfacht(d.lauf) === "GESAMT");
-            headerBar.innerText = `Gesamtergebnis (Alle Klassen)`;
+            titel = "Gesamtergebnis &middot; alle Klassen";
         }
-        if (lastUpdate) headerBar.innerText += `  ·  Stand ${lastUpdate}`;
 
         // B) AUTOMATISCHES SORTIEREN & PLATZIERUNG KORRIGIEREN
         // Nach Gesamtzeit sortieren (schnellste Zeit zuerst)
@@ -155,52 +186,96 @@
         });
 
         // Den Platz (1, 2, 3...) streng von oben nach unten neu durchnummerieren!
+        // Die Rückstände werden hier ebenfalls neu gerechnet und NICHT aus der
+        // JSON übernommen: dort stehen sie je Klasse, im Gesamtergebnis werden
+        // aber alle Klassen zusammen gewertet - die Werte passten dann nicht.
+        let bestzeit = null;
+        let vorherige = null;
         filteredData.forEach((driver, index) => {
             driver.platz = index + 1;
+
+            const zeit = parseTimeToMs(driver.zeit_total);
+            const gueltig = zeit !== 999999999;
+            if (gueltig && bestzeit === null) bestzeit = zeit;
+
+            driver._aufErsten = (gueltig && bestzeit !== null && index > 0)
+                ? '+' + msToZeit(zeit - bestzeit) : "";
+            driver._aufVordermann = (gueltig && vorherige !== null && index > 0)
+                ? '+' + msToZeit(zeit - vorherige) : "";
+            if (gueltig) vorherige = zeit;
         });
 
-        // C) Tabellenkopf einfügen
-        let html = `
-            <div class="grid-header" style="text-align: center;">Platz</div>
-            <div class="grid-header" style="text-align: center;">#</div>
-            <div class="grid-header">Fahrer<br>Ortsclub</div>
-            <div class="grid-header" style="text-align: right;">Zeit</div>
-            <div class="grid-header-diff">Differenz<br>Intervall</div>
-            <div class="grid-header gap-fill" style="grid-column: 3 / 5;"></div>
-        `;
+        // C) Kopfzeile über der Tabelle
+        headerBar.innerHTML = titel +
+            `<span class="results-count">${filteredData.length} ` +
+            `${filteredData.length === 1 ? "Starter" : "Starter"}</span>`;
 
-        if(filteredData.length === 0) {
-            html += `<div style="grid-column: 1/5; padding: 20px; text-align: center; color: #666;">Noch keine Zeiten für diese Auswahl.</div>`;
-            gridContainer.innerHTML = html;
+        if (filteredData.length === 0) {
+            headerBar.innerHTML = titel;
+            zeigeHinweis("Für diese Auswahl liegen noch keine Zeiten vor",
+                "Wähle eine andere Klasse oder einen anderen Lauf - oder warte, " +
+                "bis diese Gruppe gefahren ist.",
+                "fa-filter-circle-xmark");
             return;
         }
 
-        // D) Fahrer-Zeilen & Differenzen generieren
-        filteredData.forEach((driver) => {
-            // Die eigentliche Fahrer-Zeile
-            html += `
-                <div class="driver-row">
-                    <div class="driver-cell" style="text-align: center; font-weight: bold;">${driver.platz}</div>
-                    <div class="driver-cell" style="text-align: center;">${escapeHtml(driver.startnummer)}</div>
-                    <div class="driver-cell">
-                        <div class="driver-name">${escapeHtml(driver.name)}</div>
-                        <div class="driver-club">${escapeHtml(driver.club)}</div>
-                    </div>
-                    <div class="driver-cell time-cell">
-                        ${escapeHtml(driver.zeit_raw)}<br>
-                        ${driver.fehler ? escapeHtml(driver.fehler) + '<br>' : ''}
-                        ${escapeHtml(driver.zeit_total)}
-                    </div>
-                </div>
-            `;
+        // D) Tabellenkopf: fünf echte Spalten
+        let html = `
+            <div class="grid-header grid-header--mitte">Platz</div>
+            <div class="grid-header grid-header--mitte">Nr.</div>
+            <div class="grid-header">Fahrer &middot; Ortsclub</div>
+            <div class="grid-header grid-header--rechts">Gesamtzeit</div>
+            <div class="grid-header grid-header--rechts">Differenz<br>Intervall</div>
+        `;
 
-            // Der Differenz-Kasten (wird bei JEDEM Fahrer direkt unter ihm angezeigt)
+        // E) Eine Zeile je Fahrer
+        filteredData.forEach((driver) => {
+            const ausgefallen = parseTimeToMs(driver.zeit_total) === 999999999;
+
+            // Zweite Zeile der Zeit-Spalte: reine Fahrzeit und Strafsekunden.
+            // Nur zeigen, wenn sie etwas hinzufügt (bei Strafzeit null ist die
+            // Fahrzeit gleich der Gesamtzeit).
+            let zeitDetail = "";
+            if (driver.fehler) {
+                zeitDetail = `${escapeHtml(driver.zeit_raw)} ` +
+                             `<span class="zeit-strafe">${escapeHtml(strafeLesbar(driver.fehler))}</span>`;
+            } else if (ausgefallen && driver.zeit_raw) {
+                zeitDetail = escapeHtml(driver.zeit_raw);
+            }
+
+            // Rückstand: der Führende bekommt kein "+00:00,00", sondern ein Wort
+            let rueckstand;
+            if (driver.platz === 1) {
+                rueckstand = `<span class="diff-fuehrend">Führend</span>`;
+            } else if (driver._aufErsten) {
+                // Reihenfolge wie im Spaltenkopf: Differenz zum Führenden,
+                // darunter das Intervall zum Vordermann
+                rueckstand =
+                    `<span class="diff-first">${driver._aufErsten}</span>` +
+                    (driver._aufVordermann
+                        ? `<span class="diff-prev">${driver._aufVordermann}</span>`
+                        : "");
+            } else {
+                rueckstand = `<span class="diff-prev">&ndash;</span>`;
+            }
+
             html += `
-                <div class="gap-row">
-                    <div class="gap-cell" style="grid-column: 1 / 3;">
-                        ${String(driver.platz) === "1" ? '00:00,00<br><br><br>' : `${escapeHtml(driver.diff_first)}<br>${escapeHtml(driver.diff_prev)}<br><br>`}
+                <div class="driver-row driver-row--platz${driver.platz}">
+                    <div class="cell-platz">
+                        <span class="platz-badge">${driver.platz}</span>
                     </div>
-                    <div class="gap-empty" style="grid-column: 3 / 5;"></div>
+                    <div class="cell-nr">
+                        <span class="startnummer">${escapeHtml(driver.startnummer)}</span>
+                    </div>
+                    <div class="cell-fahrer">
+                        <span class="driver-name">${escapeHtml(driver.name)}</span>
+                        <span class="driver-club">${escapeHtml(driver.club)}</span>
+                    </div>
+                    <div class="cell-zeit">
+                        <span class="zeit-gesamt${ausgefallen ? ' zeit-gesamt--ausfall' : ''}">${escapeHtml(driver.zeit_total)}</span>
+                        ${zeitDetail ? `<span class="zeit-detail">${zeitDetail}</span>` : ''}
+                    </div>
+                    <div class="cell-diff">${rueckstand}</div>
                 </div>
             `;
         });
@@ -222,6 +297,11 @@
                 // Renntag aus den Daten übernehmen, damit im Kopf nicht das
                 // Datum einer vergangenen Veranstaltung stehen bleibt
                 if (eventDate && data.datum) eventDate.innerText = data.datum;
+                if (liveStatus) {
+                    liveStatus.innerText = lastUpdate
+                        ? `Stand ${lastUpdate}`
+                        : "Warte auf Zeitnahme";
+                }
                 waehleBelegteAnsicht();
                 renderTable(); // Tabelle sofort mit neuen Daten zeichnen
             }
