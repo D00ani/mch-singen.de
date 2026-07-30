@@ -241,6 +241,11 @@
     box-shadow: 0 4px 15px rgba(0, 71, 204, 0.05);
 }
 
+/* Im Gesamtergebnis kommt die Spalte mit den beiden Einzellaeufen dazu */
+.result-grid--gesamt {
+    grid-template-columns: 62px 46px minmax(0, 1fr) 104px 108px 104px;
+}
+
 /* --- Spaltenkoepfe --- */
 .grid-header {
     background: #f8f9fb;
@@ -341,12 +346,29 @@
 }
 
 /* --- Zeiten: tabellarische Ziffern, damit die Spalte steht --- */
-.cell-zeit, .cell-diff {
+.cell-zeit, .cell-diff, .cell-laeufe {
     text-align: right;
     align-items: flex-end;
     gap: 3px;
     font-variant-numeric: tabular-nums;
     font-feature-settings: "tnum";
+}
+
+/* Die beiden Einzellaeufe im Gesamtergebnis */
+.lauf-zeit {
+    font-size: var(--text-xs);
+    color: var(--text-light);
+    white-space: nowrap;
+}
+
+/* Beschriftung nur dort, wo kein Spaltenkopf darueber steht (Handy) */
+.lauf-name {
+    display: none;
+    font-family: var(--font-heading);
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    margin-right: 5px;
+    opacity: 0.75;
 }
 
 .zeit-gesamt {
@@ -469,7 +491,8 @@
     }
     .results-count { margin-left: 0; flex-basis: 100%; }
 
-    .result-grid {
+    .result-grid,
+    .result-grid--gesamt {
         display: block;
         border-radius: 0 0 12px 12px;
     }
@@ -477,13 +500,22 @@
     /* Spaltenkoepfe entfallen - die Karten beschriften sich selbst */
     .grid-header { display: none; }
 
+    /* Ruhig gegliederte Karte je Fahrer:
+         Zeile 1  Platz | Nr | Name          | Gesamtzeit
+         Zeile 2                Ortsclub     | Rueckstand
+         Zeile 3  Einzellaeufe ueber die volle Breite (nur im Gesamtergebnis)
+       Name und Ortsclub stecken in einer Zelle, die ueber beide Zeilen geht.
+       Die dritte Zeile bleibt ohne Einzellaeufe leer und kostet nichts. */
     .driver-row {
         display: grid;
-        grid-template-columns: 38px 34px minmax(0, 1fr) auto;
+        grid-template-columns: 40px 40px minmax(0, 1fr) auto;
         grid-template-areas:
             "platz nr fahrer zeit"
-            "platz nr diff   diff";
-        column-gap: 8px;
+            "platz nr fahrer diff"
+            "laeufe laeufe laeufe laeufe";
+        column-gap: 10px;
+        row-gap: 4px;
+        padding: 14px 14px 15px 14px;
         border-bottom: 1px solid #eef1f5;
     }
 
@@ -497,41 +529,55 @@
 
     .driver-row:hover > div { background: transparent; }
 
-    .cell-platz  { grid-area: platz; padding: 12px 0 12px 12px; }
-    .cell-nr     { grid-area: nr;    padding: 12px 0; }
-    .cell-fahrer { grid-area: fahrer; padding: 12px 0 2px 0; }
-    .cell-zeit   { grid-area: zeit;  padding: 12px 12px 2px 0; }
-    .cell-diff   { grid-area: diff;  padding: 0 12px 12px 0; }
+    .cell-platz  { grid-area: platz; justify-content: flex-start; }
+    .cell-nr     { grid-area: nr;    justify-content: flex-start; align-items: flex-start; }
+    .cell-fahrer { grid-area: fahrer; justify-content: flex-start; gap: 3px; }
+    .cell-zeit   { grid-area: zeit;  justify-content: flex-start; }
+    .cell-laeufe { grid-area: laeufe; }
+    .cell-diff   { grid-area: diff;  justify-content: flex-start; }
 
-    /* Rueckstand unter dem Namen - beide Werte in EINER Zeile, sonst wird
-       jede Fahrerkarte unnoetig hoch.
-       Der Selektor muss so genau sein wie '.driver-row > div' oben, sonst
-       gewinnt dessen flex-direction: column. */
-    .driver-row > .cell-diff {
+    /* Die Plakette etwas groesser - sie ist der Anker der Karte */
+    .platz-badge { min-width: 34px; height: 34px; font-size: var(--text-base); }
+
+    /* Startnummer ohne Spaltenkopf: gleiche Zeile wie der Name beginnen */
+    .cell-nr { padding-top: 3px; }
+
+    /* Einzellaeufe: eigene Zeile ueber die volle Breite, dadurch ist Platz
+       fuer die ausgeschriebene Beschriftung und nichts wird abgeschnitten */
+    .driver-row > .cell-laeufe {
         flex-direction: row;
         align-items: baseline;
         justify-content: flex-start;
-        gap: 8px;
+        flex-wrap: wrap;
+        gap: 4px 18px;
         text-align: left;
+        min-width: 0;
+        margin-top: 8px;
+        padding-top: 8px;
+        border-top: 1px dashed #e4e9f0;
     }
 
-    .cell-diff .diff-prev::before {
-        content: '\00B7';
-        margin-right: 7px;
-        opacity: 0.5;
-    }
+    .lauf-name { display: inline; }
 
-    .driver-row--platz1 > div:first-child { box-shadow: inset 3px 0 0 #c9a227; }
+    /* Auf dem Handy nur der Rueckstand auf den Fuehrenden. Das Intervall zum
+       Vordermann kommt ab Tablet dazu - zwei Zahlen nebeneinander machen die
+       Karte sonst unruhig. */
+    .cell-diff .diff-prev { display: none; }
+
+    .driver-row--platz1 { box-shadow: inset 3px 0 0 #c9a227; }
+    .driver-row--platz1 > div:first-child { box-shadow: none; }
 
     .live-empty { padding: 36px 18px; }
 }
 
 @media (max-width: 380px) {
     .driver-row {
-        grid-template-columns: 34px 30px minmax(0, 1fr) auto;
-        column-gap: 6px;
+        grid-template-columns: 36px 36px minmax(0, 1fr) auto;
+        column-gap: 8px;
+        padding: 13px 12px 14px 12px;
     }
     .zeit-gesamt { font-size: var(--text-sm); }
+    .driver-row > .cell-laeufe { gap: 9px; }
 }
 
 /* =========================================
@@ -605,13 +651,15 @@ body.dark-mode .driver-name { color: #f0f0f0; }
 body.dark-mode .driver-club,
 body.dark-mode .zeit-detail,
 body.dark-mode .diff-prev,
-body.dark-mode .diff-label { color: #9a9a9a; }
+body.dark-mode .lauf-zeit { color: #9a9a9a; }
 
 body.dark-mode .platz-badge { background: #2c2c2c; color: #e0e0e0; }
 body.dark-mode .startnummer { color: #999; }
 body.dark-mode .zeit-gesamt { color: #7aa7ff; }
 body.dark-mode .zeit-strafe { color: #f0a868; }
 body.dark-mode .diff-first { color: #e0e0e0; }
+
+body.dark-mode .driver-row > .cell-laeufe { border-top-color: #333; }
 
 body.dark-mode .live-empty { background: #1a1a1a; }
 body.dark-mode .live-empty h2 { color: #f0f0f0; }

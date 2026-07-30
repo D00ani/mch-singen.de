@@ -90,6 +90,17 @@
         return zahl ? `+${zahl[1]} s` : String(fehler || "");
     }
 
+    // Sucht zu einem Starter die Zeit eines einzelnen Wertungslaufs.
+    // Im Gesamtergebnis steht nur die Summe beider Läufe - die Einzelzeiten
+    // liegen als eigene Einträge (Lauf "1. WL" / "2. WL") in denselben Daten.
+    function einzelzeit(driver, lauf) {
+        const treffer = liveData.find(d =>
+            vereinfacht(d.lauf) === vereinfacht(lauf) &&
+            String(d.startnummer) === String(driver.startnummer) &&
+            vereinfacht(d.klasse) === vereinfacht(driver.klasse));
+        return treffer ? treffer.zeit_total : "";
+    }
+
     // Namen und Vereine kommen aus der Zeitmessung und werden dort von Hand
     // getippt - vor dem Einsetzen ins HTML also entschaerfen.
     function escapeHtml(wert) {
@@ -219,11 +230,16 @@
             return;
         }
 
-        // D) Tabellenkopf: fünf echte Spalten
+        // D) Tabellenkopf. Im Gesamtergebnis kommt eine Spalte mit den beiden
+        // Einzelläufen dazu - gleiches Muster wie Differenz/Intervall: zwei
+        // Werte übereinander in der Reihenfolge des Spaltenkopfs.
+        gridContainer.classList.toggle('result-grid--gesamt', isGesamt);
+
         let html = `
             <div class="grid-header grid-header--mitte">Platz</div>
             <div class="grid-header grid-header--mitte">Nr.</div>
             <div class="grid-header">Fahrer &middot; Ortsclub</div>
+            ${isGesamt ? '<div class="grid-header grid-header--rechts">1. WL<br>2. WL</div>' : ''}
             <div class="grid-header grid-header--rechts">Gesamtzeit</div>
             <div class="grid-header grid-header--rechts">Differenz<br>Intervall</div>
         `;
@@ -259,6 +275,19 @@
                 rueckstand = `<span class="diff-prev">&ndash;</span>`;
             }
 
+            // Im Gesamtergebnis die beiden Einzelläufe zeigen - so ist
+            // nachvollziehbar, woraus sich die Gesamtzeit zusammensetzt.
+            let laeufeZelle = "";
+            if (isGesamt) {
+                const wl1 = einzelzeit(driver, "1. WL");
+                const wl2 = einzelzeit(driver, "2. WL");
+                laeufeZelle = `
+                    <div class="cell-laeufe">
+                        <span class="lauf-zeit"><span class="lauf-name">1.<span class="lauf-wl"> WL</span></span>${wl1 ? escapeHtml(wl1) : '&ndash;'}</span>
+                        <span class="lauf-zeit"><span class="lauf-name">2.<span class="lauf-wl"> WL</span></span>${wl2 ? escapeHtml(wl2) : '&ndash;'}</span>
+                    </div>`;
+            }
+
             html += `
                 <div class="driver-row driver-row--platz${driver.platz}">
                     <div class="cell-platz">
@@ -271,6 +300,7 @@
                         <span class="driver-name">${escapeHtml(driver.name)}</span>
                         <span class="driver-club">${escapeHtml(driver.club)}</span>
                     </div>
+                    ${laeufeZelle}
                     <div class="cell-zeit">
                         <span class="zeit-gesamt${ausgefallen ? ' zeit-gesamt--ausfall' : ''}">${escapeHtml(driver.zeit_total)}</span>
                         ${zeitDetail ? `<span class="zeit-detail">${zeitDetail}</span>` : ''}
