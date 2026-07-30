@@ -60,8 +60,10 @@
     color: var(--primary-blue);
 }
 
-/* Live-Anzeige - gleiche Sprache wie die Vorschau-Badges auf
-   Start- und Kartsportseite (pulsierender Punkt, Anzeigeschrift) */
+/* Standanzeige - gleiche Sprache wie die Vorschau-Badges auf Start- und
+   Kartsportseite. Sie sagt ehrlich, WIE ALT der Stand ist: ein dauerhaft
+   pulsender Punkt haette auch dann "live" behauptet, wenn die Zeitnahme
+   laengst aus ist. */
 .live-status {
     display: inline-flex;
     align-items: center;
@@ -83,16 +85,66 @@
     width: 8px;
     height: 8px;
     border-radius: 50%;
-    background: var(--live-red);
+    background: currentColor;
     flex-shrink: 0;
-    /* upcoming-dot steckt schon im Bundle (modules.css) */
+}
+
+/* Frisch: roter Punkt, pulsiert (upcoming-dot steckt schon im Bundle) */
+.live-status--live::before {
+    background: var(--live-red);
     animation: upcoming-dot 2s ease-in-out infinite;
+}
+
+/* Laenger nichts passiert: ruhiger Punkt, gedeckte Farbe */
+.live-status--ruhig {
+    background: rgba(0, 0, 0, 0.04);
+    border-color: rgba(0, 0, 0, 0.10);
+    color: var(--text-light);
+}
+
+/* Zeitnahme aus bzw. noch nicht gestartet */
+.live-status--aus {
+    background: rgba(0, 0, 0, 0.04);
+    border-color: rgba(0, 0, 0, 0.10);
+    color: var(--text-light);
+    white-space: normal;
+}
+
+.live-status--archiv {
+    background: rgba(0, 71, 204, 0.07);
+    border-color: rgba(0, 71, 204, 0.15);
+    color: var(--primary-blue);
+}
+
+.live-status--archiv::before {
+    /* kein Punkt - hier laeuft nichts mehr */
+    display: none;
 }
 
 /* Kein Puls, wenn der Nutzer weniger Bewegung wuenscht */
 @media (prefers-reduced-motion: reduce) {
-    .live-status::before { animation: none; }
+    .live-status--live::before { animation: none; }
 }
+
+/* --- Hinweis in der Archivansicht --- */
+.archiv-hinweis {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0 0 16px 0;
+    padding: 11px 16px;
+    border-radius: 10px;
+    background: rgba(0, 71, 204, 0.06);
+    border-left: 4px solid var(--primary-blue);
+    font-size: var(--text-sm);
+    color: var(--text-main);
+}
+
+.archiv-hinweis i { color: var(--primary-blue); flex-shrink: 0; }
+
+/* "display: flex" wuerde das HTML-Attribut hidden aushebeln (Klassenregel
+   schlaegt die Browser-Vorgabe [hidden]) - deshalb ausdruecklich abschalten */
+.archiv-hinweis[hidden] { display: none; }
 
 /* =========================================
    2. FILTER
@@ -176,6 +228,19 @@
     color: #fff;
     border-color: var(--primary-blue);
     box-shadow: 0 4px 12px rgba(0, 51, 160, 0.25);
+}
+
+/* Auswahl, fuer die es an diesem Renntag keine Starter gibt */
+.btn-filter--leer:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+.btn-filter--leer:disabled:hover {
+    transform: none;
+    box-shadow: none;
+    background-color: #f0f4f8;
 }
 
 /* Gesamtergebnis optisch als eigene Sorte kennzeichnen */
@@ -264,9 +329,10 @@
 .grid-header--rechts { text-align: right; }
 
 /* --- Fahrerzeilen --- */
-/* display:contents laesst die fuenf Zellen direkt in die
-   Spalten des Rasters fallen. */
-.driver-row { display: contents; }
+/* display:contents laesst die Zellen direkt in die Spalten des Rasters
+   fallen. Die Zeile selbst erzeugt dadurch keinen eigenen Kasten - Umriss
+   und Hintergrund muessen deshalb ueber die Zellen laufen. */
+.driver-row { display: contents; cursor: pointer; }
 
 .driver-row > div {
     background: #fff;
@@ -281,6 +347,74 @@
 
 .driver-row:hover > div { background: #f7f9fc; }
 .driver-row:last-child > div { border-bottom: none; }
+
+/* Tastaturbedienung: die Zeile ist anklickbar, also muss der Fokus sichtbar
+   sein. Weil die Zeile selbst keinen Kasten hat, uebernehmen das die Zellen. */
+.driver-row:focus { outline: none; }
+.driver-row:focus-visible > div {
+    background: #eef4ff;
+    box-shadow: inset 0 2px 0 var(--primary-blue), inset 0 -2px 0 var(--primary-blue);
+}
+.driver-row:focus-visible > div:first-child { box-shadow: inset 2px 0 0 var(--primary-blue), inset 0 2px 0 var(--primary-blue), inset 0 -2px 0 var(--primary-blue); }
+.driver-row:focus-visible > div:last-child { box-shadow: inset -2px 0 0 var(--primary-blue), inset 0 2px 0 var(--primary-blue), inset 0 -2px 0 var(--primary-blue); }
+
+/* --- Gemerkter Fahrer --- */
+.driver-row--gemerkt > div { background: #fffdf3; }
+.driver-row--gemerkt:hover > div { background: #fff9e3; }
+.driver-row--gemerkt > div:first-child { box-shadow: inset 3px 0 0 #c9a227; }
+
+.fahrer-merker {
+    margin-left: 7px;
+    font-size: 0.75em;
+    color: #c9a227;
+    vertical-align: 1px;
+}
+
+/* --- Bestzeit des Renntags (Strafsekunden sind eingerechnet) --- */
+.bestzeit-abzeichen {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-left: 8px;
+    padding: 2px 8px;
+    border-radius: 6px;
+    background: rgba(201, 162, 39, 0.14);
+    color: #96751a;
+    font-family: var(--font-heading);
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    vertical-align: 1px;
+    white-space: nowrap;
+}
+
+.bestzeit-abzeichen i { font-size: 0.9em; }
+
+/* --- Neue oder verbesserte Zeit kurz hervorheben --- */
+.driver-row--neu > div { animation: zeile-neu 2.4s ease-out 1; }
+
+@keyframes zeile-neu {
+    0%   { background: #dbeafe; }
+    100% { background: #fff; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .driver-row--neu > div { animation: none; }
+}
+
+/* --- Positionswechsel --- */
+.platz-pfeil {
+    display: block;
+    width: 0;
+    height: 0;
+    margin-top: 3px;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+}
+
+.platz-pfeil--auf { border-bottom: 5px solid var(--success-green); }
+.platz-pfeil--ab  { border-top: 5px solid #d97706; }
 
 .cell-platz { align-items: center; }
 .cell-nr { align-items: center; }
@@ -452,6 +586,65 @@
     color: var(--text-light);
 }
 
+/* =========================================
+   4b. VERGANGENE RENNTAGE
+   ========================================= */
+
+.archiv-liste { margin-top: 26px; }
+.archiv-liste[hidden] { display: none; }
+
+.archiv-titel {
+    margin: 0 0 12px 0;
+    padding: 0 0 8px 0;
+    font-size: var(--text-lg);
+    font-style: italic;
+    font-weight: 800;
+    color: var(--text-main);
+    border-bottom: 2px solid rgba(0, 71, 204, 0.09);
+}
+
+.archiv-tage {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+    gap: 10px;
+}
+
+.archiv-tage a {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 11px 14px;
+    background: #fff;
+    border-radius: 10px;
+    border-left: 3px solid var(--primary-blue);
+    box-shadow: 0 2px 8px rgba(0, 71, 204, 0.05);
+    text-decoration: none;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.archiv-tage a:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 71, 204, 0.12);
+    text-decoration: none;
+}
+
+.archiv-datum {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: var(--text-sm);
+    color: var(--primary-blue);
+}
+
+.archiv-info {
+    font-size: var(--text-xs);
+    color: var(--text-light);
+    white-space: nowrap;
+}
+
 /* Hinweis unter der Tabelle */
 .live-hint {
     display: flex;
@@ -564,10 +757,28 @@
        Karte sonst unruhig. */
     .cell-diff .diff-prev { display: none; }
 
+    /* Der farbige Balken laeuft hier ueber die ganze Karte, nicht ueber die
+       erste Zelle - die Zeile hat auf dem Handy ja einen eigenen Kasten. */
     .driver-row--platz1 { box-shadow: inset 3px 0 0 #c9a227; }
-    .driver-row--platz1 > div:first-child { box-shadow: none; }
+    .driver-row--gemerkt { box-shadow: inset 3px 0 0 #c9a227; background: #fffdf3; }
+    .driver-row--platz1 > div:first-child,
+    .driver-row--gemerkt > div:first-child { box-shadow: none; }
+    .driver-row--gemerkt > div { background: transparent; }
+
+    .driver-row:focus-visible > div { box-shadow: none; background: transparent; }
+    .driver-row:focus-visible { background: #eef4ff; box-shadow: inset 0 0 0 2px var(--primary-blue); }
+
+    .driver-row--neu > div { animation: none; }
+    .driver-row--neu { animation: zeile-neu 2.4s ease-out 1; }
+
+    /* Bestzeit-Abzeichen in eigene Zeile unter den Namen, sonst wird die
+       Namenszeile zu voll */
+    .bestzeit-abzeichen { margin-left: 0; margin-top: 4px; }
+    .cell-fahrer .driver-name { display: flex; flex-wrap: wrap; align-items: center; gap: 0 4px; }
 
     .live-empty { padding: 36px 18px; }
+
+    .archiv-tage { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 380px) {
@@ -672,3 +883,69 @@ body.dark-mode .driver-row--platz3 .platz-badge { background: #a86f3f; color: #f
 
 body.dark-mode .result-grid,
 body.dark-mode .driver-row { border-color: #313131; }
+
+/* Standanzeige, Merker, Bestzeit, Archiv im dunklen Modus */
+body.dark-mode .live-status--ruhig,
+body.dark-mode .live-status--aus {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.12);
+    color: #9a9a9a;
+}
+
+body.dark-mode .live-status--archiv {
+    background: rgba(122, 167, 255, 0.12);
+    border-color: rgba(122, 167, 255, 0.28);
+    color: #9dbcff;
+}
+
+body.dark-mode .archiv-hinweis {
+    background: rgba(122, 167, 255, 0.10);
+    border-left-color: #5b8dff;
+    color: #e0e0e0;
+}
+body.dark-mode .archiv-hinweis i { color: #9dbcff; }
+
+body.dark-mode .driver-row--gemerkt > div { background: #241f0f; }
+body.dark-mode .driver-row--gemerkt:hover > div { background: #2c2614; }
+
+body.dark-mode .bestzeit-abzeichen {
+    background: rgba(201, 162, 39, 0.22);
+    color: #e8c869;
+}
+
+body.dark-mode .driver-row:focus-visible > div { background: #1d2942; }
+
+body.dark-mode .btn-filter--leer:disabled:hover { background-color: #2b2b2b; }
+
+body.dark-mode .archiv-titel { color: #f0f0f0; border-bottom-color: #333; }
+body.dark-mode .archiv-tage a {
+    background: #1e1e1e;
+    border-left-color: #5b8dff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+body.dark-mode .archiv-datum { color: #9dbcff; }
+body.dark-mode .archiv-info { color: #9a9a9a; }
+
+body.dark-mode .driver-row--neu > div { animation-name: zeile-neu-dunkel; }
+
+@keyframes zeile-neu-dunkel {
+    0%   { background: #1e3a5f; }
+    100% { background: #1a1a1a; }
+}
+
+/* Auf dem Handy traegt die Zeile selbst den Hintergrund (sie ist dort ein
+   eigener Kasten), nicht die einzelnen Zellen. Diese Regeln stehen bewusst
+   ganz am Ende, damit sie die allgemeinen Dunkelmodus-Regeln von oben
+   ueberschreiben - sonst blieben helle Zeile und dunkle Zellen uebereinander. */
+@media (max-width: 640px) {
+    body.dark-mode .driver-row--gemerkt { background: #241f0f; }
+    body.dark-mode .driver-row--gemerkt > div { background: transparent; }
+
+    body.dark-mode .driver-row:focus-visible { background: #1d2942; }
+    body.dark-mode .driver-row:focus-visible > div { background: transparent; }
+
+    body.dark-mode .driver-row--neu { animation-name: zeile-neu-dunkel; }
+    body.dark-mode .driver-row--neu > div { animation: none; }
+
+    body.dark-mode .driver-row > .cell-laeufe { border-top-color: #333; }
+}

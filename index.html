@@ -97,6 +97,17 @@
 
     <main>
 
+        <!-- Live-Hinweis: erscheint nur, wenn die Zeitnahme gerade frische
+             Ergebnisse liefert (siehe js/index.js, Abschnitt Live-Timing) -->
+        <a class="live-banner" id="live-banner" href="pages/live.html" hidden>
+            <span class="live-banner-punkt" aria-hidden="true"></span>
+            <span class="live-banner-text">
+                <strong id="live-banner-titel">Jetzt live</strong>
+                <span id="live-banner-info">Ergebnisse ansehen</span>
+            </span>
+            <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+        </a>
+
         <!-- Hero: Slider mit Willkommens-Text als Overlay -->
         <div class="hero-wrapper">
         <div class="image-slider">

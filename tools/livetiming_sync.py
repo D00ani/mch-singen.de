@@ -33,6 +33,8 @@ ROOT = h.ROOT
 PROJEKT = os.path.dirname(ROOT)                       # Ordner ueber mch-arbeit/
 MAIN_WORKTREE = os.path.join(PROJEKT, "mch-singen.de-main")
 LIVEDATA = os.path.join(ROOT, "data", "livedata.json")
+ARCHIV_ORDNER = os.path.join(ROOT, "data", "ergebnisse")
+ARCHIV_INDEX = os.path.join(ARCHIV_ORDNER, "index.json")
 KONFIG_DATEI = os.path.join(ROOT, "tools", "livetiming.config.json")
 
 # Wo die Datenbank der Zeitmessung ueblicherweise liegt (relativ zum Ordner
@@ -50,6 +52,7 @@ STANDARD_LAUF_NAMEN = {"1": "1. WL", "2": "2. WL", "0": "Gesamt"}
 STANDARD_KONFIG = {
     "datenbank": "",
     "datum": "heute",
+    "veranstaltung": "Bodensee Kart Cup · MCH Singen e.V.",
     "intervall_sekunden": 15,
     "veroeffentlichen": True,
     "mindestabstand_push_sekunden": 60,
@@ -242,15 +245,22 @@ def baue_ergebnisse(zeilen, datum, lauf_namen):
     return ergebnisse
 
 
-def baue_livedata(zeilen, datum, lauf_namen):
+def baue_livedata(zeilen, datum, lauf_namen, veranstaltung=""):
     ergebnisse = baue_ergebnisse(zeilen, datum, lauf_namen)
+    jetzt = datetime.now()
     try:
         anzeigedatum = datetime.strptime(datum, "%Y-%m-%d").strftime("%d.%m.%Y")
     except ValueError:
         anzeigedatum = datum
     return {
-        "last_update": datetime.now().strftime("%H:%M:%S"),
+        "last_update": jetzt.strftime("%H:%M:%S"),
+        # Voller Zeitstempel, damit die Seite ausrechnen kann, WIE ALT der
+        # Stand ist - "07:38:52" allein sagt nichts darueber aus, ob die
+        # Zeitnahme noch laeuft.
+        "stand_iso": jetzt.astimezone().isoformat(timespec="seconds"),
         "datum": anzeigedatum,
+        "datum_iso": datum,
+        "veranstaltung": veranstaltung or STANDARD_KONFIG["veranstaltung"],
         "quelle": "Zeitmessung_Kart",
         "results": ergebnisse,
     }
@@ -261,13 +271,51 @@ def baue_livedata(zeilen, datum, lauf_namen):
 # ------------------------------------------------------------------
 
 def _inhaltskennung(daten):
-    """Alles ausser der Uhrzeit des letzten Abgleichs - nur wenn sich das
-    aendert, muss neu geschrieben und gepusht werden."""
-    return json.dumps([daten.get("datum"), daten.get("results")],
+    """Alles ausser dem Zeitstempel - nur wenn sich das aendert, muss neu
+    geschrieben und gepusht werden."""
+    return json.dumps([daten.get("datum"), daten.get("veranstaltung"),
+                       daten.get("results")],
                       ensure_ascii=False, sort_keys=True)
 
 
-def schreibe_livedata(daten, pfad=LIVEDATA):
+def _json_schreiben(pfad, daten):
+    os.makedirs(os.path.dirname(pfad), exist_ok=True)
+    with open(pfad, "w", encoding="utf-8", newline="\n") as f:
+        json.dump(daten, f, ensure_ascii=False, indent=2)
+        f.write("\n")
+
+
+def archiviere(daten):
+    """Legt den Stand zusaetzlich unter data/ergebnisse/<Renntag>.json ab und
+    pflegt das Verzeichnis der Renntage. So bleiben vergangene Rennen
+    erhalten, statt von der naechsten Veranstaltung ueberschrieben zu werden."""
+    datum = daten.get("datum_iso") or ""
+    if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", datum) or not daten.get("results"):
+        return  # ohne sauberen Renntag oder ohne Ergebnisse nichts archivieren
+
+    _json_schreiben(os.path.join(ARCHIV_ORDNER, f"{datum}.json"), daten)
+
+    verzeichnis = []
+    if os.path.isfile(ARCHIV_INDEX):
+        try:
+            with open(ARCHIV_INDEX, encoding="utf-8") as f:
+                verzeichnis = json.load(f).get("renntage", [])
+        except (OSError, ValueError):
+            verzeichnis = []
+
+    eintrag = {
+        "datum": datum,
+        "anzeige": daten.get("datum", datum),
+        "veranstaltung": daten.get("veranstaltung", ""),
+        "starter": len({(e["klasse"], e["startnummer"]) for e in daten["results"]}),
+        "ergebnisse": len(daten["results"]),
+    }
+    verzeichnis = [e for e in verzeichnis if e.get("datum") != datum] + [eintrag]
+    verzeichnis.sort(key=lambda e: e.get("datum", ""), reverse=True)
+    _json_schreiben(ARCHIV_INDEX, {"renntage": verzeichnis})
+
+
+def schreibe_livedata(daten, pfad=LIVEDATA, mit_archiv=True):
     """Schreibt data/livedata.json - aber nur, wenn sich wirklich etwas
     geaendert hat. Gibt True zurueck, wenn geschrieben wurde."""
     if os.path.isfile(pfad):
@@ -278,10 +326,9 @@ def schreibe_livedata(daten, pfad=LIVEDATA):
         except (OSError, ValueError):
             pass  # kaputte oder fehlende Datei: neu schreiben
 
-    os.makedirs(os.path.dirname(pfad), exist_ok=True)
-    with open(pfad, "w", encoding="utf-8", newline="\n") as f:
-        json.dump(daten, f, ensure_ascii=False, indent=2)
-        f.write("\n")
+    _json_schreiben(pfad, daten)
+    if mit_archiv and pfad == LIVEDATA:
+        archiviere(daten)
     return True
 
 
@@ -292,19 +339,20 @@ def _git(argumente, cwd):
 
 
 def veroeffentliche(nachricht):
-    """Committet NUR data/livedata.json, merged nach main und pusht.
+    """Committet NUR die Ergebnisdateien, merged nach main und pusht.
     Bewusst nicht 'git add -A': waehrend einer Veranstaltung soll nichts
     anderes versehentlich mit veroeffentlicht werden.
     Gibt (erfolg, meldung) zurueck."""
-    relativ = os.path.relpath(LIVEDATA, ROOT).replace(os.sep, "/")
+    pfade = [os.path.relpath(LIVEDATA, ROOT).replace(os.sep, "/"),
+             os.path.relpath(ARCHIV_ORDNER, ROOT).replace(os.sep, "/")]
 
-    if _git(["add", "--", relativ], ROOT).returncode != 0:
+    if _git(["add", "--"] + pfade, ROOT).returncode != 0:
         return False, "git add fehlgeschlagen"
 
-    if not _git(["diff", "--cached", "--quiet", "--", relativ], ROOT).returncode:
+    if not _git(["diff", "--cached", "--quiet", "--"] + pfade, ROOT).returncode:
         return True, "nichts zu committen"
 
-    ergebnis = _git(["commit", "-m", nachricht, "--", relativ], ROOT)
+    ergebnis = _git(["commit", "-m", nachricht, "--"] + pfade, ROOT)
     if ergebnis.returncode != 0:
         return False, f"git commit: {(ergebnis.stderr or ergebnis.stdout).strip()}"
 
@@ -343,7 +391,8 @@ class Abgleich:
         Bedarf. Gibt eine Statuszeile zurueck."""
         zeilen = zeitmessung_lesen.lies_laufergebnisse(self.db_pfad)
         datum = waehle_datum(zeilen, self.datum_wunsch)
-        daten = baue_livedata(zeilen, datum, self.lauf_namen)
+        daten = baue_livedata(zeilen, datum, self.lauf_namen,
+                              self.konfig.get("veranstaltung", ""))
         geaendert = schreibe_livedata(daten)
 
         anzahl = len(daten["results"])
@@ -469,6 +518,10 @@ def einstellungen(konfig):
         "Welcher Tag? ('heute', 'letzte' oder JJJJ-MM-TT)",
         konfig.get("datum", "heute"))
 
+    veranstaltung = h.frage_mit_default(
+        "Name der Veranstaltung (steht im Kopf der Live-Seite)",
+        konfig.get("veranstaltung", STANDARD_KONFIG["veranstaltung"]))
+
     intervall = h.frage_mit_default(
         "Alle wieviel Sekunden nachschauen?",
         str(konfig.get("intervall_sekunden", 15)), h.ZAHL_VALIDIERER)
@@ -484,6 +537,7 @@ def einstellungen(konfig):
     konfig.update({
         "datenbank": db_pfad,
         "datum": datum.strip(),
+        "veranstaltung": veranstaltung.strip(),
         "intervall_sekunden": int(intervall),
         "veroeffentlichen": veroeffentlichen,
         "mindestabstand_push_sekunden": int(abstand),

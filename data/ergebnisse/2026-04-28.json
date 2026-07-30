@@ -1,0 +1,88 @@
+{
+  "last_update": "08:37:04",
+  "stand_iso": "2026-07-30T08:37:04+02:00",
+  "datum": "28.04.2026",
+  "datum_iso": "2026-04-28",
+  "veranstaltung": "Bodensee Kart Cup · MCH Singen e.V.",
+  "quelle": "Zeitmessung_Kart",
+  "results": [
+    {
+      "klasse": "Klasse 1a",
+      "lauf": "Gesamt",
+      "platz": 1,
+      "startnummer": 2,
+      "name": "bbbb bbbbb",
+      "club": "AC Engen",
+      "zeit_raw": "00:15,65",
+      "fehler": "",
+      "zeit_total": "00:15,65",
+      "diff_first": "",
+      "diff_prev": ""
+    },
+    {
+      "klasse": "Klasse 1a",
+      "lauf": "Gesamt",
+      "platz": 2,
+      "startnummer": 1,
+      "name": "aaaa aaaaa",
+      "club": "MCH Singen",
+      "zeit_raw": "00:22,79",
+      "fehler": "(22)",
+      "zeit_total": "00:44,79",
+      "diff_first": "+00:29,14",
+      "diff_prev": "+00:29,14"
+    },
+    {
+      "klasse": "Klasse 1a",
+      "lauf": "1. WL",
+      "platz": 1,
+      "startnummer": 2,
+      "name": "bbbb bbbbb",
+      "club": "AC Engen",
+      "zeit_raw": "00:07,78",
+      "fehler": "",
+      "zeit_total": "00:07,78",
+      "diff_first": "",
+      "diff_prev": ""
+    },
+    {
+      "klasse": "Klasse 1a",
+      "lauf": "1. WL",
+      "platz": 2,
+      "startnummer": 1,
+      "name": "aaaa aaaaa",
+      "club": "MCH Singen",
+      "zeit_raw": "00:10,52",
+      "fehler": "(12)",
+      "zeit_total": "00:22,52",
+      "diff_first": "+00:14,74",
+      "diff_prev": "+00:14,74"
+    },
+    {
+      "klasse": "Klasse 1a",
+      "lauf": "2. WL",
+      "platz": 1,
+      "startnummer": 2,
+      "name": "bbbb bbbbb",
+      "club": "AC Engen",
+      "zeit_raw": "00:07,87",
+      "fehler": "",
+      "zeit_total": "00:07,87",
+      "diff_first": "",
+      "diff_prev": ""
+    },
+    {
+      "klasse": "Klasse 1a",
+      "lauf": "2. WL",
+      "platz": 2,
+      "startnummer": 1,
+      "name": "aaaa aaaaa",
+      "club": "MCH Singen",
+      "zeit_raw": "00:12,27",
+      "fehler": "(10)",
+      "zeit_total": "00:22,27",
+      "diff_first": "+00:14,40",
+      "diff_prev": "+00:14,40"
+    }
+  ]
+}

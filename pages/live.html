@@ -111,11 +111,20 @@
 
         <div class="live-wrapper">
 
+            <p class="archiv-hinweis" id="archiv-hinweis" hidden>
+                <i class="fa-solid fa-box-archive"></i>
+                <span>Du siehst einen abgeschlossenen Renntag.
+                      <a href="live.html">Zum aktuellen Live-Timing</a></span>
+            </p>
+
             <div class="event-header-card">
                 <p class="event-title">Bodensee Kart Cup &middot; MCH Singen e.V.</p>
                 <div class="event-meta">
                     <span class="event-date">07.06.2026</span>
-                    <span class="live-status" id="live-status">Warte auf Zeitnahme</span>
+                    <!-- role="status" meldet Bildschirmlesern kurz den neuen Stand.
+                         Auf der Tabelle selbst waere das viel zu geschwaetzig. -->
+                    <span class="live-status live-status--aus" id="live-status"
+                          role="status">Warte auf Zeitnahme</span>
                 </div>
             </div>
 
@@ -150,15 +159,18 @@
             <!-- HIER STARTET DER DYNAMISCHE BEREICH (js/live.js) -->
             <div class="results-header-bar" id="live-header-bar">Warte auf Live-Daten...</div>
 
-            <div class="result-grid" id="live-grid" aria-live="polite">
+            <div class="result-grid" id="live-grid">
                 <!-- Wird vom JavaScript automatisch gefüllt -->
             </div>
 
             <p class="live-hint">
                 <i class="fa-solid fa-circle-info"></i>
                 <span>Gewertet wird die Gesamtzeit: Fahrzeit plus Strafsekunden für Pylonen
-                      und Fahrfehler. Das Gesamtergebnis fasst beide Wertungsläufe zusammen.</span>
+                      und Fahrfehler. Das Gesamtergebnis fasst beide Wertungsläufe zusammen.
+                      Ein Klick auf eine Zeile merkt den Fahrer vor.</span>
             </p>
+
+            <div class="archiv-liste" id="archiv-liste" hidden></div>
 
         </div>
     </main>

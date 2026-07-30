@@ -2,6 +2,88 @@
    0. HERO WRAPPER & TEXT-OVERLAY
    ========================================= */
 
+/* =========================================
+   LIVE-TIMING-HINWEIS
+   Erscheint nur waehrend einer Veranstaltung (js/index.js). Ohne Rennen
+   ist er ausgeblendet und die Startseite sieht aus wie immer.
+   ========================================= */
+.live-banner {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    max-width: 800px;
+    margin: 0 auto 20px auto;
+    padding: 14px 20px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, var(--primary-blue), var(--dark-blue));
+    box-shadow: 0 6px 20px rgba(0, 51, 160, 0.25);
+    color: #fff;
+    text-decoration: none;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.live-banner:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 26px rgba(0, 51, 160, 0.32);
+    text-decoration: none;
+    color: #fff;
+}
+
+.live-banner:active { transform: translateY(0); }
+
+/* "display: flex" wuerde das HTML-Attribut hidden aushebeln (Klassenregel
+   schlaegt die Browser-Vorgabe [hidden]) - deshalb ausdruecklich abschalten.
+   Ohne diese Zeile stuende der Live-Hinweis dauerhaft auf der Startseite. */
+.live-banner[hidden] { display: none; }
+
+.live-banner-punkt {
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    background: var(--accent);
+    flex-shrink: 0;
+    animation: upcoming-dot 2s ease-in-out infinite;
+}
+
+.live-banner-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+    flex: 1;
+}
+
+.live-banner-text strong {
+    font-family: var(--font-heading);
+    font-size: var(--text-lg);
+    font-weight: 800;
+    font-style: italic;
+    letter-spacing: -0.2px;
+    overflow-wrap: anywhere;
+}
+
+.live-banner-text span {
+    font-family: var(--font-display);
+    font-size: var(--text-xs);
+    letter-spacing: 0.05em;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.live-banner > i { flex-shrink: 0; opacity: 0.85; }
+
+@media (prefers-reduced-motion: reduce) {
+    .live-banner-punkt { animation: none; }
+}
+
+@media (max-width: 768px) {
+    .live-banner { margin-bottom: 16px; padding: 12px 16px; gap: 11px; }
+    .live-banner-text strong { font-size: var(--text-base); }
+}
+
+body.dark-mode .live-banner {
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+}
+
 .hero-wrapper {
     position: relative;
     max-width: 800px;

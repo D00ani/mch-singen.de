@@ -496,4 +496,51 @@ document.addEventListener('DOMContentLoaded', () => {
         statNumbers.forEach(el => counterObserver.observe(el));
     }
 
+    // ==========================================
+    // 6. LIVE-TIMING-HINWEIS
+    // Zeigt oben einen Knopf zur Live-Seite - aber nur, solange die
+    // Zeitnahme wirklich frische Ergebnisse liefert. Ohne Rennen bleibt
+    // der Hinweis unsichtbar und die Startseite unveraendert.
+    // ==========================================
+    const liveBanner = document.getElementById('live-banner');
+
+    if (liveBanner) {
+        const FRISCH_MINUTEN = 45;
+
+        async function liveHinweisPruefen() {
+            try {
+                const antwort = await fetch(`data/livedata.json?t=${Date.now()}`);
+                if (!antwort.ok) return;
+                const daten = await antwort.json();
+
+                const anzahl = Array.isArray(daten.results) ? daten.results.length : 0;
+                const stand = daten.stand_iso ? new Date(daten.stand_iso) : null;
+                if (!anzahl || !stand || isNaN(stand)) { liveBanner.hidden = true; return; }
+
+                // Nur bei einem Rennen HEUTE. Sonst wuerde der Hinweis auch
+                // erscheinen, wenn jemand alte Ergebnisse neu veroeffentlicht.
+                const jetzt = new Date();
+                const heute = jetzt.getFullYear() + '-' +
+                              String(jetzt.getMonth() + 1).padStart(2, '0') + '-' +
+                              String(jetzt.getDate()).padStart(2, '0');
+                if (daten.datum_iso && daten.datum_iso !== heute) { liveBanner.hidden = true; return; }
+
+                const alterMin = Math.floor((Date.now() - stand.getTime()) / 60000);
+                if (alterMin < 0 || alterMin > FRISCH_MINUTEN) { liveBanner.hidden = true; return; }
+
+                const starter = new Set(daten.results.map(e => e.klasse + '#' + e.startnummer)).size;
+                document.getElementById('live-banner-titel').textContent =
+                    daten.veranstaltung ? `Jetzt live: ${daten.veranstaltung}` : 'Jetzt live';
+                document.getElementById('live-banner-info').textContent =
+                    `${starter} Starter · Stand ${daten.last_update || ''}`;
+                liveBanner.hidden = false;
+            } catch (e) {
+                // Keine Live-Daten erreichbar - Hinweis bleibt einfach weg
+            }
+        }
+
+        liveHinweisPruefen();
+        setInterval(liveHinweisPruefen, 60000);
+    }
+
 });

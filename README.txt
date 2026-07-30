@@ -447,8 +447,9 @@ AM RENNTAG:
   3. Laufen lassen. Beenden mit Strg+C - der letzte Stand wird dabei
      noch veröffentlicht.
 
-BEIM ERSTEN MAL: Menüpunkt "Einstellungen" öffnen und den Pfad zur Datei
-Zeitmessung_Kart_Data.accdb eintragen. Das Werkzeug sucht sie sonst
+BEIM ERSTEN MAL: Menüpunkt "Einstellungen" öffnen, den Pfad zur Datei
+Zeitmessung_Kart_Data.accdb eintragen UND den Namen der Veranstaltung
+setzen - der steht dann im Kopf der Live-Seite. Das Werkzeug sucht sie sonst
 selbst - erst in der App.config der Zeitmessung, dann im Ordner
 Zeitmessung_Kart/Zeitmessung_Kart_Data/ neben den Webseiten-Ordnern.
 Die Einstellungen landen in tools/livetiming.config.json (bleibt lokal,
@@ -472,6 +473,28 @@ Einführungsrunde + 1./2. Wertungslauf pro Starter in die Ergebnistabelle.
 Das freie Training landet nur in ihrer History-Liste, ohne Startnummer und
 Klasse - daraus lässt sich keine Tabelle bauen. Deshalb gibt es auf der
 Live-Seite keinen "TL"-Knopf mehr.
+
+WAS DIE SEITE SONST NOCH KANN:
+  - Sie sagt ehrlich, wie alt der Stand ist: "Live · Stand 14:32" bei
+    frischen Zeiten, sonst "Letzte Zeit vor 12 Min." bzw. "Keine aktuellen
+    Zeiten". Ergebnisse eines vergangenen Renntags gelten nie als live.
+  - Auf der STARTSEITE erscheint automatisch ein Knopf "Jetzt live", solange
+    die Zeitnahme an DIESEM Tag frische Ergebnisse liefert (höchstens 45
+    Minuten alt). Ohne Rennen bleibt die Startseite unverändert.
+  - Ein Klick auf eine Fahrerzeile merkt den Fahrer vor (gelb hinterlegt,
+    Stern). Praktisch, um das eigene Kind zu verfolgen. Bleibt im Browser
+    gespeichert, auch beim Wechsel zwischen Klassen.
+  - Neue Zeiten blitzen kurz auf, Positionswechsel bekommen einen Pfeil.
+  - Die schnellste Gesamtzeit eines Wertungslaufs bekommt das Abzeichen
+    "Bestzeit" (Strafsekunden sind darin enthalten).
+  - Klassen und Läufe ohne Starter werden ausgegraut.
+
+VERGANGENE RENNTAGE:
+Jeder Renntag wird zusätzlich unter data/ergebnisse/<Datum>.json abgelegt
+und bleibt dauerhaft abrufbar - die nächste Veranstaltung überschreibt ihn
+nicht mehr. Unter der Tabelle stehen die vergangenen Renntage zum Anklicken.
+Direktlink für einen bestimmten Tag (z. B. für die Archiv-Seite):
+    pages/live.html?tag=2026-05-04
 
 WENN ETWAS KLEMMT:
   - "Datenbank nicht gefunden" -> Pfad in den Einstellungen prüfen.

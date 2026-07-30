@@ -1,0 +1,25 @@
+{
+  "renntage": [
+    {
+      "datum": "2026-05-04",
+      "anzeige": "04.05.2026",
+      "veranstaltung": "Bodensee Kart Cup · MCH Singen e.V.",
+      "starter": 19,
+      "ergebnisse": 53
+    },
+    {
+      "datum": "2026-04-28",
+      "anzeige": "28.04.2026",
+      "veranstaltung": "Bodensee Kart Cup · MCH Singen e.V.",
+      "starter": 2,
+      "ergebnisse": 6
+    },
+    {
+      "datum": "2026-04-16",
+      "anzeige": "16.04.2026",
+      "veranstaltung": "Bodensee Kart Cup · MCH Singen e.V.",
+      "starter": 4,
+      "ergebnisse": 19
+    }
+  ]
+}
