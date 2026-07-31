@@ -57,9 +57,10 @@ param([Parameter(Mandatory=$true)][string]$Datenbank,
 
 $ErrorActionPreference = 'Stop'
 
-$spalten  = '%(spalten)s'
-$tabelle  = $null
-$probleme = @()
+$spalten   = '%(spalten)s'
+$tabelle   = $null
+$verwendet = ''
+$probleme  = @()
 
 # ACE 16 zuerst (neuere Office-Installationen), sonst ACE 12.
 foreach ($provider in @('Microsoft.ACE.OLEDB.16.0', 'Microsoft.ACE.OLEDB.12.0')) {
@@ -72,6 +73,7 @@ foreach ($provider in @('Microsoft.ACE.OLEDB.16.0', 'Microsoft.ACE.OLEDB.12.0'))
             "SELECT $spalten FROM Laufergebnisse", $verbindung)
         $tabelle = New-Object System.Data.DataTable
         [void]$adapter.Fill($tabelle)
+        $verwendet = $provider
         break
     } catch {
         $probleme += ("{0}: {1}" -f $provider, $_.Exception.Message)
@@ -90,7 +92,7 @@ foreach ($z in $tabelle.Rows) {
     })
 }
 
-$json = ConvertTo-Json -InputObject @{ zeilen = $zeilen.ToArray() } -Depth 4
+$json = ConvertTo-Json -InputObject @{ zeilen = $zeilen.ToArray(); treiber = $verwendet } -Depth 4
 [System.IO.File]::WriteAllText($Ziel, $json, (New-Object System.Text.UTF8Encoding($false)))
 """ % {"spalten": ",".join(quelle for quelle, _ in SPALTEN), "zuweisungen": _ZUWEISUNGEN}
 
@@ -120,6 +122,11 @@ def _skript_ausfuehren(powershell, skriptdatei, db_pfad, ausgabedatei):
                                     f"{ergebnis.returncode}")
 
 
+# Haelt fest, welcher Weg zuletzt funktioniert hat - hilft beim Einrichten
+# eines anderen Laptops (welche PowerShell, welcher Access-Treiber).
+letzter_weg = {"powershell": "", "treiber": ""}
+
+
 def lies_laufergebnisse(db_pfad):
     """Gibt alle Zeilen der Tabelle "Laufergebnisse" als Liste von dicts
     zurueck (Schluessel siehe FELDER). Loest LeseFehler aus, wenn die
@@ -141,13 +148,14 @@ def lies_laufergebnisse(db_pfad):
             f.write(_PS_SKRIPT)
 
         probleme = []
+        benutzt = ""
         for powershell in powershells:
             try:
                 _skript_ausfuehren(powershell, skriptdatei, db_pfad, ausgabedatei)
+                benutzt = powershell
                 break
             except LeseFehler as fehler:
-                probleme.append(f"{os.path.basename(os.path.dirname(os.path.dirname(os.path.dirname(powershell))))}"
-                                f"/{os.path.basename(powershell)}: {fehler}")
+                probleme.append(f"{_kurzname(powershell)}: {fehler}")
         else:
             raise LeseFehler(" || ".join(probleme))
 
@@ -156,7 +164,21 @@ def lies_laufergebnisse(db_pfad):
     finally:
         shutil.rmtree(arbeitsordner, ignore_errors=True)
 
+    letzter_weg["powershell"] = _kurzname(benutzt)
+    letzter_weg["treiber"] = roh.get("treiber") or "?"
     return _vereinheitliche(roh.get("zeilen"))
+
+
+def _kurzname(powershell):
+    """"C:\\Windows\\SysWOW64\\...\\powershell.exe" -> "powershell.exe (32 Bit)"."""
+    if not powershell:
+        return ""
+    name = os.path.basename(powershell)
+    if "SysWOW64" in powershell:
+        return f"{name} (32 Bit)"
+    if "System32" in powershell:
+        return f"{name} (64 Bit)"
+    return name
 
 
 def _vereinheitliche(zeilen):

@@ -251,12 +251,41 @@ document.addEventListener("DOMContentLoaded", function() {
     // Beim ersten Laden auf eine Ansicht springen, in der auch wirklich Zeiten
     // stehen. Sonst landet der Besucher auf der Voreinstellung (Klasse 3 / 1. WL)
     // und sieht eine leere Tabelle, obwohl das Rennen längst läuft.
+    // Ist ein Fahrer vorgemerkt, hat dessen Ansicht Vorrang.
     function waehleBelegteAnsicht() {
         if (nutzerHatGewaehlt || isGesamt || liveData.length === 0) return;
 
         const hatDaten = (klasse, lauf) => liveData.some(d =>
             vereinfacht(d.klasse) === vereinfacht(klasse) &&
             vereinfacht(d.lauf) === vereinfacht(lauf));
+
+        const ansichtSetzen = (klasse, lauf) => {
+            runButtons.forEach(b => b.classList.remove('active'));
+            classButtons.forEach(b => b.classList.remove('active'));
+            for (const b of classButtons) if (b.innerText.trim() === klasse) b.classList.add('active');
+            for (const b of runButtons) if (b.innerText.trim() === lauf) b.classList.add('active');
+            activeClass = klasse;
+            activeRun = lauf;
+            nutzerHatGewaehlt = true;
+        };
+
+        // Vorgemerkter Fahrer: die Ansicht wählen, in der er auftaucht
+        if (gemerkt.size > 0) {
+            for (const laufBtn of runButtons) {
+                const lauf = laufBtn.innerText.trim();
+                const treffer = liveData.find(d =>
+                    vereinfacht(d.lauf) === vereinfacht(lauf) &&
+                    gemerkt.has(fahrerSchluessel(d)));
+                if (treffer) {
+                    for (const klasseBtn of classButtons) {
+                        if (vereinfacht(klasseBtn.innerText) === vereinfacht(treffer.klasse)) {
+                            ansichtSetzen(klasseBtn.innerText.trim(), lauf);
+                            return;
+                        }
+                    }
+                }
+            }
+        }
 
         if (hatDaten(activeClass, activeRun)) {
             nutzerHatGewaehlt = true;   // Voreinstellung passt, nicht mehr eingreifen
@@ -492,6 +521,7 @@ document.addEventListener("DOMContentLoaded", function() {
         });
 
         gridContainer.innerHTML = html;
+        zumGemerktenFahrerSpringen();
 
         // Merker für den nächsten Vergleich fortschreiben
         if (letzterStand !== lastUpdate) {
@@ -499,6 +529,30 @@ document.addEventListener("DOMContentLoaded", function() {
             liveData.forEach(d => { letzteZeiten[eintragSchluessel(d)] = d.zeit_total; });
             letzterStand = lastUpdate;
         }
+    }
+
+    // Beim ersten Aufbau zum vorgemerkten Fahrer scrollen - genau EINMAL.
+    // Sonst würde die Seite alle drei Sekunden unter dem Finger wegspringen.
+    let schonGesprungen = false;
+    function zumGemerktenFahrerSpringen() {
+        if (schonGesprungen || gemerkt.size === 0) return;
+
+        const zeile = gridContainer.querySelector('.driver-row--gemerkt');
+        if (!zeile) return;
+        schonGesprungen = true;
+
+        // Auf dem Desktop ist die Zeile "display: contents" und hat selbst
+        // keinen Kasten - dann muss die erste Zelle das Ziel sein.
+        const ziel = getComputedStyle(zeile).display === 'contents'
+            ? zeile.firstElementChild : zeile;
+        if (!ziel) return;
+
+        // Steht der Fahrer ohnehin schon im Bild, nicht scrollen
+        const kasten = ziel.getBoundingClientRect();
+        if (kasten.top >= 90 && kasten.bottom <= window.innerHeight) return;
+
+        const sanft = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        ziel.scrollIntoView({ behavior: sanft ? 'smooth' : 'auto', block: 'center' });
     }
 
     // --- 9. BESTZEIT DES RENNTAGS ---

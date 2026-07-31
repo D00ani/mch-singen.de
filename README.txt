@@ -496,6 +496,37 @@ nicht mehr. Unter der Tabelle stehen die vergangenen Renntage zum Anklicken.
 Direktlink für einen bestimmten Tag (z. B. für die Archiv-Seite):
     pages/live.html?tag=2026-05-04
 
+LIVE-TIMING AUF EINEM ANDEREN LAPTOP:
+Das Werkzeug selbst braucht KEINE Zusatzpakete - nur Python 3 und die
+Standardbibliothek. Nötig sind:
+  1. Windows. Der Zugriff läuft über PowerShell und den Access-Treiber,
+     einen Mac oder Linux-Rechner unterstützt das nicht.
+  2. Der Access-Treiber (Microsoft Access Database Engine / ACE OLEDB).
+     Wenn die Zeitmessung auf dem Laptop läuft, ist er da. ACHTUNG auf die
+     Bit-Version: Die Zeitmessung ist ein 32-Bit-Programm, deshalb ist auf
+     manchen Rechnern NUR der 32-Bit-Treiber installiert, auf anderen nur
+     der 64-Bit-Treiber. Das Werkzeug probiert beides automatisch durch
+     (64-Bit-PowerShell, dann 32-Bit-PowerShell) - du musst nichts
+     einstellen. Im Menüpunkt "Status / Selbsttest" steht unter "Zugriff",
+     welcher Weg funktioniert hat.
+  3. Python 3 mit "python" im Suchpfad (die .bat ruft es so auf).
+  4. Beide Git-Ordner (mch-arbeit und mch-singen.de-main) sowie ein
+     Push-Zugang zu GitHub - sonst wird lokal geschrieben, aber nichts
+     veröffentlicht.
+  5. Einmalig im Menüpunkt "Einstellungen" den Pfad zur Datenbank setzen.
+     Die Einstellungen liegen in tools/livetiming.config.json und werden
+     bewusst NICHT mit übertragen, weil der Pfad auf jedem Rechner anders
+     ist.
+
+VOR DEM RENNEN EINMAL TESTEN: "Status / Selbsttest" aufrufen. Er sagt, ob
+die Datenbank gefunden und gelesen werden kann, über welchen Weg, welche
+Renntage darin stehen und wie viele Ergebnisse für heute herauskämen.
+
+INTERNET AN DER STRECKE: Ohne Verbindung schreibt das Werkzeug weiter
+brav die Datei und sammelt die Commits - veröffentlicht wird erst, sobald
+wieder Netz da ist. Es bricht nicht ab. Ein Handy-Hotspot reicht völlig,
+die Datei ist nur wenige Kilobyte groß.
+
 WENN ETWAS KLEMMT:
   - "Datenbank nicht gefunden" -> Pfad in den Einstellungen prüfen.
   - Zeitmessung darf die Datenbank geöffnet haben, das stört nicht.

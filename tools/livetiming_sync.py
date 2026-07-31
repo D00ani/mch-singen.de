@@ -562,7 +562,9 @@ def zeige_status(konfig):
         return
 
     tage = sorted({z["datum"] for z in zeilen if z["datum"]})
+    weg = zeitmessung_lesen.letzter_weg
     print(f"  Lesen     : ok, {len(zeilen)} Zeilen")
+    print(f"  Zugriff   : {weg['powershell']} mit {weg['treiber']}")
     print(f"  Renntage  : {', '.join(tage[-5:]) if tage else 'keine'}")
 
     datum = waehle_datum(zeilen, konfig.get("datum", "heute"))
