@@ -474,7 +474,19 @@ Das freie Training landet nur in ihrer History-Liste, ohne Startnummer und
 Klasse - daraus lässt sich keine Tabelle bauen. Deshalb gibt es auf der
 Live-Seite keinen "TL"-Knopf mehr.
 
+BEISPIELDATEN ZUM VORFÜHREN:
+Menüpunkt "Beispieldaten zum Vorführen erzeugen" (oder
+python tools/livetiming_beispiel.py) füllt die Live-Seite mit erfundenen
+Namen und Zeiten - praktisch, um die Seite außerhalb eines Rennens zu
+zeigen. Der Kopf weist sie als "(Beispieldaten)" aus, das Archiv bleibt
+unberührt. Am Renntag überschreibt das echte Live-Timing sie automatisch.
+
 WAS DIE SEITE SONST NOCH KANN:
+  - Sie startet im GESAMTERGEBNIS - dort steht das ganze Feld auf einen
+    Blick. Über die Knöpfe kommst du in die einzelnen Läufe und Klassen.
+  - Ist ein Fahrer mit Stern vorgemerkt, springt die Seite beim Öffnen zu
+    ihm. Steht er schon im Gesamtergebnis, bleibt sie dort und scrollt nur;
+    hat er noch kein Gesamtergebnis, wechselt sie in seinen Lauf.
   - Sie sagt ehrlich, wie alt der Stand ist: "Live · Stand 14:32" bei
     frischen Zeiten, sonst "Letzte Zeit vor 12 Min." bzw. "Keine aktuellen
     Zeiten". Ergebnisse eines vergangenen Renntags gelten nie als live.

@@ -1,9 +1,12 @@
 document.addEventListener("DOMContentLoaded", function() {
 
     // --- 1. ZUSTAND SPEICHERN ---
+    // Die Seite startet im Gesamtergebnis - dort steht das ganze Feld auf
+    // einen Blick. Klasse und Lauf sind vorbelegt für den Fall, dass der
+    // Besucher auf eine Einzelansicht wechselt.
     let activeClass = "Klasse 3"; // Start-Klasse
     let activeRun = "1. WL";      // Start-Lauf
-    let isGesamt = false;         // Gesamtergebnis-Modus
+    let isGesamt = true;          // Gesamtergebnis-Modus
 
     let liveData = [];            // Zwischenspeicher für die JSON-Daten
     let lastUpdate = "";          // Uhrzeit des letzten neuen Ergebnisses
@@ -43,43 +46,47 @@ document.addEventListener("DOMContentLoaded", function() {
     // umgeschaltet (siehe waehleBelegteAnsicht weiter unten).
     let nutzerHatGewaehlt = false;
 
+    // Hebt genau die Knöpfe hervor, die zum aktuellen Zustand gehören.
+    // Eine Stelle statt drei - sonst bleibt beim Wechsel aus dem
+    // Gesamtergebnis heraus schnell ein Knopf unmarkiert.
+    function filterKnoepfeAktualisieren() {
+        classButtons.forEach(b =>
+            b.classList.toggle('active', !isGesamt && b.innerText.trim() === activeClass));
+        runButtons.forEach(b =>
+            b.classList.toggle('active', !isGesamt && b.innerText.trim() === activeRun));
+        if (allBtn) allBtn.classList.toggle('active', isGesamt);
+    }
+
     classButtons.forEach(btn => {
         btn.addEventListener('click', function() {
-            classButtons.forEach(b => b.classList.remove('active'));
-            if(allBtn) allBtn.classList.remove('active');
-            this.classList.add('active');
-
             activeClass = this.innerText.trim();
             isGesamt = false;
             nutzerHatGewaehlt = true;
+            filterKnoepfeAktualisieren();
             renderTable();
         });
     });
 
     runButtons.forEach(btn => {
         btn.addEventListener('click', function() {
-            runButtons.forEach(b => b.classList.remove('active'));
-            if(allBtn) allBtn.classList.remove('active');
-            this.classList.add('active');
-
             activeRun = this.innerText.trim();
             isGesamt = false;
             nutzerHatGewaehlt = true;
+            filterKnoepfeAktualisieren();
             renderTable();
         });
     });
 
     if(allBtn) {
         allBtn.addEventListener('click', function() {
-            classButtons.forEach(b => b.classList.remove('active'));
-            runButtons.forEach(b => b.classList.remove('active'));
-            this.classList.add('active');
-
             isGesamt = true;
             nutzerHatGewaehlt = true;
+            filterKnoepfeAktualisieren();
             renderTable();
         });
     }
+
+    filterKnoepfeAktualisieren();
 
     // --- 3. HILFSFUNKTIONEN ---
 
@@ -253,23 +260,36 @@ document.addEventListener("DOMContentLoaded", function() {
     // und sieht eine leere Tabelle, obwohl das Rennen längst läuft.
     // Ist ein Fahrer vorgemerkt, hat dessen Ansicht Vorrang.
     function waehleBelegteAnsicht() {
-        if (nutzerHatGewaehlt || isGesamt || liveData.length === 0) return;
+        if (nutzerHatGewaehlt || liveData.length === 0) return;
 
         const hatDaten = (klasse, lauf) => liveData.some(d =>
             vereinfacht(d.klasse) === vereinfacht(klasse) &&
             vereinfacht(d.lauf) === vereinfacht(lauf));
 
-        const ansichtSetzen = (klasse, lauf) => {
-            runButtons.forEach(b => b.classList.remove('active'));
-            classButtons.forEach(b => b.classList.remove('active'));
-            for (const b of classButtons) if (b.innerText.trim() === klasse) b.classList.add('active');
-            for (const b of runButtons) if (b.innerText.trim() === lauf) b.classList.add('active');
+        const gesamtVorhanden = liveData.some(d => vereinfacht(d.lauf) === "GESAMT");
+        const merkerImGesamt = gemerkt.size > 0 && liveData.some(d =>
+            vereinfacht(d.lauf) === "GESAMT" && gemerkt.has(fahrerSchluessel(d)));
+
+        const einzelansicht = (klasse, lauf) => {
             activeClass = klasse;
             activeRun = lauf;
+            isGesamt = false;
             nutzerHatGewaehlt = true;
+            filterKnoepfeAktualisieren();
         };
 
-        // Vorgemerkter Fahrer: die Ansicht wählen, in der er auftaucht
+        // Standard ist das Gesamtergebnis. Steht ein vorgemerkter Fahrer dort
+        // schon drin, bleibt es dabei - gesprungen wird dann innerhalb dieser
+        // Ansicht.
+        if (gesamtVorhanden && (gemerkt.size === 0 || merkerImGesamt)) {
+            isGesamt = true;
+            nutzerHatGewaehlt = true;
+            filterKnoepfeAktualisieren();
+            return;
+        }
+
+        // Vorgemerkter Fahrer ohne Gesamtergebnis: in die Einzelansicht, in
+        // der er bisher gefahren ist
         if (gemerkt.size > 0) {
             for (const laufBtn of runButtons) {
                 const lauf = laufBtn.innerText.trim();
@@ -279,7 +299,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 if (treffer) {
                     for (const klasseBtn of classButtons) {
                         if (vereinfacht(klasseBtn.innerText) === vereinfacht(treffer.klasse)) {
-                            ansichtSetzen(klasseBtn.innerText.trim(), lauf);
+                            einzelansicht(klasseBtn.innerText.trim(), lauf);
                             return;
                         }
                     }
@@ -287,24 +307,21 @@ document.addEventListener("DOMContentLoaded", function() {
             }
         }
 
-        if (hatDaten(activeClass, activeRun)) {
-            nutzerHatGewaehlt = true;   // Voreinstellung passt, nicht mehr eingreifen
+        if (gesamtVorhanden) {
+            isGesamt = true;
+            nutzerHatGewaehlt = true;
+            filterKnoepfeAktualisieren();
             return;
         }
 
+        // Noch kein Gesamtergebnis (niemand hat beide Läufe beendet):
+        // erste Einzelansicht nehmen, in der Zeiten stehen
         for (const laufBtn of runButtons) {
             for (const klasseBtn of classButtons) {
                 const lauf = laufBtn.innerText.trim();
                 const klasse = klasseBtn.innerText.trim();
                 if (!hatDaten(klasse, lauf)) continue;
-
-                runButtons.forEach(b => b.classList.remove('active'));
-                classButtons.forEach(b => b.classList.remove('active'));
-                laufBtn.classList.add('active');
-                klasseBtn.classList.add('active');
-                activeRun = lauf;
-                activeClass = klasse;
-                nutzerHatGewaehlt = true;
+                einzelansicht(klasse, lauf);
                 return;
             }
         }

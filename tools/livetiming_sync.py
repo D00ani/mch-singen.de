@@ -587,6 +587,13 @@ def zeige_status(konfig):
         print(f"  livedata  : zuletzt geschrieben {stand:%d.%m.%Y %H:%M:%S}")
 
 
+def _beispieldaten():
+    """Erfundene Ergebnisse zum Vorfuehren der Seite (eigenes Werkzeug,
+    damit dieses hier schlank bleibt)."""
+    import livetiming_beispiel
+    livetiming_beispiel.main()
+
+
 def main():
     print("=" * 60)
     print("  MCH Singen - Live-Timing aus der Zeitmessung")
@@ -602,6 +609,7 @@ def main():
              lambda: einmal_abgleichen(konfig, veroeffentlichen=False)),
             ("Status / Selbsttest", lambda: zeige_status(konfig)),
             ("Einstellungen", lambda: einstellungen(konfig)),
+            ("Beispieldaten zum Vorfuehren erzeugen", _beispieldaten),
         ]
         aktion = h.menue("Was moechtest du tun?", punkte)
         if aktion is None:
