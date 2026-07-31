@@ -80,7 +80,12 @@ def pruefe_verweise():
         for verweis in VERWEIS_MUSTER.findall(inhalt):
             if verweis.startswith(("http://", "https://", "//", "mailto:", "tel:", "data:")):
                 continue
-            ziel = os.path.normpath(os.path.join(basis, verweis))
+            # Verweise mit fuehrendem "/" zeigen ab der Wurzel der Webseite
+            # (nutzt 404.html, weil die unter JEDER Adresse ausgeliefert wird).
+            if verweis.startswith("/"):
+                ziel = os.path.normpath(os.path.join(ROOT, verweis.lstrip("/")))
+            else:
+                ziel = os.path.normpath(os.path.join(basis, verweis))
             passt, richtig = exakt_vorhanden(ziel)
             if not passt and richtig is None:
                 tote.append(f"{anzeige}: {verweis}")

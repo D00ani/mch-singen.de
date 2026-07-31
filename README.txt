@@ -103,7 +103,7 @@ Wichtig beim Dateinamen (GitHub-Server sind streng):
 -------------------------------------------------------
 3b. MEDIEN RICHTIG VERLINKEN (PDFs, Bilder)
 -------------------------------------------------------
-Drei Stolpersteine - die Werkzeuge korrigieren sie inzwischen automatisch
+Vier Stolpersteine - die Werkzeuge korrigieren sie inzwischen automatisch
 und sagen dir, was sie geändert haben:
 
 1. IMMER Schrägstriche "/", NIE Backslashes "\"
@@ -113,11 +113,25 @@ und sagen dir, was sie geändert haben:
 
 2. Der Anfang hängt davon ab, WO die Datei steht, in der der Link steht:
        Seiten in /pages/ (aktuelles.html, archiv.html, ...):  ../media/...
-       index.html und 404.html (Hauptverzeichnis):            media/...
+       index.html (Hauptverzeichnis):                         media/...
    Das "../" heißt "einen Ordner nach oben" - von /pages/ aus muss man
    erst hoch, bevor man /media/ findet.
 
-3. AUSNAHME /data/timer.txt und timer_trial.txt: dort OHNE "../"
+3. AUSNAHME 404.html: dort ALLE Pfade mit führendem "/" (ab der Wurzel)
+       /media/logos/favicon.png    /css/bundle.min.css    /pages/suche.html
+   Grund: GitHub Pages liefert 404.html bei JEDER unbekannten Adresse aus,
+   die Adresszeile im Browser behält aber die aufgerufene Adresse. Bei
+   einem toten Link wie /pages/alte-seite.html würde "css/bundle.min.css"
+   als /pages/css/bundle.min.css gesucht - dann steht die Fehlerseite ohne
+   Design, ohne Menü da und alle ihre Links führen wieder ins Leere.
+   Das Verlinken mit "/" geht nur, weil die Seite unter einer eigenen
+   Domain (CNAME: mch-singen.de) direkt auf der Wurzel liegt.
+
+   ZUM PRÜFEN: einfach eine erfundene Adresse TIEF in der Seite aufrufen,
+   z. B. mch-singen.de/pages/gibtsnicht.html - nicht nur mch-singen.de/xyz.
+   Nur die tiefe Adresse deckt diesen Fehler auf.
+
+4. AUSNAHME /data/timer.txt und timer_trial.txt: dort OHNE "../" und OHNE "/"
        ...;media/dokumente/kurzausschreibungacengen2026.pdf
    Grund: Der Countdown läuft nur auf index.html, und das Skript setzt den
    Pfad unverändert als Link ein.
