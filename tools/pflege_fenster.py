@@ -29,6 +29,7 @@ import aenderungsprotokoll
 import fenster_bausteine as B
 import fenster_seiten as S
 import fenster_seiten_inhalte as I
+import fenster_seiten_personen as P
 import fenster_seiten_technik as TE
 import fenster_seiten_texte as T
 import jaehrliches_update
@@ -51,6 +52,7 @@ SEITEN = {
     "news":       T.NewsSeite,
     "faq":        T.FaqSeite,
     "technik":    TE.TechnikSeite,
+    "team":       P.TeamSeite,
 }
 
 # Werkzeug-Modul -> Fensterseite. Was hier nicht steht, oeffnet sich
@@ -65,6 +67,7 @@ MODUL_ZU_SEITE = {
     "news_pflege":       "news",
     "faq_pflege":        "faq",
     "jaehrliches_update": "technik",
+    "team_pflege":       "team",
 }
 
 # Seitenleiste: (Gruppe, [(Beschriftung, Ziel)])
@@ -83,7 +86,7 @@ WERKZEUGE = [
         ("News-Karten", "#news"),
         ("Jahresarchiv", "#archiv"),
         ("Sponsoren & Links", "sponsoren_pflege"),
-        ("Vorstand & Trainer", "team_pflege"),
+        ("Vorstand & Trainer", "#team"),
         ("Fragen & Antworten", "#faq"),
         ("Bilder aufnehmen", "bilder_pflege"),
     ]),

@@ -99,6 +99,42 @@ def ersetze_feld(block, muster, neuer_wert):
     return block[:treffer.start(1)] + neuer_wert + block[treffer.end(1):]
 
 
+FELD_MUSTER = {
+    "kurzrolle": r'<p class="trainer-role-overlay">(.*?)</p>',
+    "rolle": r'<p class="member-role">(.*?)</p>',
+    "spruch": r'<p class="trainer-quote">(.*?)</p>',
+}
+
+
+def aendere_person(person, werte):
+    """Setzt geaenderte Felder in den Kartenblock ein und gibt ihn zurueck.
+
+    Gezielt einzelne Felder statt Neubau der Karte - so bleiben
+    Besonderheiten erhalten (eigener Bildausschnitt, Instagram-Verlinkung).
+    Ein geaenderter Name zieht an allen drei Stellen mit: Ueberschrift,
+    Beschriftung im Bild und Bildbeschreibung.
+    """
+    block = person["block"]
+
+    if werte.get("name") and werte["name"] != person["name"]:
+        neu = werte["name"]
+        block = ersetze_feld(block, r'<h3 class="trainer-name">(.*?)</h3>', neu)
+        block = ersetze_feld(block, r'<p class="trainer-name-overlay">(.*?)</p>', neu)
+        block = re.sub(rf'alt="(?:Trainer )?{re.escape(person["name"])}"',
+                       lambda m: m.group(0).replace(person["name"], neu), block)
+
+    for schluessel, muster in FELD_MUSTER.items():
+        if schluessel in werte:
+            block = ersetze_feld(block, muster, werte[schluessel])
+
+    if "email" in werte and werte["email"] != person["email"] and person["email"]:
+        block = block.replace(f'mailto:{person["email"]}', f'mailto:{werte["email"]}')
+        block = re.sub(rf"(</i>\s*){re.escape(person['email'])}",
+                       lambda m: m.group(1) + werte["email"], block)
+
+    return block
+
+
 def person_bearbeiten(bereich):
     html = lade_html()
     personen, _, _ = finde_personen(html, bereich["anker"])
@@ -131,24 +167,7 @@ def person_bearbeiten(bereich):
         print("Abgebrochen.")
         return
 
-    block = person["block"]
-    if eingaben["name"] != person["name"]:
-        neu = eingaben["name"]
-        block = ersetze_feld(block, r'<h3 class="trainer-name">(.*?)</h3>', neu)
-        block = ersetze_feld(block, r'<p class="trainer-name-overlay">(.*?)</p>', neu)
-        # alt-Text mitziehen, damit Bildbeschreibung und Name zusammenpassen
-        block = re.sub(rf'alt="(?:Trainer )?{re.escape(person["name"])}"',
-                       lambda m: m.group(0).replace(person["name"], neu), block)
-    if "kurzrolle" in eingaben:
-        block = ersetze_feld(block, r'<p class="trainer-role-overlay">(.*?)</p>', eingaben["kurzrolle"])
-    if "rolle" in eingaben:
-        block = ersetze_feld(block, r'<p class="member-role">(.*?)</p>', eingaben["rolle"])
-    if "spruch" in eingaben:
-        block = ersetze_feld(block, r'<p class="trainer-quote">(.*?)</p>', eingaben["spruch"])
-    if "email" in eingaben and eingaben["email"] != person["email"]:
-        block = block.replace(f'mailto:{person["email"]}', f'mailto:{eingaben["email"]}')
-        block = re.sub(rf"(</i>\s*){re.escape(person['email'])}",
-                       lambda m: m.group(1) + eingaben["email"], block)
+    block = aendere_person(person, eingaben)
 
     if block == person["block"]:
         print("\nNichts geaendert.")
@@ -177,6 +196,98 @@ def freie_bilder(html):
     return frei
 
 
+def bildmasse(bilddatei):
+    """(breite, hoehe) des Fotos - oder (None, None), wenn Pillow fehlt."""
+    if not Image:
+        return None, None
+    try:
+        with Image.open(os.path.join(BILDER_DIR, bilddatei)) as bild:
+            return bild.size
+    except OSError:
+        return None, None
+
+
+def webp_fassung(bilddatei):
+    stamm, _ = os.path.splitext(bilddatei)
+    return f"{stamm}.webp" if os.path.isfile(os.path.join(BILDER_DIR, f"{stamm}.webp")) else ""
+
+
+def baue_personen_karte(ist_vorstand, bilddatei, name, kurzrolle,
+                        rolle="", email="", spruch="", einrueckung=" " * 12):
+    """Baut den HTML-Block einer Personen-Karte.
+
+    Vorstand bekommt Rolle und E-Mail, das Trainer-Team einen Spruch -
+    beides ist optional und faellt weg, wenn nichts angegeben ist.
+    """
+    e = einrueckung
+    webp = webp_fassung(bilddatei)
+    breite, hoehe = bildmasse(bilddatei)
+    masse = f' width="{breite}" height="{hoehe}"' if breite else ""
+    alt_text = name if ist_vorstand else f"Trainer {name}"
+
+    zeilen = [
+        f'{e}<div class="trainer-card">',
+        f'{e}    <div class="trainer-img-wrapper">',
+        f"{e}        <picture>",
+    ]
+    if webp:
+        zeilen.append(f'{e}            <source type="image/webp" srcset="../media/bilder/ueber-uns/{webp}">')
+    zeilen += [
+        f'{e}            <img src="../media/bilder/ueber-uns/{bilddatei}" alt="{alt_text}" '
+        f'class="trainer-img" loading="lazy"{masse} decoding="async">',
+        f"{e}        </picture>",
+        f'{e}        <div class="trainer-img-overlay">',
+        f'{e}            <p class="trainer-name-overlay">{name}</p>',
+        f'{e}            <p class="trainer-role-overlay">{kurzrolle}</p>',
+        f"{e}        </div>",
+        f"{e}    </div>",
+        f'{e}    <div class="trainer-info">',
+        f'{e}        <h3 class="trainer-name">{name}</h3>',
+    ]
+    if ist_vorstand:
+        zeilen.append(f'{e}        <p class="member-role">{rolle}</p>')
+        if email:
+            zeilen += [
+                f'{e}        <p class="member-contact" style="margin-top: 8px; font-size: 0.9em;">',
+                f'{e}            <a href="mailto:{email}" style="color: var(--text-color); text-decoration: none;">',
+                f'{e}                <i class="fa-solid fa-envelope" style="color: var(--primary-blue); margin-right: 5px;"></i> {email}',
+                f"{e}            </a>",
+                f"{e}        </p>",
+            ]
+    elif spruch:
+        zeilen.append(f'{e}        <p class="trainer-quote">{spruch}</p>')
+    zeilen += [f"{e}    </div>", f"{e}</div>"]
+    return "\r\n".join(zeilen)
+
+
+def fuege_person_ein(html, karte, personen, stelle, grid_start):
+    """Setzt eine Karte an die gewaehlte Stelle des Bereichs.
+
+    stelle 0 = ganz vorne, sonst hinter personen[stelle - 1].
+    """
+    if not personen:
+        einfuegepunkt = html.find("\r\n", grid_start) + 2
+        return html[:einfuegepunkt] + karte + "\r\n" + html[einfuegepunkt:]
+    if stelle == 0:
+        anfang = personen[0]["start"]
+        while anfang > 0 and html[anfang - 1] in " \t":
+            anfang -= 1
+        return html[:anfang] + karte + "\r\n\r\n" + html[anfang:]
+    ende = personen[stelle - 1]["ende"]
+    return html[:ende] + "\r\n\r\n" + karte + html[ende:]
+
+
+def entferne_person(html, person):
+    """Schneidet eine Personen-Karte samt ihrer Zeilen heraus."""
+    anfang = person["start"]
+    while anfang > 0 and html[anfang - 1] in " \t":
+        anfang -= 1
+    ende = person["ende"]
+    while html[ende:ende + 2] == "\r\n":
+        ende += 2
+    return html[:anfang] + html[ende:]
+
+
 def person_hinzufuegen(bereich):
     html = lade_html()
     personen, grid_start, _ = finde_personen(html, bereich["anker"])
@@ -187,17 +298,6 @@ def person_hinzufuegen(bereich):
     if bild_index is None:
         return
     bilddatei = bilder[bild_index]
-
-    stamm, _ = os.path.splitext(bilddatei)
-    webp = f"{stamm}.webp" if os.path.isfile(os.path.join(BILDER_DIR, f"{stamm}.webp")) else ""
-
-    breite = hoehe = None
-    if Image:
-        try:
-            with Image.open(os.path.join(BILDER_DIR, bilddatei)) as bild:
-                breite, hoehe = bild.size
-        except OSError:
-            pass
 
     ist_vorstand = bereich["name"] == "Vorstand"
     felder = [
@@ -217,44 +317,9 @@ def person_hinzufuegen(bereich):
         print("Abgebrochen.")
         return
 
-    name = eingaben["name"]
-    e = " " * 12
-    masse = f' width="{breite}" height="{hoehe}"' if breite else ""
-    alt_text = name if ist_vorstand else f"Trainer {name}"
-
-    zeilen = [
-        f'{e}<div class="trainer-card">',
-        f'{e}    <div class="trainer-img-wrapper">',
-        f"{e}        <picture>",
-    ]
-    if webp:
-        zeilen.append(f'{e}            <source type="image/webp" srcset="../media/bilder/ueber-uns/{webp}">')
-    zeilen += [
-        f'{e}            <img src="../media/bilder/ueber-uns/{bilddatei}" alt="{alt_text}" '
-        f'class="trainer-img" loading="lazy"{masse} decoding="async">',
-        f"{e}        </picture>",
-        f'{e}        <div class="trainer-img-overlay">',
-        f'{e}            <p class="trainer-name-overlay">{name}</p>',
-        f'{e}            <p class="trainer-role-overlay">{eingaben["kurzrolle"]}</p>',
-        f"{e}        </div>",
-        f"{e}    </div>",
-        f'{e}    <div class="trainer-info">',
-        f'{e}        <h3 class="trainer-name">{name}</h3>',
-    ]
-    if ist_vorstand:
-        zeilen.append(f'{e}        <p class="member-role">{eingaben["rolle"]}</p>')
-        if eingaben.get("email"):
-            zeilen += [
-                f'{e}        <p class="member-contact" style="margin-top: 8px; font-size: 0.9em;">',
-                f'{e}            <a href="mailto:{eingaben["email"]}" style="color: var(--text-color); text-decoration: none;">',
-                f'{e}                <i class="fa-solid fa-envelope" style="color: var(--primary-blue); margin-right: 5px;"></i> {eingaben["email"]}',
-                f"{e}            </a>",
-                f"{e}        </p>",
-            ]
-    elif eingaben.get("spruch"):
-        zeilen.append(f'{e}        <p class="trainer-quote">{eingaben["spruch"]}</p>')
-    zeilen += [f"{e}    </div>", f"{e}</div>"]
-    neue_karte = "\r\n".join(zeilen)
+    neue_karte = baue_personen_karte(
+        ist_vorstand, bilddatei, eingaben["name"], eingaben["kurzrolle"],
+        eingaben.get("rolle", ""), eingaben.get("email", ""), eingaben.get("spruch", ""))
 
     print("\nNeue Karte:")
     print(neue_karte)
@@ -268,19 +333,8 @@ def person_hinzufuegen(bereich):
         moeglichkeiten += [f"Nach '{p['name']}'" for p in personen]
         stelle = h.waehle_option("An welcher Stelle?", moeglichkeiten)
 
-    if not personen:
-        einfuegepunkt = html.find("\r\n", grid_start) + 2
-        neues_html = html[:einfuegepunkt] + neue_karte + "\r\n" + html[einfuegepunkt:]
-    elif stelle == 0:
-        anfang = personen[0]["start"]
-        while anfang > 0 and html[anfang - 1] in " \t":
-            anfang -= 1
-        neues_html = html[:anfang] + neue_karte + "\r\n\r\n" + html[anfang:]
-    else:
-        ende = personen[stelle - 1]["ende"]
-        neues_html = html[:ende] + "\r\n\r\n" + neue_karte + html[ende:]
-
-    h.schreibe_datei(UEBER_UNS_HTML, neues_html)
+    h.schreibe_datei(UEBER_UNS_HTML,
+                     fuege_person_ein(html, neue_karte, personen, stelle, grid_start))
     print(f"\nGespeichert in {os.path.relpath(UEBER_UNS_HTML, ROOT)}")
 
 
@@ -299,14 +353,7 @@ def person_loeschen(bereich):
         print("Abgebrochen.")
         return
 
-    anfang = person["start"]
-    while anfang > 0 and html[anfang - 1] in " \t":
-        anfang -= 1
-    ende = person["ende"]
-    while html[ende:ende + 2] == "\r\n":
-        ende += 2
-
-    h.schreibe_datei(UEBER_UNS_HTML, html[:anfang] + html[ende:])
+    h.schreibe_datei(UEBER_UNS_HTML, entferne_person(html, person))
     print(f"\nEntfernt. {os.path.relpath(UEBER_UNS_HTML, ROOT)} aktualisiert.")
 
 
