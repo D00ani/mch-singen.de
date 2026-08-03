@@ -203,6 +203,7 @@ class Formular(tk.Toplevel):
         self.werte = None
         self._eingaben = {}
         self._fehlerzeilen = {}
+        self._reihenfolge = []      # Eingabefelder in der Reihenfolge von oben nach unten
 
         self.title(titel)
         self.configure(bg=FARBEN["grund"])
@@ -231,16 +232,38 @@ class Formular(tk.Toplevel):
         knopf(fuss, "Speichern", self._speichern, schriften, "haupt",
               padx=18, pady=7).pack(side="right", padx=(6, 18), pady=12)
         knopf(fuss, "Abbrechen", self.destroy, schriften).pack(side="right", pady=12)
+        tk.Label(fuss, text="Enter = nächstes Feld · im letzten Feld speichern · Esc = abbrechen",
+                 bg=FARBEN["erhoben"], fg=FARBEN["gedimmt"],
+                 font=schriften.klein).pack(side="left", padx=18, pady=12)
 
         self.bind("<Escape>", lambda _: self.destroy())
-        self.bind("<Return>", lambda _: self._speichern())
 
         self.update_idletasks()
         self._mittig(eltern)
         self.grab_set()
-        erstes = felder[0]["schluessel"] if felder else None
-        if erstes:
-            self._eingaben[erstes].focus_set()
+        if self._reihenfolge:
+            self._fokus(self._reihenfolge[0])
+
+    # -------------------------------------------------- Navigation
+    def _fokus(self, widget):
+        widget.focus_set()
+        if isinstance(widget, tk.Entry):
+            # Inhalt markieren: weitertippen ersetzt, Pfeiltaste stellt sich davor
+            widget.select_range(0, "end")
+            widget.icursor("end")
+
+    def _weiter(self, widget, schritt=1):
+        """Enter/Tab springt ins naechste Feld. Hinter dem letzten wird
+        gespeichert - so laesst sich ein Formular ohne Maus ausfuellen."""
+        if widget not in self._reihenfolge:
+            return "break"
+        ziel = self._reihenfolge.index(widget) + schritt
+
+        if ziel >= len(self._reihenfolge):
+            self._speichern()
+            return "break"
+        self._fokus(self._reihenfolge[max(ziel, 0)])
+        return "break"      # verhindert, dass Tk zusaetzlich selbst weiterspringt
 
     def _feld(self, eltern, reihe, feld, wert):
         tk.Label(eltern, text=feld["beschriftung"], bg=FARBEN["grund"], fg=FARBEN["text"],
@@ -264,9 +287,28 @@ class Formular(tk.Toplevel):
 
         eingabe.grid(row=reihe, column=1, sticky="ew", pady=(0, 2))
         self._eingaben[feld["schluessel"]] = eingabe
+        self._reihenfolge.append(eingabe)
 
-        if feld.get("hinweis"):
-            tk.Label(eltern, text=feld["hinweis"], bg=FARBEN["grund"], fg=FARBEN["gedimmt"],
+        if art == "mehrzeilig":
+            # Hier muss Enter einen Absatz machen - zum Weiterspringen dient Tab
+            eingabe.bind("<Tab>", lambda _, w=eingabe: self._weiter(w, 1))
+            eingabe.bind("<Shift-Tab>", lambda _, w=eingabe: self._weiter(w, -1))
+            eingabe.bind("<ISO_Left_Tab>", lambda _, w=eingabe: self._weiter(w, -1))
+            eingabe.bind("<Control-Return>", lambda _: self._speichern())
+        else:
+            eingabe.bind("<Return>", lambda _, w=eingabe: self._weiter(w, 1))
+            eingabe.bind("<KP_Enter>", lambda _, w=eingabe: self._weiter(w, 1))
+            eingabe.bind("<Shift-Return>", lambda _, w=eingabe: self._weiter(w, -1))
+
+        hinweis = feld.get("hinweis", "")
+        if art == "mehrzeilig":
+            # Enter ist hier der Absatz - das muss dabeistehen, sonst sucht
+            # man vergeblich nach dem Weiterspringen.
+            zusatz = "Enter macht einen Absatz, Tab springt weiter"
+            hinweis = f"{hinweis}\n{zusatz}" if hinweis else zusatz
+
+        if hinweis:
+            tk.Label(eltern, text=hinweis, bg=FARBEN["grund"], fg=FARBEN["gedimmt"],
                      font=self.s.klein, anchor="w", justify="left",
                      wraplength=300).grid(row=reihe + 1, column=1, sticky="w")
 
