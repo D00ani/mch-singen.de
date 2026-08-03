@@ -145,6 +145,55 @@ def karte_bearbeiten():
     print(f"\nGespeichert in {os.path.relpath(AKTUELLES_HTML, ROOT)}")
 
 
+def baue_karte(badge, datum, titel, beschreibung, link_ziel="", link_text="",
+               einrueckung=" " * 12):
+    """Baut den HTML-Block einer News-Karte.
+
+    badge: Paar (Name, CSS-Klasse) aus BADGES; Klasse None = kein Etikett.
+    """
+    badge_name, badge_klasse = badge
+    teile = [f'{einrueckung}<div class="news-card">']
+    if badge_klasse:
+        teile.append(f'{einrueckung}    <span class="{badge_klasse}">{badge_name}</span>')
+    teile += [
+        f"{einrueckung}    <div>",
+        f'{einrueckung}        <span class="news-date">{datum}</span>',
+        f"{einrueckung}        <h3>{titel}</h3>",
+        f'{einrueckung}        <p class="news-card-desc">{beschreibung}</p>',
+        f"{einrueckung}    </div>",
+    ]
+    if link_ziel:
+        extern = ' target="_blank"' if link_ziel.startswith("http") else ""
+        symbol = "fa-file-pdf" if link_ziel.lower().endswith(".pdf") else "fa-circle-info"
+        teile += [
+            f'{einrueckung}    <a href="{link_ziel}"{extern} class="news-link">',
+            f'{einrueckung}        <span class="news-icon"><i class="fa-solid {symbol}"></i></span> {link_text}',
+            f"{einrueckung}    </a>",
+        ]
+    teile.append(f"{einrueckung}</div>")
+    return "\r\n".join(teile)
+
+
+def fuege_karte_ein(html, neuer_block, bezug, davor):
+    """Setzt einen Kartenblock vor oder hinter eine vorhandene Karte."""
+    if davor:
+        zeilenanfang = html.rfind("\r\n", 0, bezug["start"])
+        stelle = zeilenanfang + 2 if zeilenanfang != -1 else bezug["start"]
+        return html[:stelle] + neuer_block + "\r\n" + html[stelle:]
+    return html[:bezug["ende"]] + "\r\n" + neuer_block + html[bezug["ende"]:]
+
+
+def entferne_karte(html, karte):
+    """Schneidet eine Karte samt ihrer Zeilen sauber heraus."""
+    start = karte["start"]
+    while start > 0 and html[start - 1] in " \t":
+        start -= 1
+    ende = karte["ende"]
+    if html[ende:ende + 2] == "\r\n":
+        ende += 2
+    return html[:start] + html[ende:]
+
+
 def karte_hinzufuegen():
     html = h.lies_datei(AKTUELLES_HTML)
     karten = finde_karten(html)
@@ -180,27 +229,8 @@ def karte_hinzufuegen():
     beschreibung = eingaben["beschreibung"]
     link_ziel, link_text = eingaben["link_ziel"], eingaben["link_text"]
 
-    einrueckung = " " * 12
-    teile = [f'{einrueckung}<div class="news-card">']
-    if badge_klasse:
-        teile.append(f'{einrueckung}    <span class="{badge_klasse}">{badge_name}</span>')
-    teile += [
-        f"{einrueckung}    <div>",
-        f'{einrueckung}        <span class="news-date">{datum}</span>',
-        f"{einrueckung}        <h3>{titel}</h3>",
-        f'{einrueckung}        <p class="news-card-desc">{beschreibung}</p>',
-        f"{einrueckung}    </div>",
-    ]
-    if link_ziel:
-        extern = ' target="_blank"' if link_ziel.startswith("http") else ""
-        symbol = "fa-file-pdf" if link_ziel.lower().endswith(".pdf") else "fa-circle-info"
-        teile += [
-            f'{einrueckung}    <a href="{link_ziel}"{extern} class="news-link">',
-            f'{einrueckung}        <span class="news-icon"><i class="fa-solid {symbol}"></i></span> {link_text}',
-            f"{einrueckung}    </a>",
-        ]
-    teile.append(f"{einrueckung}</div>")
-    neuer_block = "\r\n".join(teile)
+    neuer_block = baue_karte((badge_name, badge_klasse), datum, titel, beschreibung,
+                             link_ziel, link_text)
 
     print("\nNeue Karte:")
     print(neuer_block)
@@ -223,15 +253,7 @@ def karte_hinzufuegen():
     else:
         bezug, davor = im_abschnitt[stelle - 1], False
 
-    if davor:
-        zeilenanfang = html.rfind("\r\n", 0, bezug["start"])
-        einfuegepunkt = zeilenanfang + 2 if zeilenanfang != -1 else bezug["start"]
-        neues_html = html[:einfuegepunkt] + neuer_block + "\r\n" + html[einfuegepunkt:]
-    else:
-        einfuegepunkt = bezug["ende"]
-        neues_html = html[:einfuegepunkt] + "\r\n" + neuer_block + html[einfuegepunkt:]
-
-    h.schreibe_datei(AKTUELLES_HTML, neues_html)
+    h.schreibe_datei(AKTUELLES_HTML, fuege_karte_ein(html, neuer_block, bezug, davor))
     print(f"\nGespeichert in {os.path.relpath(AKTUELLES_HTML, ROOT)}")
 
 
@@ -251,16 +273,7 @@ def karte_loeschen():
         print("Abgebrochen.")
         return
 
-    # Ganze Zeile(n) entfernen: von der Einrueckung am Zeilenanfang bis
-    # einschliesslich des Zeilenumbruchs am Ende des Kastens.
-    start = karte["start"]
-    while start > 0 and html[start - 1] in " \t":
-        start -= 1
-    ende = karte["ende"]
-    if html[ende:ende + 2] == "\r\n":
-        ende += 2
-
-    h.schreibe_datei(AKTUELLES_HTML, html[:start] + html[ende:])
+    h.schreibe_datei(AKTUELLES_HTML, entferne_karte(html, karte))
     print(f"\nGeloescht. {os.path.relpath(AKTUELLES_HTML, ROOT)} aktualisiert.")
 
 

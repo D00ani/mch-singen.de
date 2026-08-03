@@ -29,6 +29,8 @@ import aenderungsprotokoll
 import fenster_bausteine as B
 import fenster_seiten as S
 import fenster_seiten_inhalte as I
+import fenster_seiten_technik as TE
+import fenster_seiten_texte as T
 import jaehrliches_update
 import pflege_hilfen as h
 import pruefe_seite
@@ -46,6 +48,9 @@ SEITEN = {
     "vorschau":   S.VorschauSeite,
     "termine":    I.RenntermineSeite,
     "archiv":     I.ArchivSeite,
+    "news":       T.NewsSeite,
+    "faq":        T.FaqSeite,
+    "technik":    TE.TechnikSeite,
 }
 
 # Werkzeug-Modul -> Fensterseite. Was hier nicht steht, oeffnet sich
@@ -57,6 +62,9 @@ MODUL_ZU_SEITE = {
     "vorschau":          "vorschau",
     "termine_verwalten": "termine",
     "archiv_pflege":     "archiv",
+    "news_pflege":       "news",
+    "faq_pflege":        "faq",
+    "jaehrliches_update": "technik",
 }
 
 # Seitenleiste: (Gruppe, [(Beschriftung, Ziel)])
@@ -72,11 +80,11 @@ WERKZEUGE = [
         ("Ausschreibungs-PDF", "#pdf"),
         ("Trainingstermine", "trainingstermine_import"),
         ("Statistiken", "statistiken_pflege"),
-        ("News-Karten", "news_pflege"),
+        ("News-Karten", "#news"),
         ("Jahresarchiv", "#archiv"),
         ("Sponsoren & Links", "sponsoren_pflege"),
         ("Vorstand & Trainer", "team_pflege"),
-        ("Fragen & Antworten", "faq_pflege"),
+        ("Fragen & Antworten", "#faq"),
         ("Bilder aufnehmen", "bilder_pflege"),
     ]),
     ("Nachsehen", [
@@ -86,7 +94,7 @@ WERKZEUGE = [
     ]),
     ("Technik", [
         ("Saisonwechsel", "saisonwechsel"),
-        ("Technisches Update", "jaehrliches_update"),
+        ("Technisches Update", "#technik"),
         ("Letzte Änderung rückgängig", "@rueckgaengig"),
     ]),
 ]

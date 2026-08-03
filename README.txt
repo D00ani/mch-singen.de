@@ -710,11 +710,40 @@ WAS DAS FENSTER SELBST KANN:
   LETZTE ÄNDERUNG RÜCKGÄNGIG
     Wie im Terminal, nur mit Nachfrage-Fenster statt j/n.
 
-DIE ÜBRIGEN WERKZEUGE (Renntermine, Statistiken, News, Archiv, Sponsoren,
-Vorstand, FAQ, Bilder, Live-Timing, Trainingstermine, Saisonwechsel,
-Technisches Update) stehen ebenfalls in der Seitenleiste, öffnen sich aber
-noch in einem eigenen Terminalfenster - unverändert, mit denselben Fragen
-wie über das Menü.
+  RENNTERMINE VERWALTEN
+    Umschalter Kart/Trial, darunter die Termine mit lesbarem Datum
+    (07.06.2026 statt 07;June;2026). Fehlende Ausschreibungen sind in der
+    PDF-Spalte gekennzeichnet. Neu/Bearbeiten/Löschen, Doppelklick öffnet
+    zum Bearbeiten. Der Termin wird automatisch chronologisch einsortiert.
+
+  JAHRESARCHIV PFLEGEN
+    Baumansicht: Saisons zum Aufklappen mit ihren Einträgen, fehlende PDFs
+    gekennzeichnet. Neue Saison anlegen, Einträge hinzufügen, beides
+    einzeln löschbar.
+
+  NEWS-KARTEN
+    Alle Meldungen mit Abschnitt, Datum und Titel; Karten mit Links oder
+    Schaltflächen sind markiert. Beim Bearbeiten werden nur die Felder
+    angeboten, die die Karte wirklich hat - Schaltflächen bleiben
+    unangetastet. Bei einer neuen Karte wird nach der Stelle im Abschnitt
+    gefragt, weil das Datum dort Freitext ist.
+
+  FRAGEN & ANTWORTEN
+    Frage und Antwort in der einfachen Schreibweise (**fett**,
+    [Text](seite.html)). Beim Bearbeiten wird bestehendes HTML
+    zurückverwandelt. Zeigt ein Link auf eine Seite, die es nicht gibt,
+    kommt ein Hinweis.
+
+  TECHNISCHES UPDATE
+    Zuerst die Punkte zum Abhaken, die kein Werkzeug prüfen kann, dann die
+    vier Schritte einzeln mit Stand (offen / läuft / erledigt) und der
+    Ausgabe darunter. Bricht ein Schritt ab, laufen die folgenden nicht
+    mehr. Veröffentlicht wird hier nichts - das bleibt bei der Fußleiste.
+
+NOCH IM TERMINAL öffnen sich: Live-Timing, Nach dem Rennen,
+Trainingstermine, Statistiken, Sponsoren & Links, Vorstand & Trainer,
+Bilder aufnehmen und der Saisonwechsel-Assistent. Sie stehen in der
+Seitenleiste an derselben Stelle und arbeiten unverändert.
 
 BEIDES GLEICHZEITIG OFFEN ZU HABEN ist keine gute Idee: beide schreiben in
 dieselben Dateien. Nacheinander ist völlig unproblematisch.

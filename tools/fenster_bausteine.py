@@ -8,6 +8,7 @@ und Abstaende mitbringt - und eine Aenderung hier wirkt ueberall.
 
 Wird nicht direkt ausgefuehrt.
 """
+import html as html_modul
 import queue
 import threading
 import tkinter as tk
@@ -163,6 +164,20 @@ def rollbereich(eltern):
     leinwand.bind("<Configure>",
                   lambda e: (leinwand.itemconfigure(fenster_id, width=e.width), anpassen()))
     return leinwand, innen, leiste
+
+
+def lesbar(text):
+    """HTML-Schreibweise fuer die Anzeige aufloesen: '&amp;' wird zu '&'."""
+    return html_modul.unescape(text or "")
+
+
+def fuer_html(text):
+    """Gegenstueck zu lesbar(): '&' wird wieder zu '&amp;'.
+
+    Anfuehrungszeichen bleiben unangetastet - die Texte landen zwischen
+    Tags, nicht in Attributen.
+    """
+    return html_modul.escape(text or "", quote=False)
 
 
 class Formular(tk.Toplevel):
