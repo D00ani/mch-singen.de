@@ -120,6 +120,10 @@ for n in ["jochen", "alex", "andi", "thorsten", "max", "daniel"]:
         results.append((os.path.relpath(out, ROOT), os.path.getsize(out) // 1024, small.size))
 
 # --- Logos ---
+# favicon.png ist bewusst 180x180: das deckt Tab-Symbol, apple-touch-icon
+# (Empfehlung genau 180) und das "logo" der strukturierten Daten (min. 112)
+# ab und wiegt 11,7 statt 55 KB. Als Vorlage fuer das 128er-Logo reicht das
+# ebenfalls - der Unterschied zur frueheren 512er-Vorlage liegt bei 0,8 %.
 print("Logo 128px:", small_png("media/logos/favicon.png", "mch-logo-128.png", 128))
 # In-place-Quantisierung nur, wenn die Datei noch unkomprimiert ist (>100 KB),
 # damit wiederholte Laeufe das Logo nicht mehrfach quantisieren
