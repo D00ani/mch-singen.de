@@ -95,6 +95,45 @@ def baue_karte(name, link, bild_relativ, webp_relativ, breite, hoehe, einrueckun
     return "\r\n".join(zeilen)
 
 
+def _zeilenanfang(html, position):
+    """Geht von position aus zurueck bis vor die Einrueckung der Zeile."""
+    while position > 0 and html[position - 1] in " \t":
+        position -= 1
+    return position
+
+
+def fuege_sponsor_ein(html, karte, sponsoren, stelle):
+    """Setzt eine Bande an die gewaehlte Stelle. stelle 0 = ganz vorne."""
+    if not sponsoren:
+        anker = html.find(GRID_ANKER)
+        einfuegepunkt = html.find("\r\n", anker) + 2
+        return html[:einfuegepunkt] + karte + "\r\n" + html[einfuegepunkt:]
+    if stelle == 0:
+        anfang = _zeilenanfang(html, sponsoren[0]["match"].start())
+        return html[:anfang] + karte + "\r\n" + html[anfang:]
+    ende = sponsoren[stelle - 1]["match"].end()
+    return html[:ende] + "\r\n" + karte + html[ende:]
+
+
+def ersetze_sponsor(html, sponsor, karte):
+    """Tauscht eine Bande gegen eine neu gebaute aus.
+
+    Die vorhandene Einrueckung muss weichen - baue_karte bringt ihre
+    eigene mit, sonst waechst sie bei jeder Aenderung um eine Stufe.
+    """
+    anfang = _zeilenanfang(html, sponsor["match"].start())
+    return html[:anfang] + karte + html[sponsor["match"].end():]
+
+
+def entferne_sponsor(html, sponsor):
+    """Schneidet eine Bande samt ihrer Zeilen heraus."""
+    anfang = _zeilenanfang(html, sponsor["match"].start())
+    ende = sponsor["match"].end()
+    if html[ende:ende + 2] == "\r\n":
+        ende += 2
+    return html[:anfang] + html[ende:]
+
+
 def bildmasse(relativer_pfad):
     """relativer_pfad ist der Webpfad ab /pages/, z. B. ../media/sponsoren/x.jpg"""
     absolut = os.path.normpath(os.path.join(ROOT, "pages", relativer_pfad))
@@ -197,20 +236,8 @@ def sponsor_hinzufuegen():
         moeglichkeiten += [f"Nach '{s['name']}'" for s in sponsoren]
         stelle = h.waehle_option("An welcher Stelle?", moeglichkeiten)
 
-    if not sponsoren:
-        anker = html.find(GRID_ANKER)
-        einfuegepunkt = html.find("\r\n", anker) + 2
-        neues_html = html[:einfuegepunkt] + neue_karte + "\r\n" + html[einfuegepunkt:]
-    elif stelle == 0:
-        anfang = sponsoren[0]["match"].start()
-        while anfang > 0 and html[anfang - 1] in " \t":
-            anfang -= 1
-        neues_html = html[:anfang] + neue_karte + "\r\n" + html[anfang:]
-    else:
-        ende = sponsoren[stelle - 1]["match"].end()
-        neues_html = html[:ende] + "\r\n" + neue_karte + html[ende:]
-
-    h.schreibe_datei(SPONSOREN_HTML, neues_html)
+    h.schreibe_datei(SPONSOREN_HTML,
+                     fuege_sponsor_ein(html, neue_karte, sponsoren, stelle))
     print(f"\nGespeichert in {os.path.relpath(SPONSOREN_HTML, ROOT)}")
 
 
@@ -252,11 +279,7 @@ def sponsor_bearbeiten():
         print("Abgebrochen.")
         return
 
-    m = sponsor["match"]
-    anfang = m.start()
-    while anfang > 0 and html[anfang - 1] in " \t":
-        anfang -= 1
-    h.schreibe_datei(SPONSOREN_HTML, html[:anfang] + neue_karte + html[m.end():])
+    h.schreibe_datei(SPONSOREN_HTML, ersetze_sponsor(html, sponsor, neue_karte))
     print(f"\nGespeichert in {os.path.relpath(SPONSOREN_HTML, ROOT)}")
 
 
@@ -275,15 +298,7 @@ def sponsor_loeschen():
         print("Abgebrochen.")
         return
 
-    m = sponsor["match"]
-    anfang = m.start()
-    while anfang > 0 and html[anfang - 1] in " \t":
-        anfang -= 1
-    ende = m.end()
-    if html[ende:ende + 2] == "\r\n":
-        ende += 2
-
-    h.schreibe_datei(SPONSOREN_HTML, html[:anfang] + html[ende:])
+    h.schreibe_datei(SPONSOREN_HTML, entferne_sponsor(html, sponsor))
     print(f"\nGeloescht. {os.path.relpath(SPONSOREN_HTML, ROOT)} aktualisiert.")
 
 
