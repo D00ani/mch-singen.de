@@ -30,6 +30,7 @@ import fenster_bausteine as B
 import fenster_seiten as S
 import fenster_seiten_inhalte as I
 import fenster_seiten_personen as P
+import fenster_seiten_rest as R
 import fenster_seiten_sponsoren as SP
 import fenster_seiten_statistik as ST
 import fenster_seiten_technik as TE
@@ -57,6 +58,10 @@ SEITEN = {
     "team":       P.TeamSeite,
     "statistiken": ST.StatistikenSeite,
     "sponsoren":  SP.SponsorenSeite,
+    "bilder":     R.BilderSeite,
+    "trainingstermine": R.TrainingstermineSeite,
+    "rennwochenende":   R.RennwochenendeSeite,
+    "saisonwechsel":    R.SaisonwechselSeite,
 }
 
 # Werkzeug-Modul -> Fensterseite. Was hier nicht steht, oeffnet sich
@@ -74,6 +79,10 @@ MODUL_ZU_SEITE = {
     "team_pflege":       "team",
     "statistiken_pflege": "statistiken",
     "sponsoren_pflege":  "sponsoren",
+    "bilder_pflege":     "bilder",
+    "trainingstermine_import": "trainingstermine",
+    "rennwochenende":    "rennwochenende",
+    "saisonwechsel":     "saisonwechsel",
 }
 
 # Seitenleiste: (Gruppe, [(Beschriftung, Ziel)])
@@ -84,17 +93,17 @@ WERKZEUGE = [
     ]),
     ("Inhalte pflegen", [
         ("Live-Timing", "livetiming_sync"),
-        ("Nach dem Rennen", "rennwochenende"),
+        ("Nach dem Rennen", "#rennwochenende"),
         ("Renntermine", "#termine"),
         ("Ausschreibungs-PDF", "#pdf"),
-        ("Trainingstermine", "trainingstermine_import"),
+        ("Trainingstermine", "#trainingstermine"),
         ("Statistiken", "#statistiken"),
         ("News-Karten", "#news"),
         ("Jahresarchiv", "#archiv"),
         ("Sponsoren & Links", "#sponsoren"),
         ("Vorstand & Trainer", "#team"),
         ("Fragen & Antworten", "#faq"),
-        ("Bilder aufnehmen", "bilder_pflege"),
+        ("Bilder aufnehmen", "#bilder"),
     ]),
     ("Nachsehen", [
         ("Vorschau im Browser", "#vorschau"),
@@ -102,7 +111,7 @@ WERKZEUGE = [
         ("Medien aufräumen", "#medien"),
     ]),
     ("Technik", [
-        ("Saisonwechsel", "saisonwechsel"),
+        ("Saisonwechsel", "#saisonwechsel"),
         ("Technisches Update", "#technik"),
         ("Letzte Änderung rückgängig", "@rueckgaengig"),
     ]),

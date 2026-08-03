@@ -740,10 +740,43 @@ WAS DAS FENSTER SELBST KANN:
     Ausgabe darunter. Bricht ein Schritt ab, laufen die folgenden nicht
     mehr. Veröffentlicht wird hier nichts - das bleibt bei der Fußleiste.
 
-NOCH IM TERMINAL öffnen sich: Live-Timing, Nach dem Rennen,
-Trainingstermine, Statistiken, Sponsoren & Links, Vorstand & Trainer,
-Bilder aufnehmen und der Saisonwechsel-Assistent. Sie stehen in der
-Seitenleiste an derselben Stelle und arbeiten unverändert.
+  VORSTAND & TRAINER
+    Beide Bereiche als Baum. Beim Bearbeiten werden nur die geänderten
+    Felder ersetzt - eigene Bildausschnitte und Instagram-Verlinkungen
+    bleiben erhalten. Ein neuer Name zieht in Überschrift, Bildbeschriftung
+    und Bildbeschreibung mit.
+
+  STATISTIKEN
+    Fünf Bereiche zum Umschalten: die drei Tabellen, die Rekord-Kästen und
+    die Meilenstein-Zahlen. Tabellen sortieren sich nach Jahr bzw. Datum
+    selbst ein; ein "●" zeigt, welche Zelle fett hervorgehoben ist.
+    Die Diagramme entstehen aus der Wertungs-PDF (technisches Update).
+
+  SPONSOREN & LINKS
+    Banden, befreundete Vereine, nützliche Links, die Zahlen im Kopf und
+    der Aufruf "Werde Sponsor". Beim Anlegen einer Bande entsteht die
+    WebP-Fassung und die Anzeigegröße wird berechnet. "Alle Logo-Größen
+    neu berechnen" zeigt vorher, was sich ändert.
+
+  BILDER AUFNEHMEN
+    Liste der Bilder ohne WebP-Fassung mit Größe und Pixelmaßen. Nach dem
+    Umwandeln steht der fertige <picture>-Block da - ein Knopf legt ihn in
+    die Zwischenablage.
+
+  TRAININGSTERMINE IMPORTIEREN
+    Zeigt für jede gefundene Export-Datei gleich an, wie viele Termine
+    erkannt wurden und wie viele Zeilen übersprungen werden. Auf Wunsch
+    wird der Verweis in js/aktuelles.js mit umgestellt.
+
+  NACH DEM RENNEN / SAISONWECHSEL
+    Schritt-für-Schritt-Assistenten. Jeder Schritt hat einen "Öffnen"-Knopf,
+    der direkt auf die passende Seite springt - und merkt sich, was schon
+    erledigt ist. "Von vorne" setzt die Haken zurück.
+
+NUR LIVE-TIMING öffnet sich weiterhin in einem eigenen Terminalfenster.
+Das ist Absicht: es läuft während eines Rennens stundenlang im Hintergrund
+mit. In einem eigenen Fenster läuft es weiter, auch wenn die Pflege
+zwischendurch geschlossen wird.
 
 BEIDES GLEICHZEITIG OFFEN ZU HABEN ist keine gute Idee: beide schreiben in
 dieselben Dateien. Nacheinander ist völlig unproblematisch.
