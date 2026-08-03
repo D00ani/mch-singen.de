@@ -4,37 +4,46 @@ Zentrales Werkzeug fuer die Pflege der MCH-Singen-Webseite - eine
 Anlaufstelle fuer Termine, Statistiken, News, Archiv, Bilder und das
 technische Update.
 
-Beim Beenden wird die Seite geprueft und alles Geaenderte automatisch
-veroeffentlicht.
+Beim Start steht, was gerade ansteht. Beim Beenden wird die Seite geprueft
+und alles Geaenderte automatisch veroeffentlicht.
 
 Ausfuehren: python tools/website_pflege.py
 (oder per Doppelklick auf website-pflege.bat eine Ebene ueber mch-arbeit/)
 """
 import os
-import subprocess
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
+import aenderungsprotokoll
 import archiv_pflege
+import ausschreibung_pdf
 import bilder_pflege
 import faq_pflege
 import jaehrliches_update
 import livetiming_sync
+import medien_aufraeumen
 import news_pflege
 import pflege_hilfen as h
 import pruefe_seite
+import rennwochenende
 import saisonwechsel
 import sponsoren_pflege
 import statistiken_pflege
 import team_pflege
 import termine_verwalten
 import trainingstermine_import
+import uebersicht
 import update_sitemap
+import vorschau
 
-MENUEPUNKTE = [
+# Reine Zeichenketten sind Zwischenueberschriften, Paare sind Menuepunkte.
+MENUE = [
+    "Inhalte pflegen",
     ("Live-Timing: Zeiten der Zeitmessung auf die Seite bringen", livetiming_sync.main),
+    ("Nach dem Rennen: Ergebnisse, News, Bilder, Archiv am Stueck", rennwochenende.main),
     ("Renntermine (Kart/Trial) verwalten", termine_verwalten.main),
+    ("Ausschreibungs-PDF einpflegen", ausschreibung_pdf.main),
     ("Trainingstermine importieren (Excel-Export)", trainingstermine_import.main),
     ("Statistiken-Seite pflegen (Platzierungen, Vereinsmeister, Rekorde, Zahlen)", statistiken_pflege.main),
     ("News-Karten auf 'Aktuelles' pflegen", news_pflege.main),
@@ -43,11 +52,20 @@ MENUEPUNKTE = [
     ("Vorstand & Trainer pflegen", team_pflege.main),
     ("Fragen & Antworten (FAQ) pflegen", faq_pflege.main),
     ("Bilder aufnehmen (WebP + HTML-Block)", bilder_pflege.main),
+
+    "Nachsehen und pruefen",
+    ("Vorschau im Browser (nur auf diesem Rechner)", vorschau.main),
     ("Webseite pruefen (tote Links, Schreibweise, Build)", pruefe_seite.main),
+    ("Was steht an? (Uebersicht wie beim Start)", uebersicht.main),
+    ("Medien aufraeumen (verwaiste und zu grosse Dateien)", medien_aufraeumen.main),
+
+    "Technik",
     ("Saisonwechsel-Assistent (fuehrt durch den Jahreswechsel)", saisonwechsel.main),
     ("Technisches Update (Statistik/Bilder/Copyright/Build + Push)", jaehrliches_update.main),
     ("Letzte Aenderung rueckgaengig machen", h.rueckgaengig),
 ]
+
+MENUEPUNKTE = [eintrag for eintrag in MENUE if isinstance(eintrag, tuple)]
 
 
 def veroeffentlichen():
@@ -69,9 +87,15 @@ def veroeffentlichen():
             return
 
     print("\n" + "=" * 60)
-    print("  Diese Aenderungen werden veroeffentlicht:")
+    print("  Das wird veroeffentlicht:")
     print("=" * 60)
-    subprocess.run(["git", "status", "--short"], cwd=h.ROOT)
+    aenderungsprotokoll.zeige()
+
+    if not h.frage_ja("\nJetzt veroeffentlichen? (j/n): "):
+        print("\nNicht veroeffentlicht. Die Aenderungen liegen weiterhin im")
+        print("Arbeitsordner und gehen nicht verloren.")
+        return
+
     jaehrliches_update.commit_merge_push("Webseiten-Pflege: Aenderungen aktualisiert")
 
 
@@ -79,6 +103,8 @@ def main():
     print("=" * 60)
     print("  MCH Singen - Webseiten-Pflege")
     print("=" * 60)
+
+    h.fuehre_aus(uebersicht.zeige)
 
     print("\nTipp: Mit 'x' kommst du an jeder Stelle einen Schritt zurueck.")
 
@@ -94,9 +120,14 @@ def main():
 
 def _hauptmenue():
     print("\nWas moechtest du tun?")
-    for i, (beschriftung, _) in enumerate(MENUEPUNKTE, start=1):
-        print(f"  {i:2}) {beschriftung}")
-    print("   0) Beenden")
+    nummer = 0
+    for eintrag in MENUE:
+        if isinstance(eintrag, str):
+            print(f"\n  {eintrag}")
+            continue
+        nummer += 1
+        print(f"  {nummer:2}) {eintrag[0]}")
+    print("\n   0) Beenden")
 
     gueltig = {str(i) for i in range(1, len(MENUEPUNKTE) + 1)} | {"0"}
     try:

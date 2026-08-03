@@ -398,26 +398,47 @@ def _alte_sicherungen_aufraeumen():
     _protokoll_schreiben(eintraege[-MAX_SICHERUNGEN:])
 
 
+def letzte_sicherung():
+    """Was ein "Rueckgaengig" jetzt zurueckholen wuerde - oder None.
+
+    Getrennt vom Ausfuehren, damit auch das Fenster (tools/pflege_fenster.py)
+    danach fragen kann, ohne die Terminal-Abfrage mitzuschleppen.
+    """
+    eintraege = _protokoll_eintraege()
+    while eintraege:
+        sicherungsname, relativ = eintraege[-1]
+        sicherungspfad = os.path.join(SICHERUNGS_DIR, sicherungsname)
+        if os.path.isfile(sicherungspfad):
+            zeitpunkt = sicherungsname.split("__")[0]
+            return {
+                "sicherung": sicherungspfad,
+                "ziel": os.path.join(ROOT, relativ),
+                "relativ": relativ,
+                "zeitpunkt": (f"{zeitpunkt[6:8]}.{zeitpunkt[4:6]}.{zeitpunkt[0:4]} "
+                              f"{zeitpunkt[9:11]}:{zeitpunkt[11:13]}:{zeitpunkt[13:15]}"),
+            }
+        # Sicherungsdatei ist weg - Eintrag verwerfen und weiter zurueckgehen
+        eintraege = eintraege[:-1]
+        _protokoll_schreiben(eintraege)
+    return None
+
+
+def sicherung_zuruecknehmen(stand):
+    """Spielt den von letzte_sicherung() gemeldeten Stand zurueck."""
+    shutil.copy2(stand["sicherung"], stand["ziel"])
+    os.remove(stand["sicherung"])
+    _protokoll_schreiben(_protokoll_eintraege()[:-1])
+
+
 def rueckgaengig():
     """Spielt die zuletzt gesicherte Datei zurueck."""
-    eintraege = _protokoll_eintraege()
-    if not eintraege:
+    stand = letzte_sicherung()
+    if not stand:
         print("\nKeine Sicherung vorhanden - es gibt nichts rueckgaengig zu machen.")
         return
 
-    sicherungsname, relativ = eintraege[-1]
-    sicherungspfad = os.path.join(SICHERUNGS_DIR, sicherungsname)
-    zielpfad = os.path.join(ROOT, relativ)
-
-    if not os.path.isfile(sicherungspfad):
-        print(f"\nSicherungsdatei fehlt ({sicherungsname}) - Eintrag wird verworfen.")
-        _protokoll_schreiben(eintraege[:-1])
-        return
-
-    zeitpunkt = sicherungsname.split("__")[0]
-    lesbar = f"{zeitpunkt[6:8]}.{zeitpunkt[4:6]}.{zeitpunkt[0:4]} {zeitpunkt[9:11]}:{zeitpunkt[11:13]}:{zeitpunkt[13:15]}"
-    print(f"\nLetzte Aenderung: {relativ}")
-    print(f"Stand vor der Aenderung vom {lesbar} wuerde wiederhergestellt.")
+    print(f"\nLetzte Aenderung: {stand['relativ']}")
+    print(f"Stand vor der Aenderung vom {stand['zeitpunkt']} wuerde wiederhergestellt.")
     try:
         bestaetigt = frage_ja("Wirklich rueckgaengig machen? (j/n): ")
     except Zurueck:
@@ -426,7 +447,5 @@ def rueckgaengig():
         print("Abgebrochen.")
         return
 
-    shutil.copy2(sicherungspfad, zielpfad)
-    os.remove(sicherungspfad)
-    _protokoll_schreiben(eintraege[:-1])
-    print(f"\n{relativ} wurde auf den vorherigen Stand zurueckgesetzt.")
+    sicherung_zuruecknehmen(stand)
+    print(f"\n{stand['relativ']} wurde auf den vorherigen Stand zurueckgesetzt.")

@@ -76,8 +76,6 @@ for _n in ["trial1", "trial2"]:
     _out = os.path.join(ROOT, f"media/bilder/trial/{_n}.webp")
     _img.save(_out, "WEBP", quality=78, method=6)
     results.append((os.path.relpath(_out, ROOT), os.path.getsize(_out) // 1024, _img.size))
-results += webp("media/bilder/geschichte/dtm_singen.jpg", [650, 1300])
-results += webp("media/bilder/geschichte/formel3.jpg")
 results += webp("media/bilder/ueber-uns/platzhalter.jpg")
 results += webp("media/bilder/kartsport/mach1-kart.png")
 

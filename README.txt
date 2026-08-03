@@ -94,11 +94,23 @@ Datei auf dem Server tatsächlich existiert:
 DU MUSST NUR NOCH:
   PDF-Datei mit dem richtigen Namen in /media/dokumente/ hochladen - fertig!
 
+BEQUEMER GEHT ES ÜBER DAS WERKZEUG:
+    python tools/ausschreibung_pdf.py
+  (oder Menüpunkt "Ausschreibungs-PDF einpflegen")
+Es zeigt, welche PDFs noch fehlen und zu welchem Rennen sie gehören, und
+kopiert die Datei von dort, wo sie gerade liegt (Downloads, Desktop, USB),
+an genau die angekündigte Stelle - mit dem richtigen Namen, ohne Abtippen.
+Im Explorer die Datei mit Rechtsklick "Als Pfad kopieren" greifen und im
+Werkzeug einfügen.
+
 Wichtig beim Dateinamen (GitHub-Server sind streng):
   - Nur Kleinbuchstaben, keine Leerzeichen, keine Umlaute
   - Beispiel: kurzausschreibungmchsingen2026.pdf
   - Den erwarteten Dateinamen für jedes Rennen findest du in /data/timer.txt
     (letztes Feld jeder Zeile, nach dem 7. Semikolon)
+  - Steht dort schon ein heikler Name (z. B. mit "ß"), räumt ihn der
+    Menüpunkt "Heikle Dateinamen aufräumen" auf und schreibt die timer.txt
+    gleich mit um.
 
 -------------------------------------------------------
 3b. MEDIEN RICHTIG VERLINKEN (PDFs, Bilder)
@@ -327,12 +339,44 @@ dafür ist KEIN Build nötig.
 -------------------------------------------------------
 10. WEBSEITEN-PFLEGE - EIN WERKZEUG FÜR ALLES (website-pflege.bat)
 -------------------------------------------------------
+ES GIBT ZWEI STARTPUNKTE, BEIDE MACHEN DASSELBE:
+
+  website-pflege.bat   -> Menü im Terminal (dieser Abschnitt)
+  webseiten-fenster.bat -> Fenster mit Maus (Abschnitt 12)
+
+Das Fenster deckt bisher die Übersicht und das Veröffentlichen ab; alle
+übrigen Werkzeuge öffnet es in einem eigenen Terminalfenster. Es sind
+dieselben Dateien unter /tools/ - nichts ist doppelt vorhanden, und was
+im einen geändert wird, gilt sofort auch im anderen.
+
 Eine Ebene über /mch-arbeit/ und /mch-singen.de-main/ liegt
 website-pflege.bat - der EINE Startpunkt für die gesamte Wartung.
-Einfach per Doppelklick starten, dann im Menü wählen:
+Einfach per Doppelklick starten.
+
+BEIM START STEHT, WAS ANSTEHT: Noch vor dem Menü kommt eine kurze
+Lagemeldung - nächstes Rennen, fehlende Ausschreibungen, veraltetes
+Copyright-Jahr, vergessener Build, noch nicht Veröffentlichtes. So muss man
+nicht selbst daran denken, was fällig ist. Der Punkt "Was steht an?" im
+Menü zeigt dieselbe Übersicht noch einmal.
+
+Dann im Menü wählen:
 
  0) Live-Timing: Zeiten der Zeitmessung auf die Seite bringen -> Abschnitt 11
+ 0b) Nach dem Rennen (Assistent)
+    Geht die vier Schritte durch, die nach jedem Rennen anfallen:
+    Ergebnisse in die Statistik, News-Karte, Bilder, Archiv-Eintrag.
+    Man wählt oben das Rennen aus (aus den Terminen der letzten Wochen),
+    danach steht es bei jedem Schritt im Kopf des Fensters. Jeder Schritt
+    lässt sich mit "n" überspringen - es sind dieselben Werkzeuge wie im
+    Hauptmenü, nur ohne die Gefahr, einen davon zu vergessen.
  1) Renntermine (Kart/Trial) verwalten          -> Abschnitt 2
+ 1b) Ausschreibungs-PDF einpflegen              -> Abschnitt 3
+    Beim Eintragen eines Termins wird der PDF-Pfad schon angekündigt, die
+    Datei kommt aber oft erst Wochen später. Dieses Werkzeug zeigt, welche
+    PDFs noch fehlen, und kopiert die Datei an genau die angekündigte
+    Stelle - man muss den Pfad also nicht abtippen. Enthält der
+    angekündigte Name Umlaute oder Großbuchstaben, wird ein sauberer Name
+    vorgeschlagen und der Termin-Eintrag gleich mit umgeschrieben.
  2) Trainingstermine importieren (Excel-Export) -> Abschnitt 4
  3) Statistiken-Seite pflegen                   -> Abschnitt 5
     (Top-Platzierungen, Vereinsmeister, Rekorde, Meilensteine, Diagramme)
@@ -384,10 +428,51 @@ Einfach per Doppelklick starten, dann im Menü wählen:
     eine Seite, die es nicht gibt, warnt das Werkzeug sofort.
 
  6) Bilder aufnehmen (WebP + HTML-Block)        -> Abschnitt 7
+ 6b) Vorschau im Browser
+    Startet einen kleinen Webserver auf diesem Rechner und öffnet die Seite
+    im Browser - so, wie sie später online aussieht. Es wird nichts
+    veröffentlicht, das sieht nur dieser Rechner.
+    WARUM NICHT EINFACH index.html DOPPELKLICKEN: Der Browser lädt die
+    Datei dann über file:// und blockt genau die Sachen, die die Seite
+    braucht - Countdown, Suche und Live-Timing holen ihre Daten per fetch
+    und bleiben leer. Unbekannte Adressen zeigen hier dieselbe 404-Seite
+    wie bei GitHub Pages.
+    Bei Änderungen an CSS/JS vorher den Build laufen lassen (Abschnitt 9),
+    sonst zeigt die Vorschau noch den alten Stand.
  7) Webseite prüfen
     Findet tote Links, falsche Groß-/Kleinschreibung (die auf dem
     GitHub-Server Bilder verschwinden lässt!), vergessene Build-Schritte
     und noch nicht hochgeladene Kurzausschreibungen.
+    Dazu kommen Prüfungen, die erst später auffallen würden:
+      - Bilder ohne alt-Text (Screenreader und Google sehen dort nichts)
+      - fehlende oder doppelte Seitenbeschreibung, fehlendes Vorschaubild
+        beim Teilen (og:image), fehlender canonical-Link
+      - dieselbe id zweimal auf einer Seite (JavaScript findet dann nur
+        das erste Element - der Rest tut still nichts mehr)
+      - externe Dienste ohne Eintrag in js/klaro-config.js: alles, was von
+        einem fremden Server nachgeladen wird, braucht eine Einwilligung
+        (DSGVO). Solange die Seite alles selbst ausliefert, meldet die
+        Prüfung nichts - sie schlägt an dem Tag an, an dem jemand z. B.
+        ein YouTube-Video oder eine Google-Schriftart einbaut.
+    AUF NACHFRAGE AUCH DIE LINKS INS INTERNET: Beim direkten Aufruf wird
+    gefragt, ob auch die externen Links geprüft werden sollen (dauert ein
+    paar Sekunden, braucht Internet). Sponsoren- und Vereinsseiten ziehen
+    um oder verschwinden, ohne dass es jemand merkt. Beim automatischen
+    Prüfen vor dem Veröffentlichen bleibt das aus, damit es schnell geht.
+ 7b) Medien aufräumen
+    Zeigt für /media/, was niemand mehr braucht und was zu groß ist:
+      - von keiner Seite mehr verlinkt (kann weg)
+      - nicht mehr auf der Seite, aber noch in einem Werkzeug eingetragen
+        (z. B. in optimize_images.py - erst dort austragen)
+      - unnötig groß (Bilder über 300 KB, PDFs über 2 MB, Videos über 5 MB)
+      - Bilder ohne WebP-Fassung
+    Gelöschte Dateien werden vorher gesichert und lassen sich über "Letzte
+    Änderung rückgängig machen" zurückholen.
+    Für zu große Videos werden die fertigen ffmpeg-Befehle ausgegeben.
+    Ein Video mit autoplay lädt JEDER Besucher komplett, auch am Handy -
+    hier lohnt sich die Mühe am meisten. Reihenfolge: Tonspur raus (bei
+    "muted" hört sie ohnehin niemand), neu kodieren, und zusätzlich ein
+    modernes Format anbieten (AV1 spart gegenüber H.264 etwa die Hälfte).
  8) Saisonwechsel-Assistent
     Führt beim Jahreswechsel Schritt für Schritt durch alles: Archiv,
     Diagramm einfrieren, Vereinsmeister, Trainings- und Renntermine,
@@ -421,11 +506,21 @@ dir vorher, wo der Eintrag landet ("Wird an Position 5 von 9 einsortiert"):
     sich nicht zuverlässig sortieren - deshalb fragt das Werkzeug, an
     welcher Stelle des Abschnitts die Karte stehen soll.
 
-VERÖFFENTLICHEN PASSIERT AUTOMATISCH: Beim Beenden mit "0" prüft das
-Werkzeug die Seite, aktualisiert die Datumsangaben in sitemap.xml und
-veröffentlicht dann alles Geänderte (Commit in arbeit -> Merge nach main
--> Push). Werden beim Prüfen Fehler gefunden, wird vorher gefragt, ob
-trotzdem veröffentlicht werden soll.
+VERÖFFENTLICHEN BEIM BEENDEN: Beim Beenden mit "0" prüft das Werkzeug die
+Seite, aktualisiert die Datumsangaben in sitemap.xml und veröffentlicht
+dann alles Geänderte (Commit in arbeit -> Merge nach main -> Push).
+Werden beim Prüfen Fehler gefunden, wird vorher gefragt, ob trotzdem
+veröffentlicht werden soll.
+
+VORHER STEHT IN KLARTEXT DA, WAS RAUSGEHT - nicht die Dateinamen, sondern
+was sich für Besucher ändert:
+    Aktuelles: 2 News-Karten neu (jetzt 7)
+    Renntermine Kart: 1 Termin neu (05.July.2026 09:00 - MCH Singen)
+    Jahresarchiv: 1 Saison neu (jetzt 12)
+    Bild neu: rennen1.webp
+Danach kommt die Frage, ob veröffentlicht werden soll. Mit "n" bleibt
+alles im Arbeitsordner liegen und geht nicht verloren - beim nächsten
+Start steht es wieder in der Lagemeldung.
 
 Nach jedem Menüpunkt kommt man wieder zurück ins Hauptmenü - so lassen
 sich in einem Durchgang z. B. Renntermine eintragen, die Statistik-Seite
@@ -563,4 +658,68 @@ WENN ETWAS KLEMMT:
   - Zwischen zwei Veröffentlichungen liegen mindestens 60 Sekunden
     (einstellbar), damit GitHub nicht bremst. GitHub Pages braucht danach
     wie immer 1-3 Minuten.
+
+-------------------------------------------------------
+12. DAS FENSTER (webseiten-fenster.bat)
+-------------------------------------------------------
+Dieselbe Pflege wie im Terminal, nur mit der Maus. Doppelklick auf
+webseiten-fenster.bat - eine Ebene über /mch-arbeit/, direkt neben
+website-pflege.bat.
+
+WAS DAS FENSTER SELBST KANN:
+
+  ÜBERSICHT (die Startseite)
+    Oben die Boxentafel: nächstes Kart- und Trial-Rennen als Countdown in
+    Tagen, dazu wann zuletzt veröffentlicht wurde. Darunter Karten mit
+    allem, was Aufmerksamkeit braucht - farbiger Streifen links, rot für
+    fällig, orange für Hinweise. Wo ein Werkzeug das Problem löst, sitzt
+    daneben ein "Öffnen"-Knopf, der genau dorthin führt.
+    "Neu prüfen" liest alles noch einmal ein.
+
+  VERÖFFENTLICHEN
+    Unten steht immer, wie viele Änderungen bereitliegen. Der Knopf
+    "Veröffentlichen …" öffnet ein Fenster, das ZUERST zeigt, was rausgeht
+    (in Klartext, siehe Abschnitt 10), dann die Sitemap aktualisiert und
+    die Seite prüft. Erst danach lässt sich der Knopf drücken. Werden
+    Fehler gefunden, heißt er "Trotzdem veröffentlichen" - man kann also,
+    muss aber nicht.
+
+  WEBSEITE PRÜFEN
+    Alle Prüfungen aus Abschnitt 10 als Ergebnisliste: pro Fund eine Karte
+    mit Anzahl, darunter die betroffenen Stellen. Der Haken "Internet-Links"
+    schaltet die Prüfung der externen Adressen dazu (dauert ein paar
+    Sekunden, braucht Verbindung).
+
+  MEDIEN AUFRÄUMEN
+    Tabelle mit Datei, Zustand und Größe: verwaist, nur noch im Werkzeug
+    eingetragen, zu groß, ohne WebP-Fassung. "Verwaiste löschen" fragt mit
+    voller Liste nach und sichert vorher jede Datei. Bei zu großen Videos
+    stehen die fertigen ffmpeg-Befehle zum Kopieren darunter.
+
+  AUSSCHREIBUNGS-PDF EINPFLEGEN
+    Liste der Termine, die noch auf ihre PDF warten. Zeile anklicken,
+    "PDF auswählen ..." - Datei suchen, fertig. Sie wird an die erwartete
+    Stelle kopiert und richtig benannt. Heikle Namen (Umlaute, "ß",
+    Großbuchstaben) werden beim Einpflegen oder über "Namen aufräumen"
+    korrigiert, die timer.txt gleich mit.
+
+  VORSCHAU IM BROWSER
+    Startet und beendet den Vorschau-Server und listet jede Unterseite mit
+    eigenem Knopf auf.
+
+  LETZTE ÄNDERUNG RÜCKGÄNGIG
+    Wie im Terminal, nur mit Nachfrage-Fenster statt j/n.
+
+DIE ÜBRIGEN WERKZEUGE (Renntermine, Statistiken, News, Archiv, Sponsoren,
+Vorstand, FAQ, Bilder, Live-Timing, Trainingstermine, Saisonwechsel,
+Technisches Update) stehen ebenfalls in der Seitenleiste, öffnen sich aber
+noch in einem eigenen Terminalfenster - unverändert, mit denselben Fragen
+wie über das Menü.
+
+BEIDES GLEICHZEITIG OFFEN ZU HABEN ist keine gute Idee: beide schreiben in
+dieselben Dateien. Nacheinander ist völlig unproblematisch.
+
+TECHNISCHES: Gebaut mit Tkinter, das jedem Python beiliegt - es muss also
+nichts nachinstalliert werden. Die Schrift ist Bahnschrift (die DIN-Schrift,
+liegt jedem Windows bei), die Farben sind die der Webseite aus css/style.css.
 =======================================================

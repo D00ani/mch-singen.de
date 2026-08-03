@@ -76,6 +76,20 @@ def baue_li(href, text, einrueckung):
     return f'{einrueckung}<li><a href="{href}" target="_blank"><i class="fa-solid fa-file-pdf"></i> {text}</a></li>'
 
 
+def ersetze_block(html, treffer, neuer_block):
+    """Tauscht eine Saison-Box gegen eine neue aus.
+
+    Wichtig: die vorhandene Einrueckung VOR <details> muss mit weichen.
+    baue_details_block bringt seine eigene mit - bleibt die alte stehen,
+    waechst die Einrueckung bei jeder Aenderung um eine Stufe
+    (16 -> 32 -> 48 Leerzeichen).
+    """
+    start = treffer.start()
+    while start > 0 and html[start - 1] in " \t":
+        start -= 1
+    return html[:start] + neuer_block + html[treffer.end():]
+
+
 def baue_details_block(jahr, lis, einrueckung="                "):
     items = "\r\n".join(baue_li(href, text, einrueckung + "    " * 3) for href, text in lis)
     return (
@@ -272,9 +286,7 @@ def eintrag_verwalten():
             lis[li_idx] = (eingaben["href"], eingaben["text"])
 
     neuer_block = baue_details_block(jahr, lis)
-    m = jahr_eintrag["match"]
-    neues_html = html[:m.start()] + neuer_block + html[m.end():]
-    speichere_html(neues_html)
+    speichere_html(ersetze_block(html, jahr_eintrag["match"], neuer_block))
     print(f"\nGespeichert in {os.path.relpath(ARCHIV_PATH, ROOT)}")
 
 

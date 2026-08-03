@@ -8,3 +8,6 @@ __pycache__/
 # Einstellungen des Live-Timings: enthalten den Pfad zur Datenbank der
 # Zeitmessung und sind damit von Rechner zu Rechner verschieden
 tools/livetiming.config.json
+
+# Absturzbericht des Fensters (tools/pflege_fenster.py) - rein oertlich
+tools/letzter-fehler.txt
