@@ -183,6 +183,8 @@ def pruefe_meta():
     beschreibungen = {}
 
     for html in html_dateien():
+        if os.path.basename(html) in INTERNE_SEITEN:
+            continue
         anzeige = os.path.relpath(html, ROOT)
         inhalt = open(html, encoding="utf-8").read()
 
@@ -309,6 +311,169 @@ def pruefe_externe_links(fortschritt=True):
 
 
 # ------------------------------------------------------------------
+# Suchindex, Ladegewicht, Schreibweisen
+# ------------------------------------------------------------------
+
+SUCHE_JS = os.path.join(ROOT, "js", "suche.js")
+SUCHE_EINTRAG = re.compile(
+    r"url:\s*'([^']*)'\s*,\s*titel:\s*'([^']*)'\s*,\s*beschreibung:\s*'([^']*)'", re.DOTALL)
+
+# Seiten, die bewusst nicht in der Suche auftauchen
+NICHT_SUCHBAR = {"suche.html", "404.html", "underconstruction.html", "status.html"}
+
+# Von tools/statusseite.py erzeugt: nur fuer uns, nicht fuer Besucher.
+# Titel, Beschreibung und Vorschaubild braucht sie deshalb nicht.
+INTERNE_SEITEN = {"status.html"}
+
+
+def pruefe_suchindex():
+    """js/suche.js traegt die durchsuchbaren Seiten fest ein. Wird eine
+    Seite neu angelegt, merkt das sonst niemand - sie ist dann ueber die
+    Suche der Webseite einfach nicht auffindbar."""
+    if not os.path.isfile(SUCHE_JS):
+        return []
+
+    inhalt = open(SUCHE_JS, encoding="utf-8").read()
+    eintraege = SUCHE_EINTRAG.findall(inhalt)
+    im_index = {os.path.basename(url) for url, _, _ in eintraege}
+
+    maengel = []
+    for pfad in html_dateien():
+        name = os.path.basename(pfad)
+        if name in NICHT_SUCHBAR or name in im_index:
+            continue
+        maengel.append(f"{name} fehlt im Suchindex - ueber die Suche nicht auffindbar")
+
+    for url, titel, beschreibung in eintraege:
+        # Der Index enthaelt auch Verweise nach draussen (z. B. den Shop) -
+        # die zeigen auf keine eigene Seite und muessen nicht existieren.
+        if url.startswith(("http://", "https://", "//")) or "." in url.split("/")[0]:
+            continue
+        name = os.path.basename(url)
+        ziel = os.path.join(ROOT, "index.html") if name == "index.html" \
+            else os.path.join(ROOT, "pages", name)
+        if not os.path.isfile(ziel):
+            maengel.append(f"Suchindex verweist auf {name} - diese Seite gibt es nicht")
+        elif not titel.strip() or not beschreibung.strip():
+            maengel.append(f"Suchindex-Eintrag {name}: Titel oder Beschreibung ist leer")
+
+    return maengel
+
+
+# Was der Browser ungefragt nachlaedt (verlinkte PDFs gehoeren NICHT dazu)
+LADE_TAG = re.compile(r"<(img|source|script|video|link|picture|/picture)\b([^>]*)>", re.IGNORECASE)
+LADE_ATTR = re.compile(r'(src|srcset|href|poster)="([^"]+)"', re.IGNORECASE)
+
+# Ab hier wird es auf einer Mobilverbindung unangenehm
+LADEBUDGET_KB = 2500
+
+
+def _dateigroesse(basis, verweis):
+    pfad = verweis.strip().split(" ")[0]
+    if not pfad or pfad.startswith(("http://", "https://", "//", "mailto:", "tel:", "#", "data:")):
+        return 0, None
+    voll = os.path.normpath(os.path.join(basis, pfad.lstrip("/")))
+    if not os.path.isfile(voll):
+        return 0, None
+    return os.path.getsize(voll), voll
+
+
+def seitengewicht(html):
+    """(KB, groesste Einzeldatei) - was beim Aufruf der Seite wirklich laedt.
+
+    Innerhalb eines <picture> holt der Browser genau EINE Fassung. Deshalb
+    zaehlt hier nur die groesste davon (schlechtester Fall), nicht die Summe.
+    """
+    basis = os.path.dirname(html)
+    inhalt = open(html, encoding="utf-8").read()
+
+    summe = os.path.getsize(html)
+    gesehen = set()
+    groesste = (0, "")
+    in_picture = False
+    picture_kandidaten = []
+
+    def uebernimm(groesse, voll):
+        nonlocal summe, groesste
+        if voll in gesehen:
+            return
+        gesehen.add(voll)
+        summe += groesse
+        if groesse > groesste[0]:
+            groesste = (groesse, os.path.relpath(voll, ROOT).replace(os.sep, "/"))
+
+    for tag, rest in LADE_TAG.findall(inhalt):
+        tag = tag.lower()
+        if tag == "picture":
+            in_picture, picture_kandidaten = True, []
+            continue
+        if tag == "/picture":
+            if picture_kandidaten:
+                uebernimm(*max(picture_kandidaten, key=lambda e: e[0]))
+            in_picture = False
+            continue
+        if tag == "link" and not re.search(r'rel="(stylesheet|icon|apple-touch-icon)"', rest, re.I):
+            continue
+
+        for attr, wert in LADE_ATTR.findall(rest):
+            if tag == "link" and attr.lower() != "href":
+                continue
+            for teil in wert.split(","):
+                groesse, voll = _dateigroesse(basis, teil)
+                if not voll:
+                    continue
+                if in_picture and tag in ("source", "img"):
+                    picture_kandidaten.append((groesse, voll))
+                else:
+                    uebernimm(groesse, voll)
+
+    return summe // 1024, groesste
+
+
+def pruefe_ladebudget():
+    schwer = []
+    for pfad in html_dateien():
+        kb, (groesste_kb, groesste_datei) = seitengewicht(pfad)
+        if kb > LADEBUDGET_KB:
+            anzeige = os.path.relpath(pfad, ROOT)
+            schwer.append(f"{anzeige}: {kb / 1024:.1f} MB laden beim Aufruf "
+                          f"(groesste Datei: {groesste_datei}, {groesste_kb // 1024} KB)")
+    return sorted(schwer, reverse=True)
+
+
+# Gewuenschte Schreibweise -> was stattdessen im Text steht.
+# Abgeleitet aus dem Bestand: die jeweils klar haeufigere Form gewinnt.
+SCHREIBWEISEN = [
+    ("MCH Singen",         [r"MCH-Singen"]),
+    ("Trialsport",         [r"Trial-Sport"]),
+    ("Kartslalom",         [r"Kart-Slalom", r"Kart Slalom"]),
+    ("Bodensee-Kart-Cup",  [r"Bodensee Kart Cup", r"Bodensee-Kart Cup"]),
+    ("Kartsport",          [r"Kart-Sport"]),
+]
+
+
+def pruefe_schreibweisen():
+    """Vereinsbegriffe einheitlich halten. Ueber Jahre und mehrere Autoren
+    driftet das auseinander, ohne dass es beim Lesen auffaellt."""
+    treffer = []
+    for pfad in html_dateien():
+        anzeige = os.path.relpath(pfad, ROOT)
+        inhalt = open(pfad, encoding="utf-8").read()
+        # Nur sichtbarer Text - in Adressen und Klassennamen ist die
+        # Schreibweise oft bewusst anders (z. B. trial-sport.html)
+        text = re.sub(r"<(script|style)\b.*?</\1>", " ", inhalt, flags=re.DOTALL | re.IGNORECASE)
+        text = re.sub(r"<[^>]+>", " ", text)
+
+        for gewuenscht, falsche in SCHREIBWEISEN:
+            for muster in falsche:
+                anzahl = len(re.findall(muster, text))
+                if anzahl:
+                    treffer.append(f"{anzeige}: {anzahl}x \"{muster}\" - "
+                                   f"ueblich ist \"{gewuenscht}\"")
+    return treffer
+
+
+# ------------------------------------------------------------------
 # Alles zusammen
 # ------------------------------------------------------------------
 
@@ -332,11 +497,15 @@ def pruefe_alles(still=False, extern=False):
     doppelte_ids = pruefe_doppelte_ids()
     meta_maengel = pruefe_meta()
     drittanbieter = pruefe_drittanbieter()
+    suchindex = pruefe_suchindex()
+    ladebudget = pruefe_ladebudget()
+    schreibweisen = pruefe_schreibweisen()
     kaputte_links = pruefe_externe_links(fortschritt=not still) if extern else []
 
     kritisch = bool(tote or schreibweise or veralteter_build)
     hinweise = bool(fehlende_pdfs or ohne_alt or doppelte_ids or meta_maengel
-                    or drittanbieter or kaputte_links)
+                    or drittanbieter or kaputte_links or suchindex
+                    or ladebudget or schreibweisen)
 
     if not still or kritisch or hinweise:
         print("\n" + "=" * 60)
@@ -363,6 +532,18 @@ def pruefe_alles(still=False, extern=False):
     _abschnitt(f"WARNUNG - {len(kaputte_links)} externe(r) Link(s) antworten nicht:",
                kaputte_links,
                "Menuepunkt 'Sponsoren-Seite pflegen' bzw. Link im HTML korrigieren")
+
+    _abschnitt(f"Hinweis - {len(suchindex)} Punkt(e) beim Suchindex\n"
+               "(js/suche.js fuehrt die durchsuchbaren Seiten fest auf):",
+               suchindex)
+
+    _abschnitt(f"Hinweis - {len(ladebudget)} Seite(n) ueber {LADEBUDGET_KB // 1024} MB Ladegewicht\n"
+               "(das laedt bei jedem Aufruf, auch am Handy):",
+               ladebudget,
+               "Menuepunkt 'Medien aufraeumen' zeigt, was sich verkleinern laesst")
+
+    _abschnitt(f"Hinweis - {len(schreibweisen)} uneinheitliche Schreibweise(n):",
+               schreibweisen)
 
     _abschnitt(f"Hinweis - {len(doppelte_ids)}x dieselbe id auf einer Seite\n"
                "(JavaScript findet dann nur das erste Element):",

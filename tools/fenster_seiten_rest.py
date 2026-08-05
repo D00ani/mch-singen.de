@@ -13,7 +13,7 @@ import os
 import sys
 import tkinter as tk
 from datetime import date, timedelta
-from tkinter import messagebox
+from tkinter import messagebox, ttk
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
@@ -27,6 +27,108 @@ ROOT = h.ROOT
 
 
 # ------------------------------------------------------------------
+# Wiederherstellen aus dem Verlauf
+# ------------------------------------------------------------------
+
+class VerlaufSeite(Seite):
+    titel = "Verlauf und Wiederherstellen"
+    untertitel = ("Vor jeder Änderung legt das Werkzeug eine Sicherung an. Hier stehen "
+                  "alle aufgehobenen Stände — nicht nur der letzte.")
+
+    def baue(self):
+        self.knopf("Wiederherstellen", self.wiederherstellen, "haupt")
+        self.knopf("Neu einlesen", self.aktualisieren)
+        self.baum = None
+        self.staende = {}
+
+    def aktualisieren(self):
+        self.leeren()
+        self.staende = h.sicherungs_verlauf()
+        gesamt = sum(len(v) for v in self.staende.values())
+
+        B.abschnitt(self.inhalt, self.s, "Aufgehobene Stände",
+                    f"{gesamt} Stände zu {len(self.staende)} Datei(en) · "
+                    f"Platz für {h.MAX_SICHERUNGEN}")
+
+        if not self.staende:
+            B.karte(self.inhalt, self.s, uebersicht.INFO, "Noch keine Sicherung vorhanden.",
+                    "Sobald du etwas änderst, sammeln sich hier die Stände.")
+            self.baum = None
+            return
+
+        huelle = tk.Frame(self.inhalt, bg=B.FARBEN["grund"])
+        huelle.pack(fill="both", expand=True)
+        self.baum = ttk.Treeview(huelle, columns=("zeit", "groesse"),
+                                 show="tree headings", height=15)
+        self.baum.heading("#0", text="DATEI / STAND")
+        self.baum.heading("zeit", text="GESICHERT AM")
+        self.baum.heading("groesse", text="GRÖSSE")
+        self.baum.column("#0", width=360)
+        self.baum.column("zeit", width=190)
+        self.baum.column("groesse", width=100, anchor="e")
+        leiste = ttk.Scrollbar(huelle, orient="vertical", command=self.baum.yview)
+        self.baum.configure(yscrollcommand=leiste.set)
+        leiste.pack(side="right", fill="y")
+        self.baum.pack(side="left", fill="both", expand=True)
+
+        for nummer, (relativ, liste) in enumerate(sorted(self.staende.items())):
+            knoten = self.baum.insert("", "end", iid=f"d{nummer}",
+                                      text=f"{relativ.replace(os.sep, '/')}   ({len(liste)})",
+                                      values=(liste[0]["zeitpunkt"] + "  (neuester)", ""),
+                                      open=nummer == 0)
+            for lauf, stand in enumerate(liste):
+                kb = stand["groesse"] / 1024
+                self.baum.insert(knoten, "end", iid=f"d{nummer}s{lauf}",
+                                 text=f"  Stand {lauf + 1}",
+                                 values=(stand["zeitpunkt"],
+                                         f"{kb/1024:.1f} MB" if kb > 1024 else f"{kb:.0f} KB"))
+        self.baum.bind("<Double-1>", lambda _: self.wiederherstellen())
+
+        tk.Label(self.inhalt, bg=B.FARBEN["grund"], fg=B.FARBEN["gedimmt"],
+                 font=self.s.klein, justify="left", anchor="w", wraplength=640,
+                 text=("Der aktuelle Stand wird vor dem Wiederherstellen selbst noch "
+                       "gesichert — auch dieser Schritt lässt sich also zurücknehmen. "
+                       f"Es werden die letzten {h.MAX_SICHERUNGEN} Änderungen "
+                       "aufgehoben, ältere fallen heraus.")).pack(anchor="w", pady=(12, 0))
+
+    def wiederherstellen(self):
+        if not self.baum or not self.baum.selection():
+            messagebox.showinfo("Nichts gewählt",
+                                "Bitte einen einzelnen Stand in der Liste anklicken.")
+            return
+
+        kennung = self.baum.selection()[0]
+        if "s" not in kennung:
+            messagebox.showinfo("Datei gewählt",
+                                "Bitte einen einzelnen Stand unterhalb der Datei anklicken "
+                                "— dort steht, von wann er ist.")
+            return
+
+        datei, lauf = (int(teil) for teil in kennung[1:].split("s"))
+        relativ = sorted(self.staende)[datei]
+        stand = self.staende[relativ][lauf]
+
+        if not messagebox.askyesno(
+                "Wiederherstellen",
+                f"{relativ.replace(os.sep, '/')}\n\n"
+                f"wird auf den Stand von {stand['zeitpunkt']} zurückgesetzt.\n\n"
+                "Der jetzige Stand wird vorher gesichert.\n\nFortfahren?"):
+            return
+
+        try:
+            h.sicherung_einspielen(stand)
+        except OSError as fehler:
+            messagebox.showerror("Fehlgeschlagen", str(fehler))
+            return
+
+        messagebox.showinfo("Wiederhergestellt",
+                            f"{relativ.replace(os.sep, '/')} steht wieder auf dem "
+                            f"Stand von {stand['zeitpunkt']}.")
+        self.aktualisieren()
+        self.app.fuss_auffrischen()
+
+
+# ------------------------------------------------------------------
 # Bilder aufnehmen
 # ------------------------------------------------------------------
 
@@ -37,6 +139,7 @@ class BilderSeite(Seite):
 
     def baue(self):
         self.knopf("WebP erzeugen", self.aufnehmen, "haupt")
+        self.knopf("Alle als Galerie", self.stapel)
         self.knopf("Neu einlesen", self.aktualisieren)
         self.baum = None
         self.kandidaten = []
@@ -72,6 +175,7 @@ class BilderSeite(Seite):
         self.baum = self.tabelle(self.inhalt, ("Datei", "Größe", "Pixel"),
                                  (400, 110, 130), hoehe=min(len(self.kandidaten), 12),
                                  zeilenzahl=len(self.kandidaten))
+        self.baum.configure(selectmode="extended")   # mehrere auf einmal waehlbar
         from PIL import Image
         for nummer, pfad in enumerate(self.kandidaten):
             try:
@@ -131,8 +235,62 @@ class BilderSeite(Seite):
         self._zeige_block(erzeugt, block)
         self.app.fuss_auffrischen()
 
-    def _zeige_block(self, erzeugt, block):
-        B.abschnitt(self.inhalt, self.s, "Erzeugt")
+    def stapel(self):
+        """Mehrere Fotos auf einmal - nach einem Rennen kommen 20, nicht eins."""
+        modul = self._modul()
+        if modul is None or not self.kandidaten:
+            return
+
+        gewaehlt = ([self.kandidaten[int(k)] for k in self.baum.selection()]
+                    if self.baum and self.baum.selection() else list(self.kandidaten))
+
+        werte = B.frage_formular(
+            self.rahmen, self.s, f"{len(gewaehlt)} Bilder als Galerie", [
+                {"schluessel": "alt", "beschriftung": "Bildbeschreibung",
+                 "hinweis": "gilt für alle; wird durchnummeriert"},
+                {"schluessel": "ort", "beschriftung": "Wird eingebunden auf",
+                 "art": "auswahl", "optionen": ["Unterseite in /pages/", "Startseite"]},
+            ],
+            einleitung=("Alle gewählten Bilder werden als Galerie-Kacheln aufgenommen "
+                        "(400 und 800 Pixel breit). Ohne Auswahl werden alle "
+                        f"{len(self.kandidaten)} genommen."))
+        if not werte:
+            return
+
+        von_unterseite = werte["ort"].startswith("Unterseite")
+        breiten = next(v["breiten"] for v in modul.VERWENDUNGEN
+                       if v["name"].startswith("Kleines"))
+
+        bloecke, erzeugt_alle, fehler = [], [], []
+        for nummer, quelle in enumerate(gewaehlt, start=1):
+            try:
+                erzeugt, masse = modul.erzeuge_webp(quelle, breiten)
+            except Exception as f:
+                fehler.append(f"{os.path.basename(quelle)}: {f}")
+                continue
+            erzeugt_alle += erzeugt
+            beschriftung = B.fuer_html(f"{werte['alt']} ({nummer})")
+            bloecke.append(modul.baue_picture_block(quelle, erzeugt, masse,
+                                                    von_unterseite, beschriftung))
+
+        if fehler:
+            messagebox.showwarning("Nicht alle umgewandelt", "\n".join(fehler[:8]))
+        if not bloecke:
+            return
+
+        einrueckung = " " * 16
+        galerie = (f'{" " * 12}<div class="galerie-grid">\r\n'
+                   + "\r\n".join(einrueckung + b.replace("\n", "\n" + " " * 4)
+                                 for b in bloecke)
+                   + f'\r\n{" " * 12}</div>')
+
+        self.aktualisieren()
+        self._zeige_block(erzeugt_alle, galerie,
+                          f"{len(bloecke)} Bilder als Galerie")
+        self.app.fuss_auffrischen()
+
+    def _zeige_block(self, erzeugt, block, ueberschrift="Erzeugt"):
+        B.abschnitt(self.inhalt, self.s, ueberschrift)
         for ziel, (breite, hoehe), kb in erzeugt:
             B.karte(self.inhalt, self.s, 2,
                     os.path.relpath(ziel, ROOT).replace(os.sep, "/"),

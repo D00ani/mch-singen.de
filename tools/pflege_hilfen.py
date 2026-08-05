@@ -398,6 +398,48 @@ def _alte_sicherungen_aufraeumen():
     _protokoll_schreiben(eintraege[-MAX_SICHERUNGEN:])
 
 
+def _lesbarer_zeitpunkt(sicherungsname):
+    z = sicherungsname.split("__")[0]
+    return f"{z[6:8]}.{z[4:6]}.{z[0:4]} {z[9:11]}:{z[11:13]}:{z[13:15]}"
+
+
+def sicherungs_verlauf():
+    """Alle vorhandenen Sicherungen, je Datei gebuendelt, neueste zuerst.
+
+    Liefert {relativer Pfad: [{sicherung, ziel, zeitpunkt, groesse}, ...]}.
+    Der Ordner haelt bis zu MAX_SICHERUNGEN Staende - ueber 'Rueckgaengig'
+    ist aber nur der letzte erreichbar, deshalb diese Uebersicht.
+    """
+    verlauf = {}
+    for sicherungsname, relativ in _protokoll_eintraege():
+        pfad = os.path.join(SICHERUNGS_DIR, sicherungsname)
+        if not os.path.isfile(pfad):
+            continue
+        verlauf.setdefault(relativ, []).append({
+            "sicherung": pfad,
+            "ziel": os.path.join(ROOT, relativ),
+            "relativ": relativ,
+            "zeitpunkt": _lesbarer_zeitpunkt(sicherungsname),
+            "groesse": os.path.getsize(pfad),
+        })
+    for staende in verlauf.values():
+        staende.reverse()          # neueste zuerst
+    return verlauf
+
+
+def sicherung_einspielen(stand):
+    """Spielt einen beliebigen Stand aus dem Verlauf zurueck.
+
+    Anders als sicherung_zuruecknehmen() wird der Eintrag NICHT aus dem
+    Protokoll entfernt - der aktuelle Stand wird vorher zusaetzlich
+    gesichert, damit auch dieser Schritt umkehrbar bleibt.
+    """
+    if os.path.isfile(stand["ziel"]):
+        sicherung_anlegen(stand["ziel"])
+    os.makedirs(os.path.dirname(stand["ziel"]), exist_ok=True)
+    shutil.copy2(stand["sicherung"], stand["ziel"])
+
+
 def letzte_sicherung():
     """Was ein "Rueckgaengig" jetzt zurueckholen wuerde - oder None.
 
@@ -409,13 +451,11 @@ def letzte_sicherung():
         sicherungsname, relativ = eintraege[-1]
         sicherungspfad = os.path.join(SICHERUNGS_DIR, sicherungsname)
         if os.path.isfile(sicherungspfad):
-            zeitpunkt = sicherungsname.split("__")[0]
             return {
                 "sicherung": sicherungspfad,
                 "ziel": os.path.join(ROOT, relativ),
                 "relativ": relativ,
-                "zeitpunkt": (f"{zeitpunkt[6:8]}.{zeitpunkt[4:6]}.{zeitpunkt[0:4]} "
-                              f"{zeitpunkt[9:11]}:{zeitpunkt[11:13]}:{zeitpunkt[13:15]}"),
+                "zeitpunkt": _lesbarer_zeitpunkt(sicherungsname),
             }
         # Sicherungsdatei ist weg - Eintrag verwerfen und weiter zurueckgehen
         eintraege = eintraege[:-1]

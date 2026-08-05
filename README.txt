@@ -444,6 +444,17 @@ Dann im Menü wählen:
     GitHub-Server Bilder verschwinden lässt!), vergessene Build-Schritte
     und noch nicht hochgeladene Kurzausschreibungen.
     Dazu kommen Prüfungen, die erst später auffallen würden:
+      - SUCHINDEX: js/suche.js führt die durchsuchbaren Seiten FEST auf.
+        Eine neu angelegte Seite ist sonst über die Suche der Webseite
+        einfach nicht auffindbar, ohne dass es jemand merkt.
+      - LADEGEWICHT je Seite: was beim Aufruf wirklich nachlädt (Bilder,
+        Video, CSS, JS - verlinkte PDFs zählen nicht mit, die lädt niemand
+        ungefragt). Bei einem <picture> zählt nur die größte Fassung, weil
+        der Browser genau eine davon holt. Über 2,5 MB kommt eine Warnung.
+      - SCHREIBWEISEN: Vereinsbegriffe einheitlich halten (MCH Singen,
+        Trialsport, Kartslalom, Bodensee-Kart-Cup). Über Jahre und mehrere
+        Autoren driftet das auseinander, ohne beim Lesen aufzufallen.
+        Die Liste steht in tools/pruefe_seite.py unter SCHREIBWEISEN.
       - Bilder ohne alt-Text (Screenreader und Google sehen dort nichts)
       - fehlende oder doppelte Seitenbeschreibung, fehlendes Vorschaubild
         beim Teilen (og:image), fehlender canonical-Link
@@ -710,6 +721,22 @@ WAS DAS FENSTER SELBST KANN:
   LETZTE ÄNDERUNG RÜCKGÄNGIG
     Wie im Terminal, nur mit Nachfrage-Fenster statt j/n.
 
+  VERLAUF UND WIEDERHERSTELLEN
+    "Rückgängig" holt nur den letzten Stand zurück - aufgehoben werden aber
+    die letzten 50 Änderungen. Hier stehen sie alle, nach Datei gebündelt
+    und mit Zeitpunkt. Ein Klick stellt einen beliebigen Stand wieder her;
+    der jetzige wird vorher selbst gesichert, also ist auch das umkehrbar.
+
+  STATUSSEITE FÜRS HANDY
+    Schreibt pages/status.html - die Lagemeldung als kleine Seite, die auch
+    am Telefon lesbar ist. So siehst du unterwegs, was ansteht, ohne
+    Rechner. Sie wird beim Veröffentlichen automatisch mitgeschrieben.
+    Sie ist NICHT verlinkt, steht auf "noindex" und ist in robots.txt
+    ausgeschlossen - sie taucht in keiner Suchmaschine auf. Geheim ist sie
+    damit nicht; es steht aber auch nichts drauf, was nicht ohnehin
+    öffentlich wäre.
+    Erreichbar unter https://mch-singen.de/pages/status.html
+
   RENNTERMINE VERWALTEN
     Umschalter Kart/Trial, darunter die Termine mit lesbarem Datum
     (07.06.2026 statt 07;June;2026). Fehlende Ausschreibungen sind in der
@@ -762,6 +789,10 @@ WAS DAS FENSTER SELBST KANN:
     Liste der Bilder ohne WebP-Fassung mit Größe und Pixelmaßen. Nach dem
     Umwandeln steht der fertige <picture>-Block da - ein Knopf legt ihn in
     die Zwischenablage.
+    "ALLE ALS GALERIE" nimmt mehrere Bilder auf einmal (nach einem Rennen
+    kommen 20 Fotos, nicht eins): mit Strg oder Umschalt mehrere auswählen
+    - oder ohne Auswahl alle - und es entsteht ein fertiger Galerie-Block
+    mit durchnummerierten Bildbeschreibungen.
 
   TRAININGSTERMINE IMPORTIEREN
     Zeigt für jede gefundene Export-Datei gleich an, wie viele Termine

@@ -38,6 +38,7 @@ import fenster_seiten_texte as T
 import jaehrliches_update
 import pflege_hilfen as h
 import pruefe_seite
+import statusseite
 import update_sitemap
 
 ROOT = h.ROOT
@@ -62,6 +63,7 @@ SEITEN = {
     "trainingstermine": R.TrainingstermineSeite,
     "rennwochenende":   R.RennwochenendeSeite,
     "saisonwechsel":    R.SaisonwechselSeite,
+    "verlauf":    R.VerlaufSeite,
 }
 
 # Werkzeug-Modul -> Fensterseite. Was hier nicht steht, oeffnet sich
@@ -114,6 +116,8 @@ WERKZEUGE = [
         ("Saisonwechsel", "#saisonwechsel"),
         ("Technisches Update", "#technik"),
         ("Letzte Änderung rückgängig", "@rueckgaengig"),
+        ("Verlauf und Wiederherstellen", "#verlauf"),
+        ("Statusseite fürs Handy", "@statusseite"),
     ]),
 ]
 
@@ -333,6 +337,20 @@ class PflegeFenster:
             self.seiten[self.aktuelle].aktualisieren()
         self.fuss_auffrischen()
 
+    # -------------------------------------------------- Statusseite
+    def statusseite(self):
+        geaendert, _ = mitschnitt(statusseite.schreiben, still=True)
+        einleitung = ("Die Statusseite wurde neu geschrieben." if geaendert
+                      else "Die Statusseite war bereits aktuell.")
+        messagebox.showinfo(
+            "Statusseite fürs Handy",
+            f"{einleitung}\n\n"
+            "Nach dem Veröffentlichen erreichbar unter\n"
+            "https://mch-singen.de/pages/status.html\n\n"
+            "Nicht verlinkt, auf „noindex“, in robots.txt ausgeschlossen — "
+            "sie taucht also in keiner Suchmaschine auf.")
+        self.fuss_auffrischen()
+
     # -------------------------------------------------- Veroeffentlichen
     def veroeffentlichen(self):
         VeroeffentlichenFenster(self)
@@ -418,6 +436,9 @@ class VeroeffentlichenFenster:
 
     def _pruefen(self):
         def arbeit():
+            # Statusseite mitziehen, damit die Lagemeldung am Handy zum
+            # veroeffentlichten Stand passt
+            mitschnitt(statusseite.schreiben, still=True)
             _, ausgabe_sitemap = mitschnitt(
                 update_sitemap.pruefe_und_aktualisiere, automatisch=True)
             sauber, ausgabe_pruefung = mitschnitt(pruefe_seite.pruefe_alles, still=True)
