@@ -28,6 +28,16 @@
     <script defer type="text/javascript" src="../js/suche.min.js"></script>
 </head>
 <body>
+    <!-- Dark-Mode setzen, BEVOR der Browser zeichnet - sonst blitzt bei jedem
+         Seitenaufruf kurz die helle Seite auf. Muss inline und ohne defer als
+         erstes im <body> stehen: im <head> gibt es document.body noch nicht,
+         und css/dark.css haengt komplett an body.dark-mode.
+         Der Umschalter selbst bleibt in js/main.js (Abschnitt 2). -->
+    <script id="mch-dark-mode-vorab">
+    (function(){try{var s=localStorage.getItem('dark-mode');
+    if(s==='enabled'||(s===null&&window.matchMedia('(prefers-color-scheme: dark)').matches))
+    document.body.classList.add('dark-mode');}catch(e){}})();
+    </script>
 
     <header>
         <div class="logo-container">

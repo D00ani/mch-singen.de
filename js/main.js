@@ -67,10 +67,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const themeToggleBtn = document.getElementById('theme-toggle');
     const body = document.body;
 
-    // theme-color Meta-Tag für mobile Browser-Toolbar
-    const themeColorMeta = document.createElement('meta');
-    themeColorMeta.name = 'theme-color';
-    document.head.appendChild(themeColorMeta);
+    // theme-color Meta-Tag für mobile Browser-Toolbar.
+    // index.html bringt bereits eines mit - dann das nehmen, statt ein zweites
+    // anzuhängen (bei zwei Tags gilt das erste, unser Wert käme nie an).
+    let themeColorMeta = document.querySelector('meta[name="theme-color"]');
+    if (!themeColorMeta) {
+        themeColorMeta = document.createElement('meta');
+        themeColorMeta.name = 'theme-color';
+        document.head.appendChild(themeColorMeta);
+    }
 
     // Theme laden: gespeicherte Präferenz hat Vorrang, sonst System-Einstellung
     const savedTheme = localStorage.getItem('dark-mode');
