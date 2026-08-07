@@ -2,33 +2,74 @@
    4. SEITENMENÜ (ASIDE / NAV)
    ========================================= */
 
+/* Einfarbige Flaeche statt Verlauf von #0a1535 nach #111111. Der alte
+   Verlauf wechselte ueber die Panelhoehe von Markennavy zu praktisch
+   Schwarz - alle anderen Flaechen der Seite sind einfarbig. */
 aside {
     position: fixed;
     top: 0;
     bottom: 0;
     left: 0;
     width: 300px;
-    background: linear-gradient(180deg, #0a1535 0%, #111111 100%);
+    background: #0c142e;
     color: #fff;
     padding: 0 16px 40px 16px;
-    box-shadow: 6px 0 36px rgba(0,0,0,0.55);
+    box-shadow: 6px 0 36px rgba(0, 0, 0, 0.45);
     z-index: 1000;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
     scrollbar-width: thin;
-    scrollbar-color: rgba(100, 180, 255, 0.45) transparent;
+    scrollbar-color: rgba(255, 255, 255, 0.25) transparent;
+
+    /* Geschlossen wird das Menue nicht nur weggeschoben, sondern auch
+       unsichtbar geschaltet. Ohne visibility bleiben die fuenfzehn Links
+       trotz translateX(-100%) in der Tab-Reihenfolge: wer mit der Tastatur
+       navigiert, tabbt sich erst durch ein unsichtbares Menue.
+       Die Verzoegerung sorgt dafuer, dass das Ausblenden erst NACH dem
+       Zufahren greift, die Animation also sichtbar bleibt. */
+    visibility: hidden;
     transform: translateX(-100%);
-    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+                visibility 0s linear 0.35s;
 }
 
 aside::-webkit-scrollbar { width: 4px; }
 aside::-webkit-scrollbar-track { background: transparent; }
-aside::-webkit-scrollbar-thumb { background: rgba(100, 180, 255, 0.45); border-radius: 4px; }
-aside::-webkit-scrollbar-thumb:hover { background: rgba(100, 180, 255, 0.75); }
+aside::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.25); border-radius: 4px; }
+aside::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.4); }
 
 aside.open {
+    visibility: visible;
     transform: translateX(0);
+    transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+                visibility 0s linear 0s;
+}
+
+/* Abdunkelnder Hintergrund. Er trennt das Menue sichtbar vom Inhalt und
+   faengt Klicks daneben ab. Erzeugt wird er in js/main.js, damit er auf
+   allen Seiten ohne HTML-Aenderung vorhanden ist. */
+.sidebar-scrim {
+    position: fixed;
+    inset: 0;
+    z-index: 999;
+    background: rgba(6, 14, 46, 0.5);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.35s ease, visibility 0s linear 0.35s;
+}
+
+.sidebar-scrim.open {
+    opacity: 1;
+    visibility: visible;
+    transition: opacity 0.35s ease, visibility 0s linear 0s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    aside,
+    aside.open,
+    .sidebar-scrim,
+    .sidebar-scrim.open { transition-duration: 0s; }
 }
 
 /* ── Sidebar Brand/Logo-Bereich ── */
@@ -50,16 +91,9 @@ aside.open {
     background: rgba(255, 255, 255, 0.05);
 }
 
-.sidebar-brand::after {
-    content: '';
-    position: absolute;
-    bottom: -1px;
-    left: 0;
-    right: 0;
-    height: 1px;
-    background: linear-gradient(90deg, var(--primary-blue), var(--accent), transparent);
-    opacity: 0.6;
-}
+/* Die Blau-Gold-Verlaufslinie unter dem Logo ist entfallen. Dieselbe
+   Sorte Linie hatte der Footer viermal - die Trennung leistet der
+   border-bottom oben schon. */
 
 .sidebar-logo {
     width: 44px;
@@ -67,8 +101,7 @@ aside.open {
     border-radius: 10px;
     object-fit: cover;
     flex-shrink: 0;
-    box-shadow: 0 0 14px rgba(0, 71, 204, 0.45);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.12);
 }
 
 .sidebar-brand-info {
@@ -89,9 +122,9 @@ aside.open {
 }
 
 .sidebar-brand-tagline {
-    font-size: 0.6rem;
+    font-size: 0.68rem;
     text-transform: uppercase;
-    letter-spacing: 1.5px;
+    letter-spacing: 0.08em;
     color: var(--accent);
     font-weight: 700;
     white-space: nowrap;
@@ -134,7 +167,7 @@ nav ul li a i {
 }
 
 nav ul li a {
-    color: rgba(255, 255, 255, 0.72);
+    color: rgba(255, 255, 255, 0.78);
     text-decoration: none;
     display: flex;
     align-items: center;
@@ -142,36 +175,38 @@ nav ul li a {
     background: transparent;
     border-radius: 8px;
     border-left: 3px solid transparent;
-    transition: background 0.18s ease, color 0.18s ease, padding-left 0.18s ease, box-shadow 0.18s ease;
-    font-size: 0.93rem;
+    transition: background-color 0.18s ease, color 0.18s ease;
+    font-size: var(--text-sm);
     font-weight: 400;
     gap: 2px;
 }
 
+/* Ein Effekt statt vier. Vorher wechselte beim Hover gleichzeitig der
+   Hintergrund, der Text sprang 4px nach rechts, ein blauer Schatten kam
+   dazu und die linke Kante faerbte sich ein. */
 nav ul li a:hover {
-    background: rgba(0, 71, 204, 0.22);
+    background-color: rgba(255, 255, 255, 0.09);
     color: #fff;
-    padding-left: 16px;
-    border-left-color: rgba(0, 71, 204, 0.5);
-    box-shadow: 0 2px 10px rgba(0, 71, 204, 0.18);
-    transform: none;
 }
 
+/* Aktive Seite: flaeche plus goldene Kante. Vorher zusaetzlich ein
+   horizontaler Verlauf und ein blauer Schatten. */
 nav ul li a.menu_current {
-    background: linear-gradient(90deg, rgba(0, 71, 204, 0.45), rgba(0, 71, 204, 0.15));
-    border-left: 3px solid var(--accent);
-    padding-left: 16px;
+    background-color: rgba(0, 71, 204, 0.32);
+    border-left-color: var(--accent);
     font-weight: 600;
     color: #fff;
-    box-shadow: 0 2px 14px rgba(0, 71, 204, 0.3);
 }
 
 /* ── Section Labels ── */
+/* Kontrast: 0.28 Deckkraft ergab auf dem dunklen Panel rund 2,3:1 und lag
+   damit klar unter dem Mindestwert von 4,5:1 - die Ueberschriften waren
+   kaum zu erkennen. 0.58 kommt auf etwa 5,5:1. */
 nav ul li.nav-section-label {
-    font-size: 0.62rem;
+    font-size: 0.68rem;
     text-transform: uppercase;
-    letter-spacing: 2px;
-    color: rgba(255, 255, 255, 0.28);
+    letter-spacing: 0.12em;
+    color: rgba(255, 255, 255, 0.58);
     font-weight: 700;
     padding: 18px 12px 5px 12px;
     margin-top: 4px;
@@ -209,8 +244,9 @@ nav ul li.nav-section-label {
     transition: background 0.2s, border-color 0.2s;
 }
 
+/* 0.35 Deckkraft lag bei rund 2,8:1 und damit unter dem Mindestwert. */
 .sidebar-search input::placeholder {
-    color: rgba(255, 255, 255, 0.35);
+    color: rgba(255, 255, 255, 0.62);
 }
 
 .sidebar-search input:focus {

@@ -225,26 +225,31 @@ footer > p:last-child {
     display: flex;
     align-items: center;
     gap: 10px;
-    transition: color 0.2s ease, padding-left 0.18s ease;
-    font-weight: 300;
+    transition: color 0.2s ease;
+    font-weight: 400;
 }
 
+/* Dezenter: die Icons waren goldgelb, zehnmal untereinander. Gold bleibt
+   damit dem reserviert, was wirklich heraussticht (Vereins-Tagline, aktive
+   Navigation, Mitglied-werden). Beim Hover kommt es kurz zum Vorschein. */
 .footer-links a i {
     font-size: 0.76rem;
-    color: rgba(255, 204, 0, 0.65);
+    color: rgba(255, 255, 255, 0.4);
     width: 14px;
     flex-shrink: 0;
     text-align: center;
+    transition: color 0.2s ease;
 }
 
+/* Kein Verschieben des Textes mehr beim Hover - die einzige verbliebene
+   Bewegung dieser Art auf der Seite. Die Farbe sagt dasselbe. */
 .footer-links a:hover {
     color: #fff !important;
-    padding-left: 4px;
     text-decoration: none !important;
 }
 
 .footer-links a:hover i {
-    color: var(--accent);
+    color: rgba(255, 204, 0, 0.85);
 }
 
 /* ── Footer-Unterzeile ── */

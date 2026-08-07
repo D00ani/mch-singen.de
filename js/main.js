@@ -23,25 +23,87 @@ document.addEventListener('DOMContentLoaded', () => {
     const openMenuBtn = document.getElementById('open-menu');
     const closeMenuBtn = document.getElementById('close-menu');
 
+    // Abdunkelnder Hintergrund: einmal anlegen, gilt fuer alle Seiten.
+    // Bewusst hier statt im HTML, damit nicht siebzehn Dateien angefasst
+    // werden muessen. Ein Klick darauf schliesst ueber den bereits
+    // vorhandenen Klick-daneben-Handler weiter unten.
+    let scrim = null;
+    if (sideMenu) {
+        scrim = document.createElement('div');
+        scrim.className = 'sidebar-scrim';
+        scrim.setAttribute('aria-hidden', 'true');
+        document.body.appendChild(scrim);
+    }
+
+    // Merkt sich, von wo aus das Menue geoeffnet wurde, damit der Fokus
+    // beim Schliessen genau dorthin zurueckkehrt.
+    let fokusVorher = null;
+
+    function fokussierbareElemente() {
+        return sideMenu.querySelectorAll(
+            'a[href], button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        );
+    }
+
     function openSidebar() {
         if (!sideMenu) return;
+        fokusVorher = document.activeElement;
         sideMenu.style.willChange = 'transform';
         sideMenu.classList.add('open');
+        if (scrim) scrim.classList.add('open');
         if (openMenuBtn) openMenuBtn.setAttribute('aria-expanded', 'true');
+
+        // Fokus ins Panel holen, sonst steht er weiter hinter dem Menue
+        // und die Tastaturbedienung beginnt im verdeckten Seiteninhalt.
+        (closeMenuBtn || fokussierbareElemente()[0])?.focus();
+
         sideMenu.addEventListener('transitionend', () => {
             sideMenu.style.willChange = 'auto';
         }, { once: true });
     }
 
     function closeSidebar() {
-        if (!sideMenu) return;
+        if (!sideMenu || !sideMenu.classList.contains('open')) return;
         sideMenu.style.willChange = 'transform';
         sideMenu.classList.remove('open');
+        if (scrim) scrim.classList.remove('open');
         if (openMenuBtn) openMenuBtn.setAttribute('aria-expanded', 'false');
+
+        // Fokus zurueck an den Ausgangspunkt. Ohne das landet er nach dem
+        // Schliessen am Seitenanfang und man navigiert von vorne.
+        if (fokusVorher && document.contains(fokusVorher)) fokusVorher.focus();
+        else if (openMenuBtn) openMenuBtn.focus();
+        fokusVorher = null;
+
         sideMenu.addEventListener('transitionend', () => {
             sideMenu.style.willChange = 'auto';
         }, { once: true });
     }
+
+    // Escape schliesst, und solange das Menue offen ist bleibt der Fokus
+    // darin gefangen (Tab am Ende springt zurueck an den Anfang).
+    document.addEventListener('keydown', (e) => {
+        if (!sideMenu || !sideMenu.classList.contains('open')) return;
+
+        if (e.key === 'Escape') {
+            closeSidebar();
+            return;
+        }
+        if (e.key !== 'Tab') return;
+
+        const elemente = fokussierbareElemente();
+        if (!elemente.length) return;
+        const erstes = elemente[0];
+        const letztes = elemente[elemente.length - 1];
+
+        if (e.shiftKey && document.activeElement === erstes) {
+            e.preventDefault();
+            letztes.focus();
+        } else if (!e.shiftKey && document.activeElement === letztes) {
+            e.preventDefault();
+            erstes.focus();
+        }
+    });
 
     if (openMenuBtn) {
         openMenuBtn.addEventListener('click', (e) => {
