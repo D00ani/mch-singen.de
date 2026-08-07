@@ -38,7 +38,14 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }, { threshold: 0.5 });
 
-    document.querySelectorAll('.milestone-number').forEach(c => milestoneObserver.observe(c));
+    document.querySelectorAll('.milestone-number').forEach(c => {
+        // Im HTML steht der echte Wert, damit ohne JavaScript keine "0"
+        // stehenbleibt. Fuer die Animation wird er hier zurueckgesetzt -
+        // sonst zeigt die Kachel beim Heranscrollen erst die Endzahl und
+        // springt dann sichtbar auf 0 zurueck.
+        if (!istJahreszahl(c)) c.textContent = '0';
+        milestoneObserver.observe(c);
+    });
 
     // --- DIAGRAMME ---
     const FONT = "'Outfit', system-ui, sans-serif";
@@ -70,8 +77,10 @@ document.addEventListener("DOMContentLoaded", () => {
             chart.data.datasets[0].data.forEach((val, i) => {
                 const bar = chart.getDatasetMeta(0).data[i];
                 ctx.save();
-                ctx.fillStyle = isDark ? '#e0e0e0' : '#333';
-                ctx.font = `700 12px 'Orbitron', sans-serif`;
+                // Der Wert ueber dem Balken ist eine reine Zahl - hier bleibt
+                // Orbitron, etwas groesser, damit er als Wert lesbar ist.
+                ctx.fillStyle = isDark ? '#e8ecf8' : '#26292f';
+                ctx.font = `700 14px 'Orbitron', sans-serif`;
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'bottom';
                 ctx.fillText(val, bar.x, bar.y - 5);
@@ -103,9 +112,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const isDark = document.body.classList.contains('dark-mode');
 
-        const gridColor   = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,71,204,0.07)';
-        const tickColor   = isDark ? '#888'                   : '#666';
-        const axisColor   = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,71,204,0.1)';
+        // Neutrale Rasterfarben statt blau eingefaerbter - wie im uebrigen
+        // Design auch. Ein blaustichiges Gitter konkurriert mit den Balken.
+        const gridColor   = isDark ? 'rgba(255,255,255,0.07)' : 'rgba(15,23,42,0.07)';
+        const tickColor   = isDark ? '#8b93ad'                : '#555b66';
+        const axisColor   = isDark ? 'rgba(255,255,255,0.10)' : 'rgba(15,23,42,0.12)';
         const tooltipBg   = isDark ? '#16203a'                : '#ffffff';
         const tooltipTitle= isDark ? '#ffffff'                : '#001b5e';
         const tooltipBody = isDark ? '#aaa'                   : '#555555';
@@ -120,9 +131,13 @@ document.addEventListener("DOMContentLoaded", () => {
                     data: PODIUM_ORDER.map(i => data[i]),
                     backgroundColor: PODIUM_ORDER.map(i => PODIUM.bg[i]),
                     borderColor: PODIUM_ORDER.map(i => PODIUM.border[i]),
-                    borderWidth: 2,
-                    borderRadius: 0,
-                    borderSkipped: false,
+                    // Vorher 2px Rahmen und scharfe Ecken. Der Rahmen machte
+                    // die Balken schwer, die scharfen Ecken passten nicht zu
+                    // den abgerundeten Karten der uebrigen Seite.
+                    borderWidth: 0,
+                    borderRadius: { topLeft: 6, topRight: 6 },
+                    borderSkipped: 'bottom',
+                    maxBarThickness: 120,
                 }]
             },
             options: {
@@ -140,17 +155,20 @@ document.addEventListener("DOMContentLoaded", () => {
                         grid: { display: false },
                         ticks: {
                             color: tickColor,
-                            font: { family: "'Orbitron', sans-serif", size: 11, weight: '600' },
+                            // "1. Platz" ist Text, keine Zahl -> Fliesstext-Schrift.
+                            // Orbitron bleibt den reinen Ziffern vorbehalten.
+                            font: { family: FONT, size: 12, weight: '600' },
                         }
                     },
                     y: {
                         beginAtZero: true,
-                        border: { color: axisColor, dash: [4, 4] },
+                        border: { display: false },
                         grid: { color: gridColor },
                         ticks: {
                             stepSize: 1,
                             color: tickColor,
-                            font: { family: "'Orbitron', sans-serif", size: 11 },
+                            font: { family: FONT, size: 11 },
+                            padding: 6,
                         }
                     }
                 },
@@ -180,35 +198,53 @@ document.addEventListener("DOMContentLoaded", () => {
     //   podium -> "Dieses Jahr (Bisher)", erzeugt aus der BKC-Wertungs-PDF
     //             (tools/update_statistik.py)
     //   charts -> die uebrigen Diagramme, gepflegt per tools/statistiken_pflege.py
+    // Der Beobachter wird SOFORT eingerichtet, nicht erst wenn die JSON da
+    // ist. Frueher haing die Diagramm-Erzeugung am Ende der fetch-Kette:
+    // war die Datei langsam, nicht erreichbar oder wurde die Seite lokal
+    // per Doppelklick geoeffnet, blieben die Diagramme dauerhaft leer und
+    // die Balken fuhren nie hoch. Gezeichnet wird jetzt sofort mit den
+    // Ausweichzahlen; kommen aus der JSON abweichende Werte, werden nur die
+    // betroffenen Diagramme neu aufgebaut.
+    const chartObserver = new IntersectionObserver((entries, obs) => {
+        entries.forEach(entry => {
+            if (!entry.isIntersecting) return;
+            const def = CHART_DEFS.find(c => c.id === entry.target.id);
+            if (def) { buildChart(def); obs.unobserve(entry.target); }
+        });
+    }, { threshold: 0.15 });
+
+    CHART_DEFS.forEach(({ id }) => {
+        const el = document.getElementById(id);
+        if (el) chartObserver.observe(el);
+    });
+
+    // Werte aus /data/statistik.json nachladen:
+    //   podium -> "Dieses Jahr (Bisher)", erzeugt aus der BKC-Wertungs-PDF
+    //             (tools/update_statistik.py)
+    //   charts -> die uebrigen Diagramme, gepflegt per tools/statistiken_pflege.py
+    function uebernehmen(def, daten) {
+        if (!Array.isArray(daten) || daten.length !== 3) return;
+        if (daten.every((wert, i) => wert === def.data[i])) return;  // unveraendert
+        def.data = daten;
+        // Nur neu zeichnen, wenn das Diagramm schon sichtbar war - sonst
+        // uebernimmt es die neuen Zahlen ohnehin beim ersten Aufbau.
+        if (chartInstances[def.id]) buildChart(def);
+    }
+
     fetch('../data/statistik.json')
         .then(res => res.ok ? res.json() : null)
         .then(stat => {
             if (!stat) return;
             const current = CHART_DEFS.find(c => c.id === 'chartCurrent');
             if (current && stat.podium) {
-                current.data = [stat.podium.platz1, stat.podium.platz2, stat.podium.platz3];
+                uebernehmen(current, [stat.podium.platz1, stat.podium.platz2, stat.podium.platz3]);
             }
             (stat.charts || []).forEach(({ id, data }) => {
                 const def = CHART_DEFS.find(c => c.id === id);
-                if (def && Array.isArray(data) && data.length === 3) def.data = data;
+                if (def) uebernehmen(def, data);
             });
         })
-        .catch(() => {}) // kein Zugriff moeglich -> Fallback-Zahlen oben bleiben aktiv
-        .finally(() => {
-            // Chart erst wenn sichtbar initialisieren
-            const chartObserver = new IntersectionObserver((entries, obs) => {
-                entries.forEach(entry => {
-                    if (!entry.isIntersecting) return;
-                    const def = CHART_DEFS.find(c => c.id === entry.target.id);
-                    if (def) { buildChart(def); obs.unobserve(entry.target); }
-                });
-            }, { threshold: 0.15 });
-
-            CHART_DEFS.forEach(({ id }) => {
-                const el = document.getElementById(id);
-                if (el) chartObserver.observe(el);
-            });
-        });
+        .catch(() => {}); // nicht erreichbar -> die Ausweichzahlen oben bleiben stehen
 
     // Charts bei Dark-Mode-Umschalten neu rendern
     new MutationObserver(() => {
