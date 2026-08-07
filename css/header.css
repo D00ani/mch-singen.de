@@ -18,45 +18,24 @@ header {
     row-gap: 0;
     border-top-left-radius: 12px;
     border-top-right-radius: 12px;
-    border-top: 2px solid var(--accent);
-    border-bottom: 3px solid var(--accent);
-    box-shadow: 0 6px 24px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.12);
-    transition: background 0.4s ease, box-shadow 0.4s ease, backdrop-filter 0.4s ease;
+    /* Nur noch EINE goldene Kante (vorher oben 2px und unten 3px). */
+    border-bottom: 2px solid var(--accent);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.14);
+    transition: background 0.3s ease, box-shadow 0.3s ease, backdrop-filter 0.3s ease;
     overflow: hidden;
 }
 
 header.header-scrolled {
-    background: linear-gradient(135deg, rgba(0, 51, 160, 0.82), rgba(0, 27, 94, 0.82));
+    background: linear-gradient(135deg, rgba(0, 51, 160, 0.9), rgba(0, 27, 94, 0.9));
     backdrop-filter: blur(18px);
     -webkit-backdrop-filter: blur(18px);
-    box-shadow: 0 5px 30px rgba(0, 0, 0, 0.28);
-    border-bottom-color: rgba(255, 204, 0, 0.6);
+    box-shadow: 0 2px 18px rgba(0, 0, 0, 0.22);
 }
 
-/* Diagonaler Shine-Sweep über den gesamten Header */
-@keyframes header-shine {
-    0%   { transform: translateX(-150%) skewX(-20deg); }
-    100% { transform: translateX(500%)  skewX(-20deg); }
-}
+/* Der diagonale Shine-Sweep (Endlosschleife alle 9 Sekunden quer ueber den
+   Header) ist ersatzlos entfallen. Eine Dauer-Animation ohne
+   Informationsgehalt war der auffaelligste Deko-Effekt der Seite. */
 
-header::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 28%;
-    height: 100%;
-    background: linear-gradient(
-        105deg,
-        transparent 35%,
-        rgba(255, 255, 255, 0.055) 50%,
-        transparent 65%
-    );
-    animation: header-shine 9s ease-in-out infinite 1.5s;
-    pointer-events: none;
-}
-
-/* Inhalt bleibt über dem Shine-Effekt */
 header > * {
     position: relative;
     z-index: 1;
@@ -78,14 +57,14 @@ header > * {
     height: 52px;
     width: auto;
     border-radius: 6px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
     margin-right: 5px;
-    transition: transform 0.2s ease, filter 0.2s ease;
+    transition: opacity 0.2s ease;
 }
 
+/* Vorher: scale(1.06) plus goldener drop-shadow-Glow. Ein Logo, das beim
+   Drueberfahren aufleuchtet, wirkt wie ein Werbebanner. */
 .logo-container a:hover .header-logo {
-    transform: scale(1.06);
-    filter: drop-shadow(0 3px 10px rgba(255, 204, 0, 0.5));
+    opacity: 0.85;
 }
 
 /* Goldene Trennlinie zwischen MCH- und DMV-Logo */
@@ -128,26 +107,27 @@ header > * {
     justify-content: center;
 }
 
+/* Vereinsname: Ueberschriften-Schrift statt Orbitron, gemischte Schreibung
+   statt Versalien. Der Name traegt allein, er muss nicht schreien. */
 .header-text .header-title {
-    font-family: var(--font-display);
-    font-size: clamp(0.7rem, 0.4rem + 1vw, 1.25rem);
+    font-family: var(--font-heading);
+    font-size: clamp(0.8rem, 0.45rem + 1.05vw, 1.3rem);
     font-weight: 700;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
+    letter-spacing: -0.01em;
     margin: 0;
-    line-height: 1.2;
+    line-height: 1.25;
     color: #fff;
 }
 
+/* Tagline: ruhige Fliesstext-Schrift ohne Einblend-Animation.
+   Vorher standen hier zwei gesperrte Orbitron-Zeilen uebereinander. */
 .header-text p:not(.header-title) {
-    font-size: 0.85rem;
-    font-weight: 700;
-    color: #cfd6e0;
-    opacity: 1;
-    margin: 4px 0 0 0;
-    letter-spacing: 1px;
-    font-family: var(--font-display);
-    animation: tagline-fadein 0.9s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.35s both;
+    font-size: var(--text-sm);
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.72);
+    margin: 3px 0 0 0;
+    letter-spacing: 0.01em;
+    font-family: var(--font-body);
 }
 
 /* =========================================
@@ -233,21 +213,6 @@ header > * {
     fill: white;
     width: 17px;
     height: 17px;
-}
-
-/* =========================================
-   5. TAGLINE ANIMATION
-   ========================================= */
-
-@keyframes tagline-fadein {
-    from {
-        opacity: 0;
-        transform: translateY(5px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
 }
 
 /* =========================================

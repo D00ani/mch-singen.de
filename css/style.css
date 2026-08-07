@@ -15,21 +15,42 @@
     --primary-blue: #0047cc;
     --dark-blue: #001b5e;
     --accent: #ffcc00;
-    --text-main: #333333;
-    --text-light: #555555;
+    /* Aufgehelltes Vereinsblau - ausschliesslich fuer den Dark Mode.
+       Frueher standen hier zusaetzlich #1a5ce8, #2a5fd6 und #3a6fea als
+       eigene Farben im Umlauf; alle laufen jetzt ueber diese eine Variable. */
+    --blue-light: #4285F4;
+    --text-main: #26292f;
+    --text-light: #555b66;
     --bg-color: #f4f5f8;
     --menu-bg: #1a1a1a;
     --live-red: #e60000;
     --success-green: #28a745;
+
+    /* Neutrale Flaechen und Kanten. Ersetzen die frueheren blau
+       eingefaerbten Schatten (rgba(0,71,204,.22)), die jede Karte
+       wie eine Warnmeldung wirken liessen. */
+    --surface: #ffffff;
+    --surface-muted: #f6f8fc;
+    --border-soft: rgba(15, 23, 42, 0.09);
+    --border-strong: rgba(15, 23, 42, 0.14);
+    --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.04), 0 2px 6px rgba(15, 23, 42, 0.05);
+    --shadow-md: 0 1px 2px rgba(15, 23, 42, 0.04), 0 6px 18px rgba(15, 23, 42, 0.07);
+    --shadow-lg: 0 2px 4px rgba(15, 23, 42, 0.04), 0 14px 34px rgba(15, 23, 42, 0.09);
+
+    /* Gemeinsame Inhaltsbreite fuer Startseiten-Sektionen */
+    --content-width: 1080px;
+
     --font-body:    'Inter', system-ui, sans-serif;
     --font-heading: 'Outfit', system-ui, sans-serif;
+    /* Orbitron ist ab jetzt reine Zahlen-Schrift (Countdown, Live-Timing,
+       Statistik-Zellen). Fuer Ueberschriften wird --font-heading benutzt. */
     --font-display: 'Orbitron', 'Outfit', sans-serif;
-    --text-xs:   0.72rem;
-    --text-sm:   0.875rem;
-    --text-base: 0.95rem;
-    --text-lg:   1.05rem;
-    --text-xl:   1.2rem;
-    --text-2xl:  1.6rem;
+    --text-xs:   0.78rem;
+    --text-sm:   0.9rem;
+    --text-base: 1rem;
+    --text-lg:   1.125rem;
+    --text-xl:   1.3rem;
+    --text-2xl:  1.75rem;
 }
 
 h1, h2, h3 {
@@ -95,11 +116,11 @@ button:not(.slider-btn):active,
     transform: translateY(-50%) scale(0.93);
 }
 
-/* Custom Scrollbar */
-::-webkit-scrollbar { width: 7px; }
-::-webkit-scrollbar-track { background: rgba(0, 71, 204, 0.06); border-radius: 4px; }
-::-webkit-scrollbar-thumb { background: var(--primary-blue); border-radius: 4px; }
-::-webkit-scrollbar-thumb:hover { background: var(--dark-blue); }
+/* Custom Scrollbar - neutral statt vollflaechig blau */
+::-webkit-scrollbar { width: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(15, 23, 42, 0.22); border-radius: 5px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(15, 23, 42, 0.34); }
 
 /* Scroll-Reveal Animationen */
 .reveal {
@@ -119,26 +140,18 @@ button:not(.slider-btn):active,
 .reveal-delay-5 { transition-delay: 0.40s; }
 .reveal-delay-6 { transition-delay: 0.48s; }
 
-/* ── Sektion-Trennlinie ── */
+/* ── Sektion-Trennlinie ──
+   Frueher ein dreifarbiger Blau-Gold-Blau-Verlauf. Jetzt eine ruhige
+   Haarlinie: sie trennt, ohne selbst Aufmerksamkeit zu fordern. */
 .section-divider {
-    height: 3px;
-    background: linear-gradient(90deg,
-        transparent 0%,
-        var(--primary-blue) 18%,
-        #ffcc00 50%,
-        var(--primary-blue) 82%,
-        transparent 100%);
-    margin: 30px auto 30px auto;
-    max-width: 800px;
-    border-radius: 2px;
+    height: 1px;
+    background: var(--border-soft);
+    margin: 44px auto;
+    max-width: var(--content-width);
+    border-radius: 0;
 }
 body.dark-mode .section-divider {
-    background: linear-gradient(90deg,
-        transparent 0%,
-        #4285F4 18%,
-        rgba(255, 204, 0, 0.8) 50%,
-        #4285F4 82%,
-        transparent 100%);
+    background: rgba(255, 255, 255, 0.09);
 }
 
 * {
@@ -149,15 +162,13 @@ body.dark-mode .section-divider {
 
 body {
     font-family: var(--font-body);
-    line-height: 1.5;
+    line-height: 1.6;
     color: var(--text-main);
-    background-color: #edf0f8;
-    background-image: radial-gradient(circle, rgba(0, 71, 204, 0.07) 1px, transparent 1px);
-    background-size: 28px 28px;
+    background-color: #eef1f7;
     padding: 0 10px 10px 10px;
     overflow-x: hidden;
     font-size: var(--text-base);
-    scrollbar-color: var(--primary-blue) rgba(0, 71, 204, 0.06);
+    scrollbar-color: rgba(15, 23, 42, 0.25) transparent;
     scrollbar-width: thin;
 }
 
@@ -177,35 +188,29 @@ body.transitions-ready .location-box {
                 border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
+/* Feste Lesebreite statt 85vw: auf einem 27-Zoll-Monitor waren die
+   Textzeilen sonst ueber 1600px breit und dadurch schwer lesbar. */
 .container {
-    max-width: 85vw;
+    max-width: 1180px;
     margin: 0 auto;
-    background: #fff;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-    border-radius: 8px;
-    border: 1px solid rgba(0, 71, 204, 0.08);
-}
-
-/* Ab sehr breiten Monitoren nicht weiter mit dem Viewport wachsen,
-   sondern als zentrierte Karte stehen bleiben. */
-@media (min-width: 1900px) {
-    .container {
-        max-width: 1600px;
-    }
+    background: var(--surface);
+    box-shadow: var(--shadow-md);
+    border-radius: 12px;
+    border: 1px solid var(--border-soft);
 }
 
 /* =========================================
    2. KONTAKT, FORMULAR & ERFOLGSBOXEN
    ========================================= */
 
-.contact-form { 
-    display: flex; 
-    flex-direction: column; 
-    background: #fff;
+.contact-form {
+    display: flex;
+    flex-direction: column;
+    background: var(--surface);
     padding: 30px;
     border-radius: 12px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-    border-top: 4px solid var(--primary-blue);
+    border: 1px solid var(--border-soft);
+    box-shadow: var(--shadow-sm);
     width: 100%;
 }
 
@@ -412,9 +417,12 @@ body.transitions-ready .location-box {
     padding: 40px;
 }
 
+/* Im zweispaltigen Kontakt-Layout sitzt das Formular schon in einer Karte:
+   border: none (nicht nur border-top), sonst bleiben die drei anderen
+   Kanten der Basisregel stehen. */
 .contact-main .contact-form {
     box-shadow: none;
-    border-top: none;
+    border: none;
     border-radius: 0;
     padding: 0;
     background: transparent;
@@ -515,27 +523,26 @@ body.transitions-ready .location-box {
    3. PREISBOXEN, MITGLIEDSCHAFT, IMPRESSUM, DOWNLOADS
    ========================================= */
 
+/* Karten tragen keinen 4px-Akzentbalken mehr. Vorher hatte JEDE Box einen
+   (price, chart, event-list, info-card, news-card, faq, impressum, location,
+   milestone) - wenn alles betont ist, betont nichts mehr. Der Balken bleibt
+   nur den echten Hinweisboxen (.note-box, .philosophy-box) vorbehalten. */
 .price-box,
 .impressum-box,
 .chart-box {
-    background: #fff;
+    background: var(--surface);
     padding: 25px;
     border-radius: 12px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-    border-top: 4px solid var(--primary-blue);
+    border: 1px solid var(--border-soft);
+    box-shadow: var(--shadow-sm);
     margin-bottom: 25px;
-    transition: background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+    transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
 .price-box:hover,
 .chart-box:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-}
-
-.impressum-box { 
-    border-top: none; 
-    border-left: 4px solid var(--primary-blue); 
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
 }
 
 .price-row { 
@@ -548,7 +555,9 @@ body.transitions-ready .location-box {
 .price-row:last-child { border-bottom: none; }
 
 .price-title { font-weight: 600; color: var(--text-main); }
-.price-value { font-weight: bold; color: var(--primary-blue); font-family: var(--font-display); letter-spacing: 0.03em; }
+/* Beitraege sind Zahlen -> tabular-nums, aber in der Fliesstext-Schrift.
+   Orbitron machte aus einem Mitgliedsbeitrag eine Rennstand-Anzeige. */
+.price-value { font-weight: 700; color: var(--primary-blue); font-variant-numeric: tabular-nums; }
 
 .note-box { 
     background: #fffbe6; 
@@ -579,12 +588,12 @@ body.transitions-ready .location-box {
 }
 
 .download-section {
-    text-align: center; 
-    margin-top: 50px; 
-    padding: 40px; 
-    border: 2px dashed #ccc; 
+    text-align: center;
+    margin-top: 50px;
+    padding: 40px;
+    border: 1px solid var(--border-soft);
     border-radius: 12px;
-    background: rgba(0,0,0,0.02);
+    background: var(--surface-muted);
 }
 
 /* =========================================
@@ -599,50 +608,55 @@ body.transitions-ready .location-box {
     justify-content: center; 
 }
 
-.milestone-box { 
-    background: #fff; 
-    padding: 30px 20px; 
-    border-radius: 12px; 
-    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-    text-align: center; 
-    flex: 1; 
-    min-width: 150px; 
-    border-bottom: 4px solid var(--primary-blue);
-    transition: transform 0.3s ease, background-color 0.3s ease;
+.milestone-box {
+    background: var(--surface);
+    padding: 30px 20px;
+    border-radius: 12px;
+    border: 1px solid var(--border-soft);
+    box-shadow: var(--shadow-sm);
+    text-align: center;
+    flex: 1;
+    min-width: 150px;
+    transition: transform 0.2s ease, background-color 0.3s ease, box-shadow 0.2s ease;
 }
 
-.milestone-box:hover { transform: translateY(-5px); }
+.milestone-box:hover { transform: translateY(-2px); }
 
+/* Kennzahlen bleiben in Orbitron: hier sind es echte Ziffern, dafuer ist
+   die Schrift gedacht. Der frueher zusaetzliche Gold-Glow (doppelter
+   text-shadow) ist ersatzlos entfallen. */
 .milestone-number {
-    font-size: 3.5rem;
-    font-weight: 900;
+    font-size: 3rem;
+    font-weight: 700;
     color: var(--primary-blue);
-    margin-bottom: 5px;
+    margin-bottom: 6px;
     display: block;
     font-family: var(--font-display);
-    letter-spacing: 0.03em;
+    letter-spacing: 0.02em;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.1;
 }
 
-.milestone-text { 
-    font-size: 1.1rem; 
-    color: var(--text-main); 
-    font-weight: 600; 
-    text-transform: uppercase; 
-    letter-spacing: 1px; 
+.milestone-text {
+    font-size: var(--text-sm);
+    color: var(--text-light);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
 }
 
 .faq-item {
-    background: #fff;
-    border-radius: 8px;
-    margin-bottom: 15px;
-    border-left: 4px solid var(--primary-blue);
+    background: var(--surface);
+    border-radius: 10px;
+    margin-bottom: 12px;
+    border: 1px solid var(--border-soft);
     overflow: hidden;
     transition: box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
 .faq-item:hover {
-    box-shadow: 0 6px 20px rgba(0,0,0,0.08);
-    border-left-color: var(--accent);
+    box-shadow: var(--shadow-sm);
+    border-color: var(--border-strong);
 }
 
 .faq-question { 
@@ -680,8 +694,8 @@ body.transitions-ready .location-box {
     display: flex;
     align-items: center;
     gap: 10px;
-    font-family: var(--font-display);
-    letter-spacing: 0.02em;
+    font-family: var(--font-heading);
+    letter-spacing: -0.01em;
 }
 
 .history-img-frame {
@@ -698,8 +712,10 @@ body.transitions-ready .location-box {
     transition: background-color 0.3s ease, border-color 0.3s ease, transform 0.3s ease;
 }
 
+/* Frueher zusaetzlich rotate(1deg): ein Bild, das beim Drueberfahren kippt,
+   wirkt verspielt. Nur noch ein ruhiges Anheben. */
 .history-img-frame:hover {
-    transform: translateY(-3px) rotate(1deg);
+    transform: translateY(-2px);
 }
 
 .history-img-frame img {
@@ -729,12 +745,12 @@ body.transitions-ready .location-box {
 }
 
 .event-list {
-    background: #fff;
+    background: var(--surface);
     padding: 25px;
     border-radius: 12px;
     margin: 25px 0;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-    border-top: 4px solid var(--primary-blue);
+    border: 1px solid var(--border-soft);
+    box-shadow: var(--shadow-sm);
 }
 
 .event-list ul { 
@@ -777,9 +793,8 @@ body.transitions-ready .location-box {
 }
 
 .skill-title span:last-child {
-    font-family: var(--font-display);
-    font-size: 0.82rem;
-    letter-spacing: 0.04em;
+    font-variant-numeric: tabular-nums;
+    font-size: var(--text-sm);
 }
 
 .skill-bar-bg {
@@ -797,10 +812,10 @@ body.dark-mode .skill-bar-bg {
 
 .countdown-msg {
     display: none;
-    font-size: 1.5rem;
-    font-weight: bold;
-    font-family: var(--font-display);
-    color: #ffcc00;
+    font-size: var(--text-xl);
+    font-weight: 700;
+    font-family: var(--font-heading);
+    color: var(--accent);
     text-align: center;
     margin: 20px 0;
 }
@@ -832,15 +847,17 @@ body.dark-mode .skill-bar-bg {
    LIGHT MODE ENHANCEMENTS
    ========================================= */
 
-/* Hintergrund: Diagonal-Gradient + stärkere Dots */
+/* Hintergrund: eine ruhige Flaeche.
+   Vorher lagen hier zwei Deko-Ebenen uebereinander (Punktraster alle 28px
+   PLUS ein 135-Grad-Farbverlauf). Beides ohne Funktion. */
 body:not(.dark-mode) {
-    background-color: #dde4f5;
-    background-image: radial-gradient(circle, rgba(0, 71, 204, 0.11) 1px, transparent 1px),
-                      linear-gradient(135deg, #d8e0f3 0%, #e8ecf8 50%, #eef1fa 100%);
-    background-size: 28px 28px, 100% 100%;
+    background-color: #eef1f7;
+    background-image: none;
 }
 
-/* Karten: Gradient statt Reinweiß + blauer Schatten */
+/* Karten: klare weisse Flaeche, feine Kante, neutraler Schatten.
+   Der frueher blau eingefaerbte Schatten liess jede Box wie eine
+   Hervorhebung aussehen - bei zwanzig Boxen hebt das nichts mehr hervor. */
 body:not(.dark-mode) .news-card,
 body:not(.dark-mode) .trainer-card,
 body:not(.dark-mode) .info-card,
@@ -852,132 +869,76 @@ body:not(.dark-mode) .location-box,
 body:not(.dark-mode) .result-item,
 body:not(.dark-mode) .faq-item,
 body:not(.dark-mode) .impressum-box {
-    background: linear-gradient(145deg, #ffffff 0%, #eef2ff 100%);
-    box-shadow: 0 4px 15px rgba(0, 71, 204, 0.1);
+    background: var(--surface);
+    border: 1px solid var(--border-soft);
+    box-shadow: var(--shadow-sm);
 }
 
-/* Archive-Summary: blauer Tint statt Reinweiß */
 body:not(.dark-mode) .archive-year summary,
 body:not(.dark-mode) .archive-year summary:hover {
-    background: linear-gradient(145deg, #ffffff 0%, #f4f6ff 100%) !important;
+    background: var(--surface) !important;
 }
 
-/* FAQ-Antwort: ganz leichter Blau-Tint */
 body:not(.dark-mode) .faq-answer {
-    background: #f8f9ff;
+    background: var(--surface-muted);
 }
 
-/* Archiv-Links: blauer Tint */
 body:not(.dark-mode) .archive-content ul li a {
-    background: #f0f4ff;
+    background: var(--surface-muted);
 }
 
-/* Hover: blauer Glow auf Cards */
-body:not(.dark-mode) .news-card:hover {
-    box-shadow: 0 10px 28px rgba(0, 71, 204, 0.22);
-}
-
+/* Hover: ein einziger, dezenter Schattenwert fuer alle Karten */
+body:not(.dark-mode) .news-card:hover,
 body:not(.dark-mode) .info-card:hover,
 body:not(.dark-mode) .price-box:hover,
-body:not(.dark-mode) .chart-box:hover {
-    box-shadow: 0 12px 32px rgba(0, 71, 204, 0.22);
-}
-
-body:not(.dark-mode) .milestone-box:hover {
-    box-shadow: 0 10px 28px rgba(0, 71, 204, 0.22);
-}
-
+body:not(.dark-mode) .chart-box:hover,
+body:not(.dark-mode) .milestone-box:hover,
 body:not(.dark-mode) .record-box:hover {
-    box-shadow: 0 8px 24px rgba(0, 71, 204, 0.2);
+    box-shadow: var(--shadow-md);
+    border-color: var(--border-strong);
 }
 
-/* Container: blauer Schatten */
 body:not(.dark-mode) .container {
-    box-shadow: 0 10px 30px rgba(0, 71, 204, 0.14);
+    box-shadow: var(--shadow-md);
 }
 
-/* Unterseiten main: Sichtbarer Gradient + Border */
+/* Unterseiten main: schlichte weisse Inhaltsflaeche ohne Verlauf */
 body:not(.dark-mode):not(.page-home) main {
-    background: linear-gradient(180deg, #e8eeff 0%, #f4f7ff 35%, #ffffff 100%) !important;
-    box-shadow: 0 6px 24px rgba(0, 71, 204, 0.1);
-    border-left: 1px solid rgba(0, 71, 204, 0.1);
-    border-right: 1px solid rgba(0, 71, 204, 0.1);
-    border-bottom: 1px solid rgba(0, 71, 204, 0.08);
+    background: var(--surface) !important;
+    box-shadow: var(--shadow-md);
+    border-left: 1px solid var(--border-soft);
+    border-right: 1px solid var(--border-soft);
+    border-bottom: 1px solid var(--border-soft);
 }
 
-/* Unterseiten body: mehr Seitenabstand → Hintergrund sichtbar */
 body:not(.dark-mode):not(.page-home) {
     padding-left: 15px;
     padding-right: 15px;
     padding-bottom: 15px;
 }
 
-/* H2-Trennlinie sichtbarer */
 body:not(.dark-mode) main h2 {
-    border-bottom-color: rgba(0, 71, 204, 0.15);
+    border-bottom-color: var(--border-soft);
 }
 
-/* Meilenstein-Zahlen: Blau + Gold-Glow */
-body:not(.dark-mode) .milestone-number {
-    text-shadow: 0 2px 12px rgba(0, 71, 204, 0.3), 0 0 24px rgba(255, 204, 0, 0.18);
-}
-
-/* Tabellen-Hover: blauer Tint */
 body:not(.dark-mode) table.stats-table tr:hover td {
-    background-color: #f0f4ff;
+    background-color: var(--surface-muted);
 }
 
-/* Text-Selektion: Markenfarbe */
 body:not(.dark-mode) ::selection {
-    background: rgba(0, 71, 204, 0.18);
-    color: #001b5e;
+    background: rgba(0, 71, 204, 0.16);
+    color: var(--dark-blue);
 }
 
-/* H1 auf Unterseiten: Farbverlauf */
-body:not(.dark-mode) main h1 {
-    background: linear-gradient(135deg, var(--primary-blue) 0%, #2a5fd6 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-}
-
-/* Karten: blauer Border beim Hover */
-body:not(.dark-mode) .news-card:hover,
-body:not(.dark-mode) .info-card:hover,
-body:not(.dark-mode) .price-box:hover,
-body:not(.dark-mode) .chart-box:hover,
-body:not(.dark-mode) .milestone-box:hover {
-    outline: 1.5px solid rgba(0, 71, 204, 0.22);
-}
-
-/* Tabellenheader: Gradient statt Flachblau */
-body:not(.dark-mode) table.stats-table th {
-    background: linear-gradient(135deg, var(--primary-blue) 0%, #1a5ce8 100%);
-}
-
-/* Links im Fließtext: schönere Unterstrich-Animation */
+/* Links im Fliesstext */
 body:not(.dark-mode) main a {
     text-underline-offset: 3px;
     text-decoration-thickness: 1.5px;
-    text-decoration-color: rgba(0, 71, 204, 0.4);
+    text-decoration-color: rgba(0, 71, 204, 0.35);
 }
 
 body:not(.dark-mode) main a:hover {
     text-decoration-color: var(--primary-blue);
-}
-
-/* Quick-Nav: stärkerer Glaseffekt + blauer Border */
-body:not(.dark-mode) .quick-nav {
-    background: rgba(255, 255, 255, 0.72);
-    border: 1px solid rgba(0, 71, 204, 0.13);
-    box-shadow: 0 4px 20px rgba(0, 71, 204, 0.1);
-}
-
-/* Welcome-Section: stärkerer Glaseffekt + blauer Border */
-body:not(.dark-mode) .welcome-section {
-    background: rgba(255, 255, 255, 0.84);
-    border: 1px solid rgba(0, 71, 204, 0.1);
-    box-shadow: 0 8px 32px rgba(0, 71, 204, 0.13), 0 1px 2px rgba(0, 0, 0, 0.04);
 }
 
 /* =========================================
@@ -1029,10 +990,11 @@ body:not(.dark-mode) .welcome-section {
     }
 }
 
-/* Unterseiten h1 in Orbitron */
+/* Unterseiten-H1 in der Ueberschriften-Schrift (Outfit) statt Orbitron.
+   Orbitron ist eine Sci-Fi-Schrift und bleibt jetzt den Ziffern vorbehalten. */
 body:not(.page-home) main h1 {
-    font-family: var(--font-display);
-    letter-spacing: 0.03em;
+    font-family: var(--font-heading);
+    letter-spacing: -0.02em;
     font-size: var(--text-2xl);
 }
 

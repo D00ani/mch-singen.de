@@ -2,28 +2,18 @@
    FOOTER - Modernes 3-Spalten-Layout
    ========================================= */
 
+/* Der Footer hatte drei leuchtende Blau-Gold-Verlaufslinien (border-image,
+   ::before und .footer-rule) plus eine vierte in .footer-bottom. Jetzt eine
+   ruhige goldene Oberkante, den Rest tragen Abstaende. */
 footer {
     background: linear-gradient(160deg, #0d1f5c 0%, #060e2e 100%);
     color: rgba(255, 255, 255, 0.65);
     padding: 0;
-    border-top: 1px solid transparent;
-    border-image: linear-gradient(90deg, transparent 0%, var(--primary-blue) 30%, var(--accent) 60%, transparent 100%) 1;
+    border-top: 2px solid var(--accent);
     border-bottom-left-radius: 12px;
     border-bottom-right-radius: 12px;
-    font-size: 0.9rem;
+    font-size: var(--text-sm);
     position: relative;
-}
-
-/* Glowing top accent line (border-image doesn't work with border-radius, so we use ::before) */
-footer::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 1px;
-    background: linear-gradient(90deg, transparent 0%, var(--primary-blue) 25%, var(--accent) 55%, var(--primary-blue) 80%, transparent 100%);
-    opacity: 0.75;
 }
 
 /* ── Simple footer layout (logo + nav + text) ── */
@@ -42,16 +32,13 @@ footer > img.footer-logo {
     width: auto;
     border-radius: 8px;
     opacity: 0.9;
-    filter: drop-shadow(0 0 10px rgba(0, 71, 204, 0.5));
-    transition: opacity 0.3s, filter 0.3s, transform 0.3s;
+    transition: opacity 0.2s;
     margin: 0 auto;
 }
 
 footer > .footer-logo-link:hover img.footer-logo,
 footer > img.footer-logo:hover {
     opacity: 1;
-    filter: drop-shadow(0 0 16px rgba(255, 204, 0, 0.5));
-    transform: translateY(-2px);
 }
 
 /* Club-Name unter Logo */
@@ -92,8 +79,7 @@ footer > img.footer-logo:hover {
 .footer-rule {
     display: block;
     height: 1px;
-    background: linear-gradient(90deg, transparent 0%, var(--primary-blue) 25%, var(--accent) 55%, var(--primary-blue) 80%, transparent 100%);
-    opacity: 0.5;
+    background: rgba(255, 255, 255, 0.12);
     margin: 0 auto 14px auto;
     max-width: 400px;
 }
@@ -161,10 +147,9 @@ footer > p:last-child {
 }
 
 .footer-tagline {
-    font-size: 0.68rem;
-    font-family: var(--font-display);
+    font-size: var(--text-xs);
+    letter-spacing: 0.08em;
     text-transform: uppercase;
-    letter-spacing: 2px;
     color: var(--accent);
     font-weight: 700;
     margin-bottom: 10px !important;
@@ -264,12 +249,8 @@ footer > p:last-child {
     justify-content: space-between;
     align-items: center;
     padding: 14px 50px;
-    border-top: none;
-    background-image: linear-gradient(90deg, transparent 0%, var(--primary-blue) 20%, var(--accent) 50%, var(--primary-blue) 80%, transparent 100%);
-    background-repeat: no-repeat;
-    background-size: 100% 1px;
-    background-position: top;
-    font-size: 0.78rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    font-size: var(--text-xs);
     font-weight: 300;
     color: rgba(255, 255, 255, 0.28);
     gap: 12px;

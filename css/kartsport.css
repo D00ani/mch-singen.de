@@ -62,9 +62,10 @@ body.dark-mode .track-preview-container {
    KLASSEN-TABELLE: Erwachsenen-Zeilen
    ========================================= */
 
+/* Erwachsenen-Klassen werden durch den Flaechenton unterschieden.
+   Kursiv zusaetzlich war doppelt gemoppelt und schlechter lesbar. */
 table.stats-table tr.kart-class-adult td {
-    background-color: #f0f4ff;
-    font-style: italic;
+    background-color: var(--surface-muted);
 }
 
 body.dark-mode table.stats-table tr.kart-class-adult td {

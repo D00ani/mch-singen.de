@@ -180,17 +180,31 @@
     /* =====================
        HAUPT-INHALT
        ===================== */
-    main { padding: 25px 20px; }
+    main { padding: 25px 16px; }
 
-    /* Hero-Text-Overlay auf Mobile verstecken (zu klein zum Lesen) */
-    .hero-text-overlay { display: none; }
+    /* Der Willkommenstext lag frueher als Overlay auf dem Hero-Bild und
+       musste auf Mobile ausgeblendet werden, weil er dort unlesbar war.
+       Seit dem Split steht er unter dem Bild und bleibt sichtbar. */
+    .hero { gap: 20px; margin-bottom: 32px; }
+
+    .hero-actions .btn {
+        flex: 1 1 auto;
+        min-width: 0;
+    }
 
     main h1 {
-        font-size: 1.35rem;
+        font-size: 1.4rem;
         word-break: break-word;
         overflow-wrap: break-word;
         hyphens: auto;
         -webkit-hyphens: auto;
+    }
+
+    /* Der Hero-H1 ist bewusst groesser als die Unterseiten-H1 */
+    .hero-intro h1 {
+        font-size: 2rem;
+        hyphens: none;
+        -webkit-hyphens: none;
     }
 
     .sponsor-gallery { justify-content: center; }
@@ -198,13 +212,13 @@
     /* =====================
        COUNTDOWN
        ===================== */
-    .countdown-wrapper { padding: 15px 10px; width: 100%; display: flex; flex-direction: column; align-items: center; }
-    .countdown-wrapper h2 { font-size: 1.1rem; margin-bottom: 10px; }
-    .countdown-container { gap: 6px; justify-content: center; width: 100%; text-align: center; }
-    .countdown-box { min-width: 40px; display: flex; flex-direction: column; align-items: center; text-align: center; }
-    .number { font-size: 1.5rem; margin: 0; line-height: 1.1; }
-    .label { font-size: 0.5rem; letter-spacing: 0; text-transform: uppercase; color: #fff; margin-top: 2px; width: 100%; }
-    .colon { font-size: 1.2rem; color: rgba(255,255,255,0.7); margin: 0 -1px 10px; display: flex; align-items: flex-end; justify-content: center; }
+    .countdown-wrapper { padding: 22px 16px; width: 100%; display: flex; flex-direction: column; align-items: center; }
+    .countdown-wrapper h2 { font-size: var(--text-base); margin-bottom: 14px; }
+    .countdown-container { gap: 8px; justify-content: center; width: 100%; text-align: center; }
+    .countdown-box { min-width: 48px; display: flex; flex-direction: column; align-items: center; text-align: center; }
+    .number { font-size: 1.9rem; margin: 0; line-height: 1.1; }
+    .label { font-size: 0.62rem; letter-spacing: 0.04em; text-transform: uppercase; margin-top: 5px; width: 100%; }
+    .colon { font-size: 1.5rem; margin: 0; line-height: 1.1; }
 
     /* =====================
        BUTTONS & SUCHE

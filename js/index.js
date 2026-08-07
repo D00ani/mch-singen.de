@@ -118,7 +118,11 @@ document.addEventListener('DOMContentLoaded', () => {
     function switchSport(index) {
         currentSport = index;
         sportTrack.style.transform = `translateX(-${index * 50}%)`;
-        sportTabs.forEach((tab, i) => tab.classList.toggle('active', i === index));
+        sportTabs.forEach((tab, i) => {
+            const aktiv = i === index;
+            tab.classList.toggle('active', aktiv);
+            tab.setAttribute('aria-selected', aktiv ? 'true' : 'false');
+        });
         if (typeof klaro !== 'undefined') {
             try {
                 if (klaro.getManager().getConsent('googleMaps')) {
@@ -135,13 +139,8 @@ document.addEventListener('DOMContentLoaded', () => {
             tab.addEventListener('click', () => switchSport(i));
         });
 
-        // Pfeil-Buttons
-        document.querySelector('.sport-arrow-prev')?.addEventListener('click', () =>
-            switchSport(currentSport === 0 ? 1 : 0)
-        );
-        document.querySelector('.sport-arrow-next')?.addEventListener('click', () =>
-            switchSport(currentSport === 0 ? 1 : 0)
-        );
+        // Die frueheren Pfeil-Buttons sind entfallen: bei zwei Reitern war
+        // das eine dritte Bedienart (Klick, Pfeil, Wischen) fuer dasselbe Ziel.
 
         // Touch-Swipe auf dem Sport-Switcher
         const sportOverflow = document.querySelector('.sport-switcher-overflow');
@@ -258,6 +257,21 @@ document.addEventListener('DOMContentLoaded', () => {
         const cdMsgEl = document.getElementById(cdMsg);
         const el = id => document.getElementById(id);
 
+        // Sekundenanzeige (Doppelpunkt + Kaestchen) dieses Countdowns.
+        // Sie erscheint erst in den letzten 48 Stunden vor dem Termin: ein
+        // sekundengenauer Zaehler auf ein Datum in drei Wochen liest sich wie
+        // ein Verkaufstimer, nicht wie eine Terminankuendigung.
+        const SEKUNDEN_AB_MS = 48 * 60 * 60 * 1000;
+        const sekundenTeile = cdBoxEl
+            ? cdBoxEl.querySelectorAll('[data-sekunden]')
+            : [];
+        let sekundenSichtbar = null;
+        function sekundenAnzeigen(sichtbar) {
+            if (sekundenSichtbar === sichtbar) return;
+            sekundenSichtbar = sichtbar;
+            sekundenTeile.forEach(teil => { teil.hidden = !sichtbar; });
+        }
+
         // HEAD-Check: Button nur zeigen wenn PDF wirklich auf dem Server liegt.
         // Wird einmalig pro Event ausgeführt (nicht jede Sekunde).
         const pdfWrapper = pdfEl?.parentElement ?? null;
@@ -314,10 +328,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 const s = Math.floor((distance % 60000)    / 1000);
                 const pad = n => String(n).padStart(2, '0');
 
+                const zeigeSekunden = distance < SEKUNDEN_AB_MS;
+                sekundenAnzeigen(zeigeSekunden);
+
                 if (el(days))    el(days).innerHTML    = pad(d);
                 if (el(hours))   el(hours).innerHTML   = pad(h);
                 if (el(minutes)) el(minutes).innerHTML = pad(m);
-                if (el(seconds)) el(seconds).innerHTML = pad(s);
+                if (zeigeSekunden && el(seconds)) el(seconds).innerHTML = pad(s);
 
                 if (cdBoxEl) cdBoxEl.style.display = 'flex';
                 if (cdMsgEl) cdMsgEl.style.display  = 'none';

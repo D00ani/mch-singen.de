@@ -6,7 +6,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- LCP: erstes sichtbares Hero-Bild mit hoechster Prioritaet vorladen -->
-    <link rel="preload" as="image" type="image/webp" href="media/bilder/mch_pic-640.webp" imagesrcset="media/bilder/mch_pic-480.webp 480w, media/bilder/mch_pic-640.webp 640w" imagesizes="(min-width: 992px) 1100px, (min-width: 840px) 800px, 100vw" fetchpriority="high">
+    <link rel="preload" as="image" type="image/webp" href="media/bilder/mch_pic-640.webp" imagesrcset="media/bilder/mch_pic-480.webp 480w, media/bilder/mch_pic-640.webp 640w" imagesizes="(min-width: 900px) 600px, 100vw" fetchpriority="high">
     <link rel="canonical" href="https://mch-singen.de/">
     <meta name="description" content="Motorsport aus Leidenschaft - Kart und Trial in Singen am Hohentwiel. Willkommen beim MCH Singen Motorsportclub!">
     <meta property="og:type" content="website">
@@ -118,15 +118,21 @@
             <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
         </a>
 
-        <!-- Hero: Slider mit Willkommens-Text als Overlay -->
-        <div class="hero-wrapper">
+        <!-- Hero: Bild links, Text rechts (auf Mobile untereinander).
+             Frueher lag der Text als Overlay AUF dem wechselnden Bild - bei
+             hellen Slides war er kaum lesbar und auf Mobile wurde er ganz
+             ausgeblendet. Der Split loest beides und braucht ausserdem nur
+             rund 600px Bildbreite: genau das, was mch_pic.jpg (640px nativ)
+             ohne Hochskalieren hergibt. -->
+        <section class="hero" aria-labelledby="hero-heading">
+        <div class="hero-media">
         <div class="image-slider">
             <div class="slider-track">
 
                 <!-- Klon von Bild 3 (am Anfang für rückwärts-Loop) -->
                 <a href="pages/trialsport.html" class="slide" aria-hidden="true" tabindex="-1">
                     <picture>
-                        <source type="image/webp" srcset="media/bilder/trial/trial_abteilung-480.webp 480w, media/bilder/trial/trial_abteilung-800.webp 800w, media/bilder/trial/trial_abteilung-1179.webp 1179w" sizes="(min-width: 992px) 1100px, (min-width: 840px) 800px, 100vw">
+                        <source type="image/webp" srcset="media/bilder/trial/trial_abteilung-480.webp 480w, media/bilder/trial/trial_abteilung-800.webp 800w, media/bilder/trial/trial_abteilung-1179.webp 1179w" sizes="(min-width: 900px) 600px, 100vw">
                         <img src="media/bilder/trial/trial_abteilung.jpg" alt="Motorrad-Trialsport beim MCH Singen Hohentwiel" width="1179" height="1533" loading="lazy" decoding="async">
                     </picture>
                     <div class="slide-caption-box">
@@ -138,7 +144,7 @@
                 <!-- Bild 1: Gesamter Verein -->
                 <a href="pages/ueber-uns.html" class="slide">
                     <picture>
-                        <source type="image/webp" srcset="media/bilder/mch_pic-480.webp 480w, media/bilder/mch_pic-640.webp 640w" sizes="(min-width: 992px) 1100px, (min-width: 840px) 800px, 100vw">
+                        <source type="image/webp" srcset="media/bilder/mch_pic-480.webp 480w, media/bilder/mch_pic-640.webp 640w" sizes="(min-width: 900px) 600px, 100vw">
                         <img src="media/bilder/mch_pic.jpg" alt="MCH Singen Motorsportclub Hohentwiel - Vereinsleben" fetchpriority="high" loading="eager" width="640" height="480" decoding="async">
                     </picture>
                     <div class="slide-caption-box">
@@ -150,7 +156,7 @@
                 <!-- Bild 2: Kart Abteilung -->
                 <a href="pages/kartsport.html" class="slide">
                     <picture>
-                        <source type="image/webp" srcset="media/bilder/kartsport/kart_abteilung-480.webp 480w, media/bilder/kartsport/kart_abteilung-800.webp 800w, media/bilder/kartsport/kart_abteilung-1600.webp 1600w" sizes="(min-width: 992px) 1100px, (min-width: 840px) 800px, 100vw">
+                        <source type="image/webp" srcset="media/bilder/kartsport/kart_abteilung-480.webp 480w, media/bilder/kartsport/kart_abteilung-800.webp 800w, media/bilder/kartsport/kart_abteilung-1600.webp 1600w" sizes="(min-width: 900px) 600px, 100vw">
                         <img src="media/bilder/kartsport/kart_abteilung.jpg" alt="Kartslalom-Training beim MCH Singen Hohentwiel" width="1600" height="1200" loading="lazy" decoding="async">
                     </picture>
                     <div class="slide-caption-box">
@@ -162,7 +168,7 @@
                 <!-- Bild 3: Trial Abteilung -->
                 <a href="pages/trialsport.html" class="slide">
                     <picture>
-                        <source type="image/webp" srcset="media/bilder/trial/trial_abteilung-480.webp 480w, media/bilder/trial/trial_abteilung-800.webp 800w, media/bilder/trial/trial_abteilung-1179.webp 1179w" sizes="(min-width: 992px) 1100px, (min-width: 840px) 800px, 100vw">
+                        <source type="image/webp" srcset="media/bilder/trial/trial_abteilung-480.webp 480w, media/bilder/trial/trial_abteilung-800.webp 800w, media/bilder/trial/trial_abteilung-1179.webp 1179w" sizes="(min-width: 900px) 600px, 100vw">
                         <img src="media/bilder/trial/trial_abteilung.jpg" alt="Motorrad-Trialsport beim MCH Singen Hohentwiel" width="1179" height="1533" loading="lazy" decoding="async">
                     </picture>
                     <div class="slide-caption-box">
@@ -174,7 +180,7 @@
                 <!-- Klon von Bild 1 (am Ende für vorwärts-Loop) -->
                 <a href="pages/ueber-uns.html" class="slide" aria-hidden="true" tabindex="-1">
                     <picture>
-                        <source type="image/webp" srcset="media/bilder/mch_pic-480.webp 480w, media/bilder/mch_pic-640.webp 640w" sizes="(min-width: 992px) 1100px, (min-width: 840px) 800px, 100vw">
+                        <source type="image/webp" srcset="media/bilder/mch_pic-480.webp 480w, media/bilder/mch_pic-640.webp 640w" sizes="(min-width: 900px) 600px, 100vw">
                         <img src="media/bilder/mch_pic.jpg" alt="MCH Singen Motorsportclub Hohentwiel - Vereinsleben" width="640" height="480" loading="lazy" decoding="async">
                     </picture>
                     <div class="slide-caption-box">
@@ -193,14 +199,19 @@
             </button>
 
             <div class="slider-dots"></div>
+        </div>
+        </div><!-- /.hero-media -->
 
-            <div class="hero-text-overlay">
-                <p class="hero-kicker">Herzlich willkommen beim MCH Singen</p>
-                <h1>Motorsport aus Leidenschaft</h1>
-                <p>Kartslalom &amp; Trialsport in Singen am Hohentwiel</p>
+        <div class="hero-intro">
+            <p class="hero-kicker">Gegründet 1954 &middot; Mitglied im DMV</p>
+            <h1 id="hero-heading">Motorsport aus Leidenschaft</h1>
+            <p class="hero-lead">Kartslalom für den Nachwuchs und Motorrad-Trialsport in Singen am Hohentwiel. Schnuppertraining jederzeit möglich.</p>
+            <div class="hero-actions">
+                <a href="pages/mitglied-werden.html" class="btn btn-primary">Mitglied werden</a>
+                <a href="pages/ueber-uns.html" class="btn btn-secondary">Verein kennenlernen</a>
             </div>
         </div>
-        </div><!-- /.hero-wrapper -->
+        </section><!-- /.hero -->
 
         <!-- Kurze Vereinsvorstellung -->
         <section class="welcome-section reveal" aria-labelledby="welcome-heading">
@@ -241,21 +252,21 @@
         <div class="section-divider"></div>
 
         <!-- Sport-Switcher: Countdown + Karte (Kart / Trial) -->
-        <section class="sport-switcher reveal" id="sport-switcher" aria-label="Termine und Trainingsorte">
+        <section class="sport-switcher reveal" id="sport-switcher" aria-labelledby="termine-heading">
 
-            <!-- Tab-Leiste mit Pfeilen -->
-            <div class="sport-tabs-bar">
-                <button class="sport-arrow sport-arrow-prev" aria-label="Vorherige Sportart">
-                    <i class="fa-solid fa-chevron-left"></i>
+            <h2 id="termine-heading" class="section-heading">Termine und Trainingsorte</h2>
+
+
+            <!-- Tab-Leiste. Die frueheren Pfeil-Buttons links und rechts sind
+                 entfallen: bei genau zwei Reitern zeigen die Reiter selbst
+                 schon beide Ziele, der Pfeil war eine dritte Bedienart fuer
+                 dieselbe Sache (Klick, Pfeil, Wischen). -->
+            <div class="sport-tabs-bar" role="tablist">
+                <button class="sport-tab-btn active" data-sport-index="0" role="tab" aria-selected="true" aria-controls="sport-panel-kart" id="sport-tab-kart">
+                    <i class="fa-solid fa-flag-checkered" aria-hidden="true"></i> Kartsport
                 </button>
-                <button class="sport-tab-btn active" data-sport-index="0">
-                    <i class="fa-solid fa-flag-checkered"></i> Kartsport
-                </button>
-                <button class="sport-tab-btn" data-sport-index="1">
-                    <i class="fa-solid fa-motorcycle"></i> Trialsport
-                </button>
-                <button class="sport-arrow sport-arrow-next" aria-label="Nächste Sportart">
-                    <i class="fa-solid fa-chevron-right"></i>
+                <button class="sport-tab-btn" data-sport-index="1" role="tab" aria-selected="false" aria-controls="sport-panel-trial" id="sport-tab-trial">
+                    <i class="fa-solid fa-motorcycle" aria-hidden="true"></i> Trialsport
                 </button>
             </div>
 
@@ -264,7 +275,7 @@
                 <div class="sport-track" id="sport-track">
 
                     <!-- ===== PANEL 0: KART ===== -->
-                    <div class="sport-panel">
+                    <div class="sport-panel" id="sport-panel-kart" role="tabpanel" aria-labelledby="sport-tab-kart">
 
                         <div class="countdown-wrapper" id="countdown-wrapper-kart">
                             <h2 id="countdown-heading-kart">Nächstes Rennen startet in:</h2>
@@ -283,8 +294,8 @@
                                     <span id="minutes-kart" class="number">00</span>
                                     <span class="label">Min.</span>
                                 </div>
-                                <span class="colon">:</span>
-                                <div class="countdown-box">
+                                <span class="colon" data-sekunden hidden>:</span>
+                                <div class="countdown-box" data-sekunden hidden>
                                     <span id="seconds-kart" class="number">00</span>
                                     <span class="label">Sek.</span>
                                 </div>
@@ -318,7 +329,7 @@
                     </div>
 
                     <!-- ===== PANEL 1: TRIAL ===== -->
-                    <div class="sport-panel">
+                    <div class="sport-panel" id="sport-panel-trial" role="tabpanel" aria-labelledby="sport-tab-trial">
 
                         <div class="countdown-wrapper" id="countdown-wrapper-trial">
                             <h2 id="countdown-heading-trial">Nächster Triallauf startet in:</h2>
@@ -337,8 +348,8 @@
                                     <span id="minutes-trial" class="number">00</span>
                                     <span class="label">Min.</span>
                                 </div>
-                                <span class="colon">:</span>
-                                <div class="countdown-box">
+                                <span class="colon" data-sekunden hidden>:</span>
+                                <div class="countdown-box" data-sekunden hidden>
                                     <span id="seconds-trial" class="number">00</span>
                                     <span class="label">Sek.</span>
                                 </div>
@@ -392,7 +403,6 @@
         </ul>
         <span class="footer-rule"></span>
         <p>© 2026 MCH Singen Motorsportclub "Hohentwiel" e.V. im DMV - Alle Rechte vorbehalten. | <a href="pages/impressum-datenschutz.html" onclick="klaro.show(); return false;">Cookie-Einstellungen</a></p>
-        <p class="designer-credit">Created by <a href="https://www.instagram.com/dnl_kr">Daniel Krieger</a></p>
     </footer>
 
     <aside id="side-menu">
