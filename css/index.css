@@ -733,8 +733,6 @@ body.dark-mode .sport-tab-btn:not(.active):hover { color: #d3d9ea; }
     transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
-/* Panel: auf Desktop stehen Countdown und Standort nebeneinander statt
-   gestapelt - das nutzt die neue Inhaltsbreite und halbiert die Scrolltiefe. */
 .sport-panel {
     width: 50%;
     box-sizing: border-box;
@@ -743,10 +741,46 @@ body.dark-mode .sport-tab-btn:not(.active):hover { color: #d3d9ea; }
     align-content: start;
 }
 
+/* Countdown auf dem Desktop als flache Leiste ueber die volle Breite.
+   Vorher standen Countdown und Standort nebeneinander. Das sah auf einem
+   breiten Monitor aus zwei Gruenden nicht gut aus:
+     - Der Kasten war mit rund 560px mehr als doppelt so breit wie sein
+       Inhalt. Die Ziffern schwammen in einer grossen blauen Flaeche.
+     - Die Standort-Spalte daneben ist etwa dreimal so hoch. Unter dem
+       Countdown blieben dadurch rund 450px tote Flaeche stehen.
+   Als Leiste sitzt der Text links, die Ziffern rechts, und darunter geht
+   es ohne Loch weiter. Auf Mobil bleibt der gestapelte Kasten. */
 @media (min-width: 900px) {
-    .sport-panel {
-        grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
-        align-items: start;
+    .sport-panel .countdown-wrapper {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px 40px;
+        padding: 20px 30px;
+        text-align: left;
+    }
+
+    .sport-panel .countdown-wrapper h2 {
+        margin: 0;
+        flex: 1 1 260px;
+    }
+
+    .sport-panel .countdown-container {
+        flex: 0 0 auto;
+        gap: 14px;
+    }
+
+    /* Meldung ("HEUTE! ...") und PDF-Knopf ruecken in dieselbe Zeile,
+       sobald sie eingeblendet werden. */
+    .sport-panel .countdown-msg,
+    .sport-panel .pdf-wrapper {
+        margin: 0;
+        flex: 0 0 auto;
+    }
+
+    .sport-panel .countdown-pdf-btn {
+        margin: 0;
     }
 }
 
