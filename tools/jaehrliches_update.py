@@ -13,7 +13,40 @@ import sys
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MAIN_WORKTREE = os.path.join(os.path.dirname(ROOT), "mch-singen.de-main")
 
+# Solange diese Datei existiert, geht der Arbeitsstand NICHT auf die echte
+# Seite. Sie liegt im Projektordner ausserhalb beider Worktrees, damit Git
+# sie weder versioniert noch beim Wechseln der Branches wegraeumt.
+LIVE_SPERRE = os.path.join(os.path.dirname(ROOT), "LIVE-GESPERRT.txt")
+
 JN_VALIDIERER = lambda a: None if a.lower() in ("j", "n") else "Bitte j oder n."
+
+
+def live_gesperrt():
+    """True, solange der Arbeitsstand nur in die Beta-Vorschau darf."""
+    return os.path.isfile(LIVE_SPERRE)
+
+
+def sperr_hinweis():
+    """Erklaerungstext, der statt einer Veroeffentlichung ausgegeben wird."""
+    return (
+        "\n" + "=" * 66 +
+        "\n  VEROEFFENTLICHUNG GESPERRT"
+        "\n" + "=" * 66 +
+        "\n"
+        "\n  Der Arbeitsstand geht derzeit nur in die Beta-Vorschau,"
+        "\n  nicht auf mch-singen.de. Das ist so gewollt: die Website"
+        "\n  wird umgebaut und soll erst in EINEM grossen Schritt live"
+        "\n  gehen, nicht stueckweise."
+        "\n"
+        "\n  Vorschau aktualisieren (das ist der normale Weg):"
+        "\n      python tools/beta_vorschau.py"
+        "\n"
+        "\n  Rennergebnisse sind davon nicht betroffen - die Live-Timing-"
+        "\n  Synchronisation veroeffentlicht weiterhin ganz normal."
+        "\n"
+        "\n  Wenn wirklich alles live soll, siehe LIVE-GESPERRT.txt."
+        "\n" + "=" * 66 + "\n"
+    )
 
 
 def frage(text, validierer=None):
@@ -63,7 +96,15 @@ def hat_aenderungen(cwd=ROOT):
 
 def commit_merge_push(commit_message, cwd=ROOT, main_worktree=MAIN_WORKTREE):
     """Committet alle Aenderungen in arbeit, merged nach main und pusht.
-    Gibt True zurueck, wenn erfolgreich gepusht wurde."""
+    Gibt True zurueck, wenn erfolgreich gepusht wurde.
+
+    Ist die Live-Sperre aktiv, wird NICHTS committet oder gepusht - der
+    Abbruch erfolgt bewusst ganz am Anfang, damit kein halber Zustand
+    entsteht."""
+    if live_gesperrt():
+        print(sperr_hinweis())
+        return False
+
     if not hat_aenderungen(cwd):
         print("\nKeine Aenderungen zu committen.")
         return False

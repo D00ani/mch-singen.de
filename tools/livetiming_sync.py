@@ -339,13 +339,20 @@ def _git(argumente, cwd):
 
 
 def veroeffentliche(nachricht):
-    """Committet NUR die Ergebnisdateien, merged nach main und pusht.
-    Bewusst nicht 'git add -A': waehrend einer Veranstaltung soll nichts
-    anderes versehentlich mit veroeffentlicht werden.
+    """Veroeffentlicht NUR die Ergebnisdateien auf main.
+
+    Wichtig: der Arbeitsstand (Branch 'arbeit') bleibt dabei aussen vor.
+    Frueher stand hier 'git merge arbeit' im main-Worktree - damit haette
+    jede Ergebnis-Veroeffentlichung waehrend eines Rennens den kompletten
+    Arbeitsstand mit live geschaltet, also auch unfertige Umbauten an der
+    Website. Stattdessen werden jetzt gezielt nur die beiden Datenpfade
+    aus 'arbeit' nach main uebernommen.
+
     Gibt (erfolg, meldung) zurueck."""
     pfade = [os.path.relpath(LIVEDATA, ROOT).replace(os.sep, "/"),
              os.path.relpath(ARCHIV_ORDNER, ROOT).replace(os.sep, "/")]
 
+    # --- 1. In 'arbeit' festhalten (bleibt die Quelle der Wahrheit) ---
     if _git(["add", "--"] + pfade, ROOT).returncode != 0:
         return False, "git add fehlgeschlagen"
 
@@ -357,16 +364,29 @@ def veroeffentliche(nachricht):
         return False, f"git commit: {(ergebnis.stderr or ergebnis.stdout).strip()}"
 
     if not os.path.isdir(MAIN_WORKTREE):
-        return False, f"{MAIN_WORKTREE} nicht gefunden - Merge/Push nicht moeglich"
+        return False, f"{MAIN_WORKTREE} nicht gefunden - Push nicht moeglich"
 
-    ergebnis = _git(["merge", "arbeit", "--no-edit"], MAIN_WORKTREE)
+    # --- 2. Nur die Datenpfade nach main holen, KEIN Branch-Merge ---
+    ergebnis = _git(["checkout", "arbeit", "--"] + pfade, MAIN_WORKTREE)
     if ergebnis.returncode != 0:
-        return False, f"Merge nach main: {(ergebnis.stderr or ergebnis.stdout).strip()}"
+        return False, f"Uebernahme nach main: {(ergebnis.stderr or ergebnis.stdout).strip()}"
 
-    ergebnis = _git(["push", "origin", "main"], MAIN_WORKTREE)
+    if _git(["diff", "--cached", "--quiet", "--"] + pfade, MAIN_WORKTREE).returncode:
+        ergebnis = _git(["commit", "-m", nachricht, "--"] + pfade, MAIN_WORKTREE)
+        if ergebnis.returncode != 0:
+            return False, f"Commit auf main: {(ergebnis.stderr or ergebnis.stdout).strip()}"
+
+    # --- 3. Push. Die Live-Sperre laesst genau diesen Weg durch, weil hier
+    #        ausschliesslich Ergebnisdaten und nie der Arbeitsstand gehen. ---
+    umgebung = dict(os.environ, MCH_ERGEBNIS_PUSH="1")
+    ergebnis = subprocess.run(["git", "push", "origin", "main"],
+                              cwd=MAIN_WORKTREE, capture_output=True, text=True,
+                              encoding="utf-8", errors="replace", env=umgebung)
     if ergebnis.returncode != 0:
         return False, f"Push: {(ergebnis.stderr or ergebnis.stdout).strip()}"
 
+    # --- 4. main zurueck nach arbeit mergen, damit die beiden Historien
+    #        verbunden bleiben und der spaetere grosse Release sauber merged. ---
     _git(["merge", "main", "--no-edit"], ROOT)
     return True, "veroeffentlicht"
 
