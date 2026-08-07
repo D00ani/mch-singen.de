@@ -535,7 +535,9 @@ body.dark-mode .news-card--highlight {
     margin-left: 6px;
     vertical-align: middle;
     flex-shrink: 0;
-    animation: upcoming-dot 2s ease-in-out infinite;
+    /* Frueher pulsierte dieser Punkt dauerhaft. "Steht bevor" ist aber ein
+       feststehender Zustand, kein laufendes Ereignis - im Gegensatz zum
+       Live-Banner der Startseite, wo das Pulsieren berechtigt bleibt. */
 }
 
 @keyframes upcoming-dot {
@@ -902,13 +904,13 @@ body.dark-mode .sugg-item {
 .main-search-box input {
     flex: 1;
     padding: 15px;
-    font-size: 1.1rem;
-    border: 2px solid #ddd;
+    font-size: var(--text-lg);
+    border: 1.5px solid #9aa1ad;
     border-radius: 8px;
     font-family: inherit;
-    background: #f9f9f9;
+    background: var(--surface);
     color: var(--text-main);
-    transition: border-color 0.3s;
+    transition: border-color 0.2s;
 }
 
 .main-search-box input:focus {

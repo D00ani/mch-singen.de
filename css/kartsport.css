@@ -2,21 +2,27 @@
    KARTSPORT - PAGE-SPECIFIC STYLES
    ========================================= */
 
-/* Track-Preview Video (styles from index.css, needed here too) */
+/* Track-Preview Video.
+   ACHTUNG: dieselben Regeln stehen auch in index.css. Nur DIESE Kopie wird
+   tatsaechlich benutzt, weil das Video auf der Kartsportseite liegt und
+   diese Seite index.css gar nicht laedt. Aenderungen also hier machen. */
+
+/* Vorher ein 3px starker Rahmen in Vereinsblau. Ein Video braucht kein
+   Passepartout - jetzt dieselbe feine Kante wie alle anderen Medien. */
 .track-preview-container {
     position: relative;
     width: 100%;
     border-radius: 12px;
     overflow: hidden;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-    border: 3px solid var(--primary-blue);
-    background: #000;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border-soft);
+    background: #0b1020;
     margin-bottom: 25px;
 }
 
 body.dark-mode .track-preview-container {
-    border-color: #4285F4;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    border-color: rgba(255, 255, 255, 0.09);
+    box-shadow: none;
 }
 
 .track-video {
@@ -24,33 +30,35 @@ body.dark-mode .track-preview-container {
     height: auto;
     display: block;
     object-fit: contain;
-    background-color: #000;
+    background-color: #0b1020;
 }
 
 .video-overlay {
     position: absolute;
-    top: 15px;
-    left: 15px;
+    top: 14px;
+    left: 14px;
     z-index: 2;
 }
 
 .preview-badge {
-    background: rgba(0, 0, 0, 0.7);
+    background: rgba(6, 14, 46, 0.78);
     color: #fff;
-    padding: 6px 15px;
-    border-radius: 20px;
-    font-size: 0.85rem;
-    font-weight: bold;
+    padding: 6px 13px;
+    border-radius: 8px;
+    font-size: var(--text-xs);
+    font-weight: 600;
     display: flex;
     align-items: center;
     gap: 8px;
-    backdrop-filter: blur(4px);
-    border: 1px solid rgba(255,255,255,0.2);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    border: 1px solid rgba(255, 255, 255, 0.14);
 }
 
+/* Der Punkt pulsierte dauerhaft in Rot und suggerierte damit eine
+   Live-Uebertragung. Es ist eine aufgezeichnete Onboard-Runde. */
 .preview-badge i {
-    color: var(--live-red);
-    animation: pulse 1.5s infinite;
+    color: rgba(255, 255, 255, 0.75);
 }
 
 @keyframes pulse {

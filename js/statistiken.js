@@ -4,9 +4,22 @@ document.addEventListener("DOMContentLoaded", () => {
     // --- ANIMIERTE MEILENSTEINE ---
     const easeOut = t => 1 - Math.pow(1 - t, 3);
 
+    // Jahreszahlen werden nicht hochgezaehlt. "Gegruendet" ist ein Datum,
+    // keine Menge - ein von 0 auf 1954 laufender Zaehler las sich wie eine
+    // Mitgliederzahl und wirkte dadurch unseriös.
+    const istJahreszahl = (el) => el.hasAttribute('data-mode')
+        ? el.getAttribute('data-mode') === 'year'
+        : /^(19|20)\d{2}$/.test(el.getAttribute('data-target') || '');
+
     const animateCounter = (counter) => {
         const target = +counter.getAttribute('data-target');
         const suffix = counter.getAttribute('data-suffix') || '';
+
+        if (istJahreszahl(counter)) {
+            counter.textContent = target + suffix;
+            return;
+        }
+
         const duration = Math.min(1800, 600 + target * 0.4);
         const start = performance.now();
         const tick = (now) => {

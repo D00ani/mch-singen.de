@@ -55,11 +55,37 @@ main p {
     line-height: 1.65;
 }
 
-/* Lesbare Zeilenlaenge: ohne Begrenzung liefen Absaetze auf breiten
-   Monitoren ueber die gesamte Containerbreite. */
-main > p,
-main > section > p {
-    max-width: 72ch;
+/* Lesbare Zeilenlaenge.
+   Ohne Begrenzung liefen Absaetze auf einem breiten Monitor ueber rund
+   150 Zeichen - etwa das Doppelte dessen, was sich noch gut liest.
+   Die Regel gilt fuer ALLE Absaetze in main: in schmalen Karten und
+   Rasterzellen greift sie ohnehin nicht, sie wirkt also genau dort, wo
+   Text frei ueber die volle Breite laufen wuerde. */
+main p,
+main li {
+    max-width: 74ch;
+}
+
+/* Ausnahmen: in mittig gesetzten Boxen muss der Absatz mittig bleiben,
+   sonst sitzt der Textblock sichtbar links neben der Mitte. */
+.download-section p,
+.sponsor-cta-box p,
+.maps-placeholder p,
+.countdown-wrapper p,
+.success-box p,
+main [style*="text-align: center"] p,
+main [style*="text-align:center"] p {
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* In Rasterlisten (Terminliste, Link-Karten) darf die Begrenzung nicht
+   greifen, dort bestimmt die Rasterzelle die Breite. */
+.event-list li,
+.link-card-grid li,
+.footer-links li,
+.footer-quick-nav li {
+    max-width: none;
 }
 
 main a { 

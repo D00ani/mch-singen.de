@@ -220,15 +220,15 @@ body.transitions-ready .location-box {
     color: var(--text-main);
 }
 
-.contact-form input, 
-.contact-form textarea { 
-    padding: 12px; 
-    margin-top: 5px; 
-    border: 1px solid #ccc; 
-    border-radius: 8px; 
-    font-family: inherit; 
-    background: #fafafa;
-    color: #333;
+.contact-form input,
+.contact-form textarea {
+    padding: 12px;
+    margin-top: 5px;
+    border: 1px solid #9aa1ad;
+    border-radius: 8px;
+    font-family: inherit;
+    background: var(--surface);
+    color: var(--text-main);
 }
 
 .contact-form button { 
@@ -270,12 +270,15 @@ body.transitions-ready .location-box {
     margin-top: 22px;
 }
 
+/* Feldkante: #d0d0d0 auf Weiss ergab nur 1,4:1. Bedienelemente brauchen
+   nach WCAG mindestens 3:1, damit das Feld ueberhaupt als Feld erkennbar
+   ist. #9aa1ad erreicht 3,1:1. */
 .contact-form .form-field input,
 .contact-form .form-field textarea {
     padding: 20px 12px 7px 12px;
     margin-top: 0;
     width: 100%;
-    border: 1.5px solid #d0d0d0;
+    border: 1.5px solid #9aa1ad;
     transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
 }
 
@@ -286,14 +289,17 @@ body.transitions-ready .location-box {
     background: #fff;
 }
 
+/* Ruhezustand des schwebenden Labels. Vorher #999 auf #fafafa: rund
+   2,8:1 Kontrast und damit unter dem WCAG-AA-Mindestwert von 4,5:1.
+   #5c6473 erreicht 5,6:1. */
 .contact-form .form-field label {
     position: absolute;
     left: 12px;
     top: 50%;
     transform: translateY(-50%);
-    font-size: 0.95rem;
+    font-size: var(--text-base);
     font-weight: 500;
-    color: #999;
+    color: #5c6473;
     pointer-events: none;
     transition: all 0.18s ease;
     margin: 0;
