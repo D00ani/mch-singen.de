@@ -6,9 +6,14 @@
    Gezeichnet wird die Tabelle in js/live.js.
    ========================================= */
 
+/* Frueher 940px und mittig zentriert. Dadurch sass der Inhalt der
+   Live-Seite als eigene, schmalere Spalte in der Seite: Brotkrumen und
+   Ueberschrift begannen links, die Ergebnistabelle rueckte darunter
+   sichtbar ein. Jetzt volle Inhaltsbreite wie ueberall sonst - eine
+   Ergebnistabelle mit sieben Spalten profitiert davon ohnehin. */
 .live-wrapper {
-    max-width: 940px;
-    margin: 0 auto;
+    max-width: 100%;
+    margin: 0;
 }
 
 /* =========================================
@@ -24,9 +29,9 @@
     justify-content: space-between;
     gap: 10px 24px;
     background: #fff;
-    border-top: 4px solid var(--primary-blue);
+    border: 1px solid var(--border-soft);
     border-radius: 12px;
-    box-shadow: 0 4px 15px rgba(0, 71, 204, 0.06);
+    box-shadow: var(--shadow-sm);
     padding: 16px 22px;
     margin-bottom: 18px;
 }
@@ -132,7 +137,7 @@
     padding: 11px 16px;
     border-radius: 10px;
     background: rgba(0, 71, 204, 0.06);
-    border-left: 4px solid var(--primary-blue);
+    border: 1px solid var(--border-soft);
     font-size: var(--text-sm);
     color: var(--text-main);
 }
@@ -151,7 +156,7 @@
 .live-filters {
     background: #fff;
     border-radius: 12px;
-    box-shadow: 0 4px 15px rgba(0, 71, 204, 0.06);
+    box-shadow: var(--shadow-sm);
     padding: 6px 20px 14px 20px;
     margin-bottom: 22px;
 }
@@ -242,7 +247,7 @@
 /* Gesamtergebnis optisch als eigene Sorte kennzeichnen */
 .btn-filter--total {
     background: transparent;
-    border: 2px solid var(--primary-blue);
+    border: 1.5px solid var(--primary-blue);
     color: var(--primary-blue);
 }
 
@@ -298,7 +303,7 @@
     border-top: none;
     border-radius: 0 0 12px 12px;
     overflow: hidden;
-    box-shadow: 0 4px 15px rgba(0, 71, 204, 0.05);
+    box-shadow: var(--shadow-sm);
 }
 
 /* Im Gesamtergebnis kommt die Spalte mit den beiden Einzellaeufen dazu */
@@ -614,15 +619,15 @@
     padding: 11px 14px;
     background: #fff;
     border-radius: 10px;
-    border-left: 3px solid var(--primary-blue);
-    box-shadow: 0 2px 8px rgba(0, 71, 204, 0.05);
+    border: 1px solid var(--border-soft);
+    box-shadow: var(--shadow-sm);
     text-decoration: none;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .archiv-tage a:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(0, 71, 204, 0.12);
+    box-shadow: var(--shadow-md);
     text-decoration: none;
 }
 

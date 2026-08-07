@@ -9,48 +9,76 @@
             const emailConfirm = document.getElementById('email-confirm');
             const emailError = document.getElementById('email-error');
             const emailFormatError = document.getElementById('email-format-error');
+            const sendeFehler = document.getElementById('sende-fehler');
+
+            // Meldung ein- oder ausblenden und das zugehoerige Feld als
+            // fehlerhaft markieren. aria-invalid steuert gleichzeitig die rote
+            // Kante (siehe style.css) und das, was Screenreader vorlesen -
+            // beides bleibt so zwangslaeufig synchron.
+            function meldung(el, feld, zeigen) {
+                if (el) el.hidden = !zeigen;
+                if (feld) {
+                    if (zeigen) feld.setAttribute('aria-invalid', 'true');
+                    else feld.removeAttribute('aria-invalid');
+                }
+            }
 
             function validateEmail() {
                 const val = emailInput.value;
                 const isValidFormat = emailRegex.test(val);
-                emailFormatError.style.display = (!val || isValidFormat) ? 'none' : 'block';
+                meldung(emailFormatError, emailInput, !!val && !isValidFormat);
                 const matches = val === emailConfirm.value;
-                emailError.style.display = (emailConfirm.value && !matches) ? 'block' : 'none';
+                meldung(emailError, emailConfirm, !!emailConfirm.value && !matches);
                 return isValidFormat && matches;
             }
 
-            emailInput.addEventListener('blur', function() {
+            function formatPruefen() {
                 const val = emailInput.value;
-                if (val) emailFormatError.style.display = emailRegex.test(val) ? 'none' : 'block';
-            });
+                if (val) meldung(emailFormatError, emailInput, !emailRegex.test(val));
+            }
+
+            function gleichheitPruefen() {
+                if (emailConfirm.value) {
+                    meldung(emailError, emailConfirm, emailInput.value !== emailConfirm.value);
+                }
+            }
+
+            emailInput.addEventListener('blur', formatPruefen);
             emailInput.addEventListener('keydown', function(e) {
-                if (e.key === 'Enter') {
-                    const val = emailInput.value;
-                    if (val) emailFormatError.style.display = emailRegex.test(val) ? 'none' : 'block';
+                if (e.key === 'Enter') formatPruefen();
+            });
+            // Tippt jemand nach einem Fehler weiter, verschwindet die Meldung
+            // sofort wieder - sonst steht sie rot da, waehrend man sie behebt.
+            emailInput.addEventListener('input', function() {
+                if (emailInput.getAttribute('aria-invalid') === 'true' && emailRegex.test(emailInput.value)) {
+                    meldung(emailFormatError, emailInput, false);
                 }
             });
 
-            emailConfirm.addEventListener('blur', function() {
-                if (emailConfirm.value) {
-                    emailError.style.display = (emailInput.value === emailConfirm.value) ? 'none' : 'block';
-                }
-            });
+            emailConfirm.addEventListener('blur', gleichheitPruefen);
             emailConfirm.addEventListener('keydown', function(e) {
-                if (e.key === 'Enter' && emailConfirm.value) {
-                    emailError.style.display = (emailInput.value === emailConfirm.value) ? 'none' : 'block';
+                if (e.key === 'Enter') gleichheitPruefen();
+            });
+            emailConfirm.addEventListener('input', function() {
+                if (emailConfirm.getAttribute('aria-invalid') === 'true' && emailInput.value === emailConfirm.value) {
+                    meldung(emailError, emailConfirm, false);
                 }
             });
 
             contactForm.addEventListener('submit', function(e) {
                 e.preventDefault();
+                if (sendeFehler) sendeFehler.hidden = true;
 
                 if (!validateEmail()) {
+                    // Zum ersten fehlerhaften Feld springen, nicht pauschal
+                    // ins Bestaetigungsfeld: sonst landet man beim falschen.
                     if (!emailRegex.test(emailInput.value)) {
-                        emailFormatError.style.display = 'block';
+                        meldung(emailFormatError, emailInput, true);
+                        emailInput.focus();
                     } else {
-                        emailError.style.display = 'block';
+                        meldung(emailError, emailConfirm, true);
+                        emailConfirm.focus();
                     }
-                    emailConfirm.focus();
                     return;
                 }
 
@@ -61,6 +89,18 @@
 
                 const formData = new FormData(contactForm);
                 formData.delete('_email_confirm');
+
+                // Fehler stehen jetzt im Formular statt in einem alert().
+                // Ein Systemdialog reisst aus dem Ablauf, verdeckt das
+                // Formular und nennt keinen Ausweg.
+                function fehlgeschlagen(text) {
+                    if (sendeFehler) {
+                        sendeFehler.textContent = text;
+                        sendeFehler.hidden = false;
+                    }
+                    submitBtn.innerHTML = originalBtnText;
+                    submitBtn.disabled = false;
+                }
 
                 fetch(contactForm.action, {
                     method: 'POST',
@@ -74,15 +114,15 @@
                         contactForm.style.display = 'none';
                         successBox.style.display = 'block';
                     } else {
-                        alert("Es gab leider ein Problem beim Senden.");
-                        submitBtn.innerHTML = originalBtnText;
-                        submitBtn.disabled = false;
+                        fehlgeschlagen('Die Nachricht konnte nicht gesendet werden. '
+                            + 'Bitte versuche es noch einmal oder schreib uns direkt '
+                            + 'an info@mch-singen.de.');
                     }
                 })
-                .catch(error => {
-                    alert("Verbindungsfehler.");
-                    submitBtn.innerHTML = originalBtnText;
-                    submitBtn.disabled = false;
+                .catch(() => {
+                    fehlgeschlagen('Keine Verbindung zum Server. Bitte prüfe deine '
+                        + 'Internetverbindung und versuche es erneut. Alternativ '
+                        + 'erreichst du uns unter info@mch-singen.de.');
                 });
             });
         }

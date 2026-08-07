@@ -129,27 +129,31 @@
                     </div>
                 </div>
 
+                <p class="form-hinweis">Mit <span class="pflicht" aria-hidden="true">*</span> gekennzeichnete Felder sind Pflichtfelder.</p>
+
                 <form id="my-contact-form" class="contact-form" action="https://formsubmit.co/info@mch-singen.de" method="POST" style="margin-top: 0;">
 
                     <input type="hidden" name="_subject" value="Neue Nachricht von der MCH Webseite!">
                     <input type="hidden" name="_captcha" value="false">
 
                     <div class="form-field">
-                        <input type="text" id="name" name="Name" placeholder=" " required>
-                        <label for="name">Dein Name</label>
+                        <input type="text" id="name" name="Name" placeholder=" " required aria-required="true">
+                        <label for="name">Dein Name <span class="pflicht" aria-hidden="true">*</span></label>
                     </div>
 
                     <div class="form-field">
-                        <input type="email" id="email" name="Email" placeholder=" " required>
-                        <label for="email">Deine E-Mail-Adresse</label>
+                        <input type="email" id="email" name="Email" placeholder=" " required
+                               aria-required="true" aria-describedby="email-format-error">
+                        <label for="email">Deine E-Mail-Adresse <span class="pflicht" aria-hidden="true">*</span></label>
                     </div>
-                    <p id="email-format-error" style="color: #e53935; font-size: 0.85rem; display: none; margin: 4px 0 0 0;">Bitte gib eine gültige E-Mail-Adresse ein.</p>
+                    <p id="email-format-error" class="feld-fehler" role="alert" hidden>Bitte gib eine gültige E-Mail-Adresse ein.</p>
 
                     <div class="form-field">
-                        <input type="email" id="email-confirm" name="_email_confirm" placeholder=" " required>
-                        <label for="email-confirm">E-Mail-Adresse bestätigen</label>
+                        <input type="email" id="email-confirm" name="_email_confirm" placeholder=" " required
+                               aria-required="true" aria-describedby="email-error">
+                        <label for="email-confirm">E-Mail-Adresse bestätigen <span class="pflicht" aria-hidden="true">*</span></label>
                     </div>
-                    <p id="email-error" style="color: #e53935; font-size: 0.85rem; display: none; margin: 4px 0 0 0;">Die E-Mail-Adressen stimmen nicht überein.</p>
+                    <p id="email-error" class="feld-fehler" role="alert" hidden>Die E-Mail-Adressen stimmen nicht überein.</p>
 
                     <div class="form-field">
                         <input type="tel" id="phone" name="Telefon" placeholder=" ">
@@ -157,8 +161,8 @@
                     </div>
 
                     <div class="form-field field-textarea">
-                        <textarea id="message" name="Nachricht" rows="5" placeholder=" " required></textarea>
-                        <label for="message">Deine Nachricht</label>
+                        <textarea id="message" name="Nachricht" rows="5" placeholder=" " required aria-required="true"></textarea>
+                        <label for="message">Deine Nachricht <span class="pflicht" aria-hidden="true">*</span></label>
                     </div>
 
                     <div style="margin-top: 18px; margin-bottom: 20px; font-size: 0.9rem; color: var(--text-main); display: flex; align-items: flex-start; gap: 10px;">
@@ -167,6 +171,8 @@
                             Ich stimme zu, dass meine Angaben zur Kontaktaufnahme und für Rückfragen dauerhaft gespeichert werden. Weitere Informationen findest du in unserer <a href="impressum-datenschutz.html" style="color: var(--primary-blue); text-decoration: underline;">Datenschutzerklärung</a>.
                         </label>
                     </div>
+
+                    <p id="sende-fehler" class="form-fehler" role="alert" hidden></p>
 
                     <button type="submit"><i class="fa-solid fa-paper-plane"></i> Nachricht senden</button>
                 </form>

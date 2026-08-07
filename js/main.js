@@ -265,7 +265,9 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
             <div class="footer-bottom">
                 <span>© 2026 Motorsportclub Singen Hohentwiel e.V. | <a href="#" onclick="return klaro.show();">Cookie-Einstellungen</a></span>
-                <p class="designer-credit">Created by <a href="https://www.instagram.com/dnl_kr">Daniel Krieger</a></p>
+                <!-- Der Gestaltungs-Hinweis steht jetzt im Impressum unter
+                     "Gestaltung und Umsetzung der Website" und nicht mehr in
+                     der Fusszeile jeder einzelnen Seite. -->
             </div>
         `;
     })();

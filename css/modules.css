@@ -469,12 +469,22 @@ body.dark-mode .news-card--highlight {
     color: #000 !important;
 }
 
-/* Aktuelles / News Grid */
-.news-grid { 
-    display: grid; 
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); 
-    gap: 20px; 
-    margin-top: 20px; 
+/* Aktuelles / News Grid
+   auto-fit statt auto-fill: leere Rasterspuren fallen weg. Vorher stand
+   eine einzelne Meldung als schmale Karte links, daneben lief das Raster
+   mit zwei bis drei leeren Spuren weiter - das sah aus wie ein Fehler. */
+.news-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+}
+
+/* Ist nur eine Meldung da, wuerde sie durch auto-fit ueber die gesamte
+   Breite gezogen. Deshalb hier eine Obergrenze: die Karte bekommt das
+   Format einer hervorgehobenen Meldung statt eines Banners. */
+.news-grid > :only-child {
+    max-width: 620px;
 }
 
 .news-card {
@@ -893,12 +903,15 @@ body.dark-mode .sugg-item {
     color: #e0e0e0;
 }
 
-/* Die große Suchleiste auf suche.html */
+/* Die grosse Suchleiste auf suche.html.
+   Begrenzt: ein einzeiliges Eingabefeld ueber 1200px Breite wirkt
+   verloren und ist beim Tippen unangenehm zu ueberblicken. */
 .main-search-box {
     display: flex;
     gap: 10px;
     margin-bottom: 30px;
     margin-top: 20px;
+    max-width: 620px;
 }
 
 .main-search-box input {

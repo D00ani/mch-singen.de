@@ -6,6 +6,16 @@ main {
     padding: 20px 40px;
 }
 
+/* Kurze Seiten (Suche ohne Treffer, Baustellenseite, 404) endeten bisher
+   mitten im Bild: der Fussbereich rutschte nach oben und darunter stand
+   eine grosse leere Flaeche. Der Inhaltsbereich fuellt jetzt mindestens
+   die Fensterhoehe abzueglich Kopf- und Fusszeile.
+   100dvh statt 100vh, damit auf Mobilgeraeten die ein- und ausfahrende
+   Adressleiste das Layout nicht springen laesst. */
+body:not(.page-home) main {
+    min-height: calc(100dvh - 420px);
+}
+
 body:not(.page-home) main {
     background: #fff;
     border-radius: 0 0 10px 10px;

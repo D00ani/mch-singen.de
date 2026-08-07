@@ -272,6 +272,61 @@ body.transitions-ready .location-box {
     background: #fff;
 }
 
+/* =========================================
+   PFLICHTFELDER UND FEHLERMELDUNGEN
+   Vorher war nirgends erkennbar, welche Felder noetig sind. Die Pruefung
+   lief allein ueber die Browser-Vorgabe, Sendefehler kamen per alert().
+   ========================================= */
+
+.form-hinweis {
+    margin: 0 0 4px 0;
+    font-size: var(--text-sm);
+    color: var(--text-light);
+}
+
+/* Der Stern ist nur Dekoration: die Information steckt fuer Screenreader
+   in aria-required am Feld, deshalb im Markup aria-hidden. */
+.pflicht {
+    color: #b3261e;
+    font-weight: 700;
+}
+
+/* Bewusst ohne Icon-Schrift: Font Awesome wird asynchron nachgeladen, ein
+   Symbol darin waere in genau dem Moment, in dem der Fehler erscheint,
+   moeglicherweise noch ein leeres Kaestchen. Rote Schrift plus rote
+   Feldkante sagen dasselbe und koennen nicht kaputtgehen. */
+.feld-fehler {
+    margin: 6px 0 0 0;
+    font-size: var(--text-sm);
+    font-weight: 600;
+    color: #b3261e;
+}
+
+/* [hidden] muss die display-Regel schlagen, sonst stehen die Meldungen
+   dauerhaft da. */
+.feld-fehler[hidden],
+.form-fehler[hidden] { display: none; }
+
+.form-fehler {
+    margin: 0 0 16px 0;
+    padding: 12px 16px;
+    border-radius: 8px;
+    background: #fdeceb;
+    border: 1px solid rgba(179, 38, 30, 0.3);
+    color: #8c1d18;
+    font-size: var(--text-sm);
+    font-weight: 500;
+}
+
+body.dark-mode .form-hinweis { color: #8b93ad; }
+body.dark-mode .pflicht,
+body.dark-mode .feld-fehler { color: #f2b8b5; }
+body.dark-mode .form-fehler {
+    background: rgba(179, 38, 30, 0.18);
+    border-color: rgba(242, 184, 181, 0.35);
+    color: #f2b8b5;
+}
+
 /* Floating Labels (#2) */
 .form-field {
     position: relative;
@@ -296,6 +351,24 @@ body.transitions-ready .location-box {
     box-shadow: 0 0 0 3px rgba(0, 51, 160, 0.12);
     background: #fff;
 }
+
+/* Feld mit Fehler: die Kante wird rot, damit man beim Ueberfliegen sieht,
+   WO das Problem sitzt, nicht nur DASS eines besteht. Gesteuert per
+   aria-invalid, also derselbe Zustand, den auch Screenreader vorlesen. */
+.contact-form .form-field input[aria-invalid="true"],
+.contact-form .form-field textarea[aria-invalid="true"] {
+    border-color: #b3261e;
+}
+
+.contact-form .form-field input[aria-invalid="true"]:focus,
+.contact-form .form-field textarea[aria-invalid="true"]:focus {
+    border-color: #b3261e;
+    box-shadow: 0 0 0 3px rgba(179, 38, 30, 0.15);
+}
+
+/* Die Einfaerbung des schwebenden Feldnamens steht weiter unten, NACH den
+   Floating-Label-Regeln. Sonst gewinnt bei gleicher Spezifitaet die
+   spaeter notierte Regel und der Name bleibt blau. */
 
 /* Ruhezustand des schwebenden Labels. Vorher #999 auf #fafafa: rund
    2,8:1 Kontrast und damit unter dem WCAG-AA-Mindestwert von 4,5:1.
@@ -337,6 +410,13 @@ body.transitions-ready .location-box {
     font-weight: 600;
     color: var(--primary-blue);
     letter-spacing: 0.3px;
+}
+
+/* Feldname bei Fehler ebenfalls rot. Muss NACH den beiden Bloecken oben
+   stehen: gleiche Spezifitaet, es entscheidet die Reihenfolge. */
+.contact-form .form-field input[aria-invalid="true"] ~ label,
+.contact-form .form-field textarea[aria-invalid="true"] ~ label {
+    color: #b3261e;
 }
 
 /* =========================================
