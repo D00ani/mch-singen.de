@@ -10,7 +10,14 @@ header {
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
     color: #fff;
-    padding: 14px 30px 14px 93px;
+    /* Die blaue Flaeche bleibt randlos ueber die ganze Fensterbreite, ihr
+       INHALT richtet sich aber an derselben Spalte aus wie der Rest der
+       Seite. Die 53px links sind der Platz fuer den Menue-Knopf, der
+       ausserhalb des Flusses sitzt (position: fixed). */
+    padding-top: 14px;
+    padding-bottom: 14px;
+    padding-right: max(30px, calc((100% - var(--content-width)) / 2));
+    padding-left: max(93px, calc((100% - var(--content-width)) / 2));
     display: flex;
     flex-wrap: wrap;
     align-items: center;
@@ -134,10 +141,14 @@ header > * {
    3. HAMBURGER BUTTON
    ========================================= */
 
+/* Auf breiten Monitoren sitzt der Menue-Knopf im linken Rand, damit Logo,
+   Navigation und Inhalt gemeinsam an der Kante der Inhaltsspalte beginnen.
+   Ist kein Rand da (schmales Fenster), faellt er auf 40px zurueck.
+   Fixiert, rechnet also gegen das Fenster (100vw). */
 .hamburger-btn {
     position: fixed;
     top: 21px;
-    left: 40px;
+    left: max(40px, calc((100vw - var(--content-width)) / 2 - 53px));
     z-index: 950;
     width: 38px;
     height: 38px;

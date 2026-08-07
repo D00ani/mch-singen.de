@@ -602,12 +602,38 @@ body.dark-mode .track-preview-container {
     }
 }
 
-@media (min-width: 992px) {
+/* =========================================
+   SEITENRASTER (ab Tablet)
+   Kopfzeile, Inhalt und Fussbereich benutzen denselben Seitenrand, damit
+   die Seite EINE durchgehende linke Kante hat. Der Rand ist mindestens so
+   breit, dass der Menue-Knopf hineinpasst (93px) - auf breiten Monitoren
+   waechst er auf den Wert, der die Inhaltsspalte mittig stellt.
+   Vorher hatten Kopf und Inhalt getrennte Werte: bei 1920px lagen 300px
+   zwischen Navigation und Hero-Bild, bei 1280px 60px in die andere
+   Richtung. Auf dem Handy fiel es nicht auf, weil dort beides randlos ist.
+   ========================================= */
+@media (min-width: 769px) {
     body.page-home main {
         background-color: transparent;
         box-shadow: none;
-        padding: 0;
         margin-top: 0;
+        padding-top: 0;
+        padding-bottom: 0;
+        padding-left: max(93px, calc((100% - var(--content-width)) / 2));
+        padding-right: max(30px, calc((100% - var(--content-width)) / 2));
+    }
+
+    /* Die Breite kommt jetzt vom Innenabstand des main-Bereichs, nicht
+       mehr von einer eigenen Begrenzung je Sektion. */
+    body.page-home .hero,
+    body.page-home .welcome-section,
+    body.page-home .quick-nav,
+    body.page-home .sport-switcher,
+    body.page-home .section-divider,
+    body.page-home .live-banner {
+        max-width: none;
+        margin-left: 0;
+        margin-right: 0;
     }
 }
 
@@ -943,6 +969,32 @@ body.dark-mode .cta-banner {
 @media (min-width: 992px) {
     .welcome-section h2 {
         font-size: 1.5rem;
+    }
+}
+
+/* Vereinsvorstellung zweispaltig, sobald genug Platz da ist.
+   Einspaltig endete der Text bei 74 Zeichen und liess auf einem breiten
+   Monitor das rechte Drittel der Inhaltsspalte leer - die Seite bekam
+   dadurch eine unruhige, ausgefranste rechte Kante. */
+@media (min-width: 1000px) {
+    .welcome-section {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        column-gap: 52px;
+        row-gap: 4px;
+        align-items: start;
+    }
+
+    .welcome-section h2 {
+        grid-column: 1 / -1;
+        margin-bottom: 6px;
+    }
+
+    /* In der Spalte bestimmt das Raster die Breite, nicht die
+       Zeichenbegrenzung aus main.css. */
+    .welcome-section p {
+        max-width: none;
+        margin-bottom: 0;
     }
 }
 

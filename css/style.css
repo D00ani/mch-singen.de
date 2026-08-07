@@ -37,8 +37,16 @@
     --shadow-md: 0 1px 2px rgba(15, 23, 42, 0.04), 0 6px 18px rgba(15, 23, 42, 0.07);
     --shadow-lg: 0 2px 4px rgba(15, 23, 42, 0.04), 0 14px 34px rgba(15, 23, 42, 0.09);
 
-    /* Gemeinsame Inhaltsbreite fuer Startseiten-Sektionen */
-    --content-width: 1080px;
+    /* Gemeinsame Inhaltsbreite. Kopfzeile, Inhalt und Fussbereich richten
+       sich alle danach aus, damit die Seite auf dem Desktop EINE linke
+       Kante hat. Vorher lief der Kopf ueber die volle Fensterbreite,
+       waehrend der Inhalt mittig in einer schmaleren Spalte sass - auf
+       einem 1920er Monitor lagen zwischen Navigation und Hero-Bild rund
+       300 Pixel Versatz. Auf dem Handy fiel das nicht auf, weil dort
+       beides gleich breit ist.
+       1200px ist zusaetzlich so gewaehlt, dass die Hero-Bildspalte genau
+       640px breit wird - die native Breite von mch_pic.jpg. */
+    --content-width: 1200px;
 
     --font-body:    'Inter', system-ui, sans-serif;
     --font-heading: 'Outfit', system-ui, sans-serif;

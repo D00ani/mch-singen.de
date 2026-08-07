@@ -119,12 +119,16 @@ footer > p:last-child {
     }
 }
 
-/* ── 3-Spalten-Grid ── */
+/* ── 3-Spalten-Grid ──
+   Gleiche Ausrichtung wie Kopfzeile und Inhalt: die dunkle Flaeche geht
+   randlos ueber das Fenster, der Inhalt sitzt in der Inhaltsspalte. */
 .footer-inner {
     display: grid;
     grid-template-columns: 1.6fr 1fr 1fr;
     gap: 48px;
-    padding: 52px 50px 42px 50px;
+    padding-top: 52px;
+    padding-bottom: 42px;
+    padding-inline: max(50px, calc((100% - var(--content-width)) / 2));
 }
 
 /* ── Branding-Spalte ── */
@@ -248,7 +252,8 @@ footer > p:last-child {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 14px 50px;
+    padding-block: 14px;
+    padding-inline: max(50px, calc((100% - var(--content-width)) / 2));
     border-top: 1px solid rgba(255, 255, 255, 0.1);
     font-size: var(--text-xs);
     font-weight: 300;

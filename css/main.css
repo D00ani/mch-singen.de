@@ -13,6 +13,20 @@ body:not(.page-home) main {
     margin-bottom: 0;
 }
 
+/* Unterseiten auf dasselbe Seitenraster wie Kopfzeile und Fussbereich.
+   Die weisse Flaeche bleibt randlos, ihr INHALT beginnt aber an derselben
+   Kante wie Logo und Navigation. Ohne diese Regel stand auf einem 1920er
+   Monitor das Logo bei x=360 und die Ueberschrift bei x=57.
+   Derselbe Ausdruck wie in header.css und footer.css. */
+@media (min-width: 769px) {
+    body:not(.page-home) main {
+        padding-top: 28px;
+        padding-bottom: 32px;
+        padding-left: max(93px, calc((100% - var(--content-width)) / 2));
+        padding-right: max(30px, calc((100% - var(--content-width)) / 2));
+    }
+}
+
 /* Ueberschriften: aufrecht statt kursiv.
    Kursiv plus font-weight 900 war die Optik von Sportvereins-Trikotdruck
    und der groesste einzelne Seriositaetsverlust der alten Seite.
