@@ -256,3 +256,136 @@ main img {
     color: var(--primary-blue);
     font-weight: 600;
 }
+
+/* --- BREADCRUMB: MITTLERE STUFE (GRUPPE) ---
+   Die Breadcrumb stand auf jeder Unterseite gleich da: "Startseite /
+   Seitenname". Das sagte nur, dass man nicht auf der Startseite ist.
+   Die Hauptnavigation gliedert dieselben Seiten aber in Verein, Sport und
+   Aktuelles - und diese Gliederung war unterhalb von 900px nirgends zu
+   sehen, weil dort die Navigationsleiste ausgeblendet ist.
+
+   Die mittlere Stufe traegt sie nach. Ohne JavaScript bleibt sie ein
+   lesbarer Hinweis; js/main.js (Abschnitt 20) macht daraus einen
+   Schalter, der die Geschwisterseiten aufklappt - also dasselbe Feld,
+   das am Desktop beim Darueberfahren erscheint. Die Liste dafuer wird aus
+   der vorhandenen Hauptnavigation gelesen, nicht zweimal gepflegt. */
+.breadcrumb-gruppe {
+    color: var(--text-light);
+    font-weight: 500;
+}
+
+/* Erst wenn JavaScript den Schalter gebaut hat, sieht die Stufe auch
+   bedienbar aus. Vorher waere ein Zeiger-Cursor ein leeres Versprechen. */
+.breadcrumb-gruppe-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 7px;
+    margin: -3px 0;
+    font: inherit;
+    color: var(--text-light);
+    font-weight: 500;
+    background: none;
+    border: 0;
+    border-radius: 7px;
+    cursor: pointer;
+    transition: background 0.16s ease, color 0.16s ease;
+}
+
+.breadcrumb-gruppe-btn:hover,
+.breadcrumb-gruppe-btn[aria-expanded="true"] {
+    background: var(--surface-muted);
+    color: var(--primary-blue);
+}
+
+.breadcrumb-gruppe-chevron {
+    font-size: 0.55rem;
+    opacity: 0.7;
+    transition: transform 0.18s ease;
+}
+
+.breadcrumb-gruppe-btn[aria-expanded="true"] .breadcrumb-gruppe-chevron {
+    transform: rotate(180deg);
+}
+
+/* Das Feld haengt am Schalter, nicht am Seitenrand - deshalb sitzt die
+   Positionierung auf einem eigenen Huellelement. */
+.breadcrumb-gruppe-huelle { position: relative; }
+
+.breadcrumb-gruppe-feld {
+    position: absolute;
+    top: calc(100% + 5px);
+    left: 0;
+    z-index: 30;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 232px;
+    margin: 0;
+    padding: 6px;
+    list-style: none;
+    background: var(--surface);
+    border: 1px solid var(--border-soft);
+    border-radius: 10px;
+    box-shadow: var(--shadow-lg);
+}
+
+.breadcrumb-gruppe-feld[hidden] { display: none; }
+
+.breadcrumb-gruppe-feld a {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    /* 44px Antippflaeche - die Stufe wird vor allem am Handy benutzt. */
+    min-height: 44px;
+    padding: 9px 11px;
+    border-radius: 8px;
+    color: var(--text-main);
+    font-size: 0.9rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: background 0.16s ease;
+}
+
+.breadcrumb-gruppe-feld a i {
+    width: 20px;
+    text-align: center;
+    color: var(--primary-blue);
+    flex-shrink: 0;
+    font-size: 0.85rem;
+}
+
+.breadcrumb-gruppe-feld a:hover,
+.breadcrumb-gruppe-feld a:focus-visible {
+    background: var(--surface-muted);
+    color: var(--primary-blue);
+}
+
+/* Die Seite, auf der man gerade steht, bleibt in der Liste sichtbar -
+   aber als Ist-Zustand, nicht als Ziel. */
+.breadcrumb-gruppe-feld a[aria-current="page"] {
+    background: var(--surface-muted);
+    color: var(--primary-blue);
+    font-weight: 600;
+}
+
+/* Auf schmalen Geraeten haengt das Feld nicht mehr am Schalter, sondern an
+   der ganzen Breadcrumb-Zeile. Sonst beginnt es dort, wo "Sport" steht -
+   bei 232px Mindestbreite laeuft es auf einem 360px-Handy rechts aus dem
+   Bild. Ueber "position: static" auf der Huelle faellt der Bezugspunkt auf
+   .breadcrumb zurueck, und das Feld nutzt die volle Zeilenbreite. */
+@media (max-width: 560px) {
+    .breadcrumb { position: relative; }
+    .breadcrumb-gruppe-huelle { position: static; }
+
+    .breadcrumb-gruppe-feld {
+        left: 0;
+        right: 0;
+        min-width: 0;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .breadcrumb-gruppe-btn,
+    .breadcrumb-gruppe-chevron { transition: none; }
+}

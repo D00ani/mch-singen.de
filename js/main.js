@@ -27,6 +27,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const openMenuBtn = document.getElementById('open-menu');
     const closeMenuBtn = document.getElementById('close-menu');
 
+    // Die Schublade hat seit der Leiste am unteren Rand ZWEI Zugaenge: den
+    // Menue-Knopf im Kopf (ab 769px) und den Knopf "Menue" in der Leiste
+    // (darunter). Beide muessen ihren aria-expanded-Zustand mitfuehren,
+    // sonst meldet ein Vorleseprogramm "zugeklappt", waehrend das Menue
+    // offen dasteht.
+    const menueOeffner = [openMenuBtn, document.querySelector('.tabbar-menue')]
+        .filter(Boolean);
+
+    function oeffnerZustand(offen) {
+        menueOeffner.forEach(b => b.setAttribute('aria-expanded', String(offen)));
+    }
+
     // Abdunkelnder Hintergrund: einmal anlegen, gilt fuer alle Seiten.
     // Bewusst hier statt im HTML, damit nicht siebzehn Dateien angefasst
     // werden muessen. Ein Klick darauf schliesst ueber den bereits
@@ -55,7 +67,7 @@ document.addEventListener('DOMContentLoaded', () => {
         sideMenu.style.willChange = 'transform';
         sideMenu.classList.add('open');
         if (scrim) scrim.classList.add('open');
-        if (openMenuBtn) openMenuBtn.setAttribute('aria-expanded', 'true');
+        oeffnerZustand(true);
 
         // Fokus ins Panel holen, sonst steht er weiter hinter dem Menue
         // und die Tastaturbedienung beginnt im verdeckten Seiteninhalt.
@@ -71,12 +83,12 @@ document.addEventListener('DOMContentLoaded', () => {
         sideMenu.style.willChange = 'transform';
         sideMenu.classList.remove('open');
         if (scrim) scrim.classList.remove('open');
-        if (openMenuBtn) openMenuBtn.setAttribute('aria-expanded', 'false');
+        oeffnerZustand(false);
 
         // Fokus zurueck an den Ausgangspunkt. Ohne das landet er nach dem
         // Schliessen am Seitenanfang und man navigiert von vorne.
         if (fokusVorher && document.contains(fokusVorher)) fokusVorher.focus();
-        else if (openMenuBtn) openMenuBtn.focus();
+        else if (menueOeffner.length) menueOeffner[0].focus();
         fokusVorher = null;
 
         sideMenu.addEventListener('transitionend', () => {
@@ -109,12 +121,14 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    if (openMenuBtn) {
-        openMenuBtn.addEventListener('click', (e) => {
+    menueOeffner.forEach(knopf => {
+        knopf.addEventListener('click', (e) => {
             openSidebar();
+            // Ohne das faengt der Klick-daneben-Handler weiter unten den
+            // eigenen Klick ab und schliesst sofort wieder zu.
             e.stopPropagation();
         });
-    }
+    });
 
     if (closeMenuBtn) {
         closeMenuBtn.addEventListener('click', () => {
@@ -549,6 +563,120 @@ document.addEventListener('DOMContentLoaded', () => {
         // Handy: erst laden, wenn jemand wirklich abspielen will.
         video.addEventListener('play', quelleSetzen);
         video.addEventListener('click', quelleSetzen);
+    })();
+
+    // --- 19. SCHNELLZUGRIFF UNTEN: AKTUELLE SEITE MARKIEREN ---
+    // Gleiche Erkennung wie im Seitenmenue (Abschnitt 14). Die Leiste
+    // selbst steht im Markup jeder Seite, damit sie auch ohne JavaScript
+    // da ist - nur die Markierung kommt von hier.
+    (function initTabbarActive() {
+        const links = document.querySelectorAll('.tabbar a.tabbar-link');
+        if (!links.length) return;
+
+        const pfad = window.location.pathname.toLowerCase();
+        const aktuell = pfad.split('/').pop() || 'index.html';
+
+        links.forEach(link => {
+            const ziel = (link.getAttribute('href') || '').toLowerCase().split('?')[0];
+            const datei = ziel.split('/').pop();
+            if (!datei) return;
+
+            const istStart = datei === 'index.html';
+            const trifftStart = istStart && (aktuell === 'index.html' || aktuell === '');
+            const trifftSeite = !istStart && aktuell === datei;
+
+            if (trifftStart || trifftSeite) {
+                link.classList.add('is-active');
+                link.setAttribute('aria-current', 'page');
+            }
+        });
+    })();
+
+    // --- 20. BREADCRUMB: GRUPPE AUFKLAPPBAR ---
+    // Die mittlere Stufe ("Startseite / Sport / Kartsport") steht als
+    // schlichter Text im Markup und bleibt ohne JavaScript genau das.
+    // Hier wird ein Schalter daraus, der die Geschwisterseiten zeigt -
+    // also dasselbe Feld, das am Desktop beim Darueberfahren aufklappt.
+    //
+    // Der Inhalt wird aus der vorhandenen Hauptnavigation geholt und nicht
+    // noch einmal aufgeschrieben. Unterhalb von 900px ist die Leiste nur
+    // ausgeblendet, im Markup steht sie weiterhin. So koennen die beiden
+    // Listen gar nicht auseinanderlaufen: wer oben eine Seite ergaenzt,
+    // hat sie hier automatisch mit drin.
+    (function initBreadcrumbGruppe() {
+        const stufe = document.querySelector('.breadcrumb-gruppe');
+        if (!stufe) return;
+
+        const gruppe = (stufe.dataset.gruppe || '').toLowerCase();
+        if (!gruppe) return;
+
+        // Passenden Reiter der Hauptnavigation suchen (Verein/Sport/Aktuelles).
+        const reiter = [...document.querySelectorAll('.main-nav-item.has-sub')]
+            .find(li => {
+                const kopf = li.querySelector('.main-nav-link');
+                return kopf && kopf.textContent.trim().toLowerCase().startsWith(gruppe);
+            });
+        const quelle = reiter && reiter.querySelector('.main-nav-sub');
+        // Ohne Vorlage bleibt die Stufe der lesbare Text, der sie ohne
+        // JavaScript ohnehin waere.
+        if (!quelle) return;
+
+        const pfad = window.location.pathname.toLowerCase();
+        const aktuell = pfad.split('/').pop() || 'index.html';
+
+        const huelle = document.createElement('span');
+        huelle.className = 'breadcrumb-gruppe-huelle';
+
+        const knopf = document.createElement('button');
+        knopf.type = 'button';
+        knopf.className = 'breadcrumb-gruppe-btn';
+        knopf.setAttribute('aria-expanded', 'false');
+        knopf.innerHTML = stufe.textContent.trim() +
+            ' <i class="fa-solid fa-chevron-down breadcrumb-gruppe-chevron" aria-hidden="true"></i>';
+
+        const feld = document.createElement('ul');
+        feld.className = 'breadcrumb-gruppe-feld';
+        feld.hidden = true;
+
+        quelle.querySelectorAll('li > a').forEach(a => {
+            const zeile = document.createElement('li');
+            const kopie = a.cloneNode(true);
+            const datei = (kopie.getAttribute('href') || '').toLowerCase().split('/').pop();
+            if (datei && datei === aktuell) kopie.setAttribute('aria-current', 'page');
+            zeile.appendChild(kopie);
+            feld.appendChild(zeile);
+        });
+        if (!feld.children.length) return;
+
+        knopf.setAttribute('aria-label',
+            'Weitere Seiten im Bereich ' + stufe.textContent.trim());
+
+        huelle.appendChild(knopf);
+        huelle.appendChild(feld);
+        stufe.replaceWith(huelle);
+
+        function zu() {
+            feld.hidden = true;
+            knopf.setAttribute('aria-expanded', 'false');
+        }
+
+        knopf.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const offen = knopf.getAttribute('aria-expanded') === 'true';
+            feld.hidden = offen;
+            knopf.setAttribute('aria-expanded', String(!offen));
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!feld.hidden && !huelle.contains(e.target)) zu();
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && !feld.hidden) {
+                zu();
+                knopf.focus();
+            }
+        });
     })();
 
 });

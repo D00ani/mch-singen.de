@@ -11,3 +11,15 @@ tools/livetiming.config.json
 
 # Absturzbericht des Fensters (tools/pflege_fenster.py) - rein oertlich
 tools/letzter-fehler.txt
+
+# Entwurfs-Vorschauen zum Ansehen im Browser. Sie laden eine zusaetzliche
+# CSS-Schicht ueber das fertige Bundle und aendern an den Originaldateien
+# nichts. Bleiben lokal, bis eine Fassung ausgewaehlt ist - dann wandern
+# deren Regeln in die echten Stylesheets und die Vorschau wird geloescht.
+#   vorschlag-kopf-fuss.html : Kopf- und Fussbereich (Stand 2026-09-20, offen)
+#   vorschlag-handy.html     : Handy-Navigation (Stand 2026-09-28, Variante B
+#                              ist inzwischen umgesetzt - Datei kann weg)
+css/vorschlag/
+vorschlag-kopf-fuss.html
+pages/vorschlag-kopf-fuss.html
+vorschlag-handy.html

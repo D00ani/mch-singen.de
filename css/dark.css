@@ -335,3 +335,41 @@ body.dark-mode .breadcrumb [aria-current="page"] { color: #dfe4ee; }
     body.dark-mode table.stats-table tr.kart-class-adult td { background-color: transparent; }
     body.dark-mode table.stats-table tbody td::before { color: #8b93a7; }
 }
+
+/* Breadcrumb: die mittlere Stufe (Verein/Sport/Aktuelles) und ihr
+   Aufklappfeld. Das Feld benutzt --surface und --border-soft, die im Dark
+   Mode bereits umgesetzt sind - nur die eigenen Toene brauchen Nachtwerte. */
+body.dark-mode .breadcrumb-gruppe,
+body.dark-mode .breadcrumb-gruppe-btn { color: #8b93a7; }
+
+body.dark-mode .breadcrumb-gruppe-btn:hover,
+body.dark-mode .breadcrumb-gruppe-btn[aria-expanded="true"] {
+    background: #1a2340;
+    color: #74a3ff;
+}
+
+body.dark-mode .breadcrumb-gruppe-feld {
+    background: #171b24;
+    border-color: #2c313d;
+}
+
+body.dark-mode .breadcrumb-gruppe-feld a { color: #dfe4ee; }
+body.dark-mode .breadcrumb-gruppe-feld a i { color: #74a3ff; }
+
+body.dark-mode .breadcrumb-gruppe-feld a:hover,
+body.dark-mode .breadcrumb-gruppe-feld a:focus-visible,
+body.dark-mode .breadcrumb-gruppe-feld a[aria-current="page"] {
+    background: #1a2340;
+    color: #74a3ff;
+}
+
+/* Schnellzugriff unten (css/mobile.css, Abschnitt 17).
+   Die Leiste ist auch im hellen Modus dunkel - im Dark Mode wird sie nur
+   eine Spur tiefer, damit sie sich vom Seitenhintergrund (#121212) abhebt
+   statt mit ihm zu verschwimmen. */
+@media (max-width: 768px) {
+    body.dark-mode .tabbar {
+        background: #10141d;
+        border-top-color: #2c313d;
+    }
+}

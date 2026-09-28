@@ -160,6 +160,8 @@
         <nav class="breadcrumb" aria-label="Breadcrumb">
             <a href="../index.html"><i class="fa-solid fa-house" aria-hidden="true"></i> Startseite</a>
             <span class="breadcrumb-sep" aria-hidden="true">/</span>
+            <span class="breadcrumb-gruppe" data-gruppe="aktuelles">Aktuelles</span>
+            <span class="breadcrumb-sep" aria-hidden="true">/</span>
             <span aria-current="page">Live-Ergebnisse</span>
         </nav>
         <div class="page-head">
@@ -288,6 +290,27 @@
         </div>
     </footer>
 
+    <!-- =============================================
+         SCHNELLZUGRIFF (nur Handy, siehe css/mobile.css)
+         =============================================
+         Die fuenf haeufigsten Ziele dort, wo am Handy der Daumen liegt.
+         Oberhalb von 768px ist die Leiste ausgeblendet - dort fuehrt die
+         Hauptnavigation im Kopf.
+
+         Live steht bewusst NICHT hier: dafuer gibt es den Live-Banner, der
+         nur erscheint, solange die Zeitnahme wirklich Ergebnisse liefert.
+         Ein Dauerplatz fuer drei Renntage im Jahr waere totes Gewicht.
+
+         Steht im Markup statt in js/main.js, damit die Navigation auch ohne
+         JavaScript da ist - gleiche Ueberlegung wie beim Skip-Link oben.
+         Die Markierung der aktuellen Seite ergaenzt js/main.js. -->
+    <nav class="tabbar" aria-label="Schnellzugriff">
+        <a class="tabbar-link" href="../index.html"><i class="fa-solid fa-house" aria-hidden="true"></i><span>Start</span></a>
+        <a class="tabbar-link" href="aktuelles.html"><i class="fa-solid fa-calendar-days" aria-hidden="true"></i><span>Termine</span></a>
+        <a class="tabbar-link" href="kartsport.html"><i class="fa-solid fa-flag-checkered" aria-hidden="true"></i><span>Kart</span></a>
+        <a class="tabbar-link" href="trialsport.html"><i class="fa-solid fa-motorcycle" aria-hidden="true"></i><span>Trial</span></a>
+        <button type="button" class="tabbar-link tabbar-menue" aria-controls="side-menu" aria-expanded="false"><i class="fa-solid fa-bars" aria-hidden="true"></i><span>Menü</span></button>
+    </nav>
 </body>
 </html>
 
