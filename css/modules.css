@@ -527,6 +527,13 @@ body.dark-mode .news-card--highlight {
     font-weight: 600;
     font-variant-numeric: tabular-nums;
     margin-bottom: 15px;
+    /* Der Ausweis (.news-badge) schwebt absolut in der oberen rechten Ecke
+       und belegt dort rund 60px. Ohne diese Grenze laeuft ein langes Datum
+       darunter durch und ist halb verdeckt - auf dem Handy, wo die Karte
+       schmal ist, schon ab etwa 30 Zeichen. Mit der Grenze bricht der Text
+       stattdessen um. Kurze Datumsangaben erreichen sie nie, fuer sie
+       aendert sich nichts. */
+    max-width: calc(100% - 60px);
 }
 
 .news-badge {
