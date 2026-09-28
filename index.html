@@ -174,8 +174,8 @@
                 <!-- Klon von Bild 3 (am Anfang für rückwärts-Loop) -->
                 <a href="pages/trialsport.html" class="slide" aria-hidden="true" tabindex="-1">
                     <picture>
-                        <source type="image/webp" srcset="media/bilder/trial/trial_abteilung-480.webp 480w, media/bilder/trial/trial_abteilung-800.webp 800w, media/bilder/trial/trial_abteilung-1179.webp 1179w" sizes="(min-width: 900px) 640px, 100vw" width="1179" height="663">
-                        <img src="media/bilder/trial/trial_abteilung.jpg" alt="Motorrad-Trialsport beim MCH Singen Hohentwiel" width="1179" height="1533" loading="lazy" decoding="async">
+                        <source type="image/webp" srcset="media/bilder/trial/trial_abteilung-480.webp 480w, media/bilder/trial/trial_abteilung-800.webp 800w, media/bilder/trial/trial_abteilung-1179.webp 1179w" sizes="(min-width: 900px) 640px, 100vw" width="1179" height="884">
+                        <img src="media/bilder/trial/trial_abteilung.jpg" alt="Motorrad-Trialsport beim MCH Singen Hohentwiel" width="1179" height="884" loading="lazy" decoding="async">
                     </picture>
                     <div class="slide-caption-box">
                         <span>Zur Trial Abteilung</span>
@@ -210,8 +210,8 @@
                 <!-- Bild 3: Trial Abteilung -->
                 <a href="pages/trialsport.html" class="slide">
                     <picture>
-                        <source type="image/webp" srcset="media/bilder/trial/trial_abteilung-480.webp 480w, media/bilder/trial/trial_abteilung-800.webp 800w, media/bilder/trial/trial_abteilung-1179.webp 1179w" sizes="(min-width: 900px) 640px, 100vw" width="1179" height="663">
-                        <img src="media/bilder/trial/trial_abteilung.jpg" alt="Motorrad-Trialsport beim MCH Singen Hohentwiel" width="1179" height="1533" loading="lazy" decoding="async">
+                        <source type="image/webp" srcset="media/bilder/trial/trial_abteilung-480.webp 480w, media/bilder/trial/trial_abteilung-800.webp 800w, media/bilder/trial/trial_abteilung-1179.webp 1179w" sizes="(min-width: 900px) 640px, 100vw" width="1179" height="884">
+                        <img src="media/bilder/trial/trial_abteilung.jpg" alt="Motorrad-Trialsport beim MCH Singen Hohentwiel" width="1179" height="884" loading="lazy" decoding="async">
                     </picture>
                     <div class="slide-caption-box">
                         <span>Zur Trial Abteilung</span>
@@ -530,14 +530,21 @@
     </footer>
 
     <aside id="side-menu">
-        <a href="index.html" class="sidebar-brand">
-            <img src="media/logos/mch-logo-128.png" alt="MCH Logo" class="sidebar-logo" width="128" height="128">
-            <div class="sidebar-brand-info">
-                <span class="sidebar-brand-name">MCH Singen</span>
-                <span class="sidebar-brand-tagline">Motorsport aus Leidenschaft</span>
-            </div>
-        </a>
-        <button class="close-btn" id="close-menu">&times;</button>
+        <!-- Marke und Schliessen-Knopf stehen in EINER Zeile. Vorher lag der
+             Knopf absolut ueber dem Markenblock und schnitt in den Text;
+             ausserdem verschob env(safe-area-inset-top) beide verschieden. -->
+        <div class="sidebar-kopf">
+            <a href="index.html" class="sidebar-brand">
+                <img src="media/logos/mch-logo-128.png" alt="MCH Logo" class="sidebar-logo" width="128" height="128">
+                <div class="sidebar-brand-info">
+                    <span class="sidebar-brand-name">MCH Singen</span>
+                    <span class="sidebar-brand-tagline">Motorsport aus Leidenschaft</span>
+                </div>
+            </a>
+            <button class="close-btn" id="close-menu" aria-label="Menü schließen">
+                <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+            </button>
+        </div>
         
         <div class="sidebar-search">
             <form action="pages/suche.html" method="GET" class="sidebar-search-row">

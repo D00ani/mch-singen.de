@@ -55,15 +55,27 @@ results = []
 results += webp("media/bilder/mch_pic.jpg", [480, 640])
 results += webp("media/bilder/kartsport/kart_abteilung.jpg", [480, 800, 1600])
 
-# trial_abteilung: Hochformat-Foto, im 16:9-Hero-Slider per object-fit:cover
-# ohnehin auf 16:9 beschnitten -> WebP direkt als 16:9-Center-Crop erzeugen
-# (rendert pixelidentisch, spart aber >50% Dateigroesse beim koernigen Foto)
+# trial_abteilung: Hochformat-Foto (1179x1533) im Hero-Slider der Startseite.
+# Der Slider ist 4:3 (css/index.css, .hero-media .image-slider) - die beiden
+# anderen Slides sind nativ 4:3 und werden dadurch gar nicht beschnitten.
+# Dieses Foto wird deshalb hier schon auf 4:3 gebracht, damit im Browser
+# nichts mehr wegfaellt und die Groessenangaben im HTML stimmen.
+#
+# Frueher stand hier ein 16:9-Schnitt aus der Zeit, als der Slider 16:9 war.
+# Das Format wurde spaeter auf 4:3 geaendert, dieses Werkzeug aber nicht -
+# der 16:9-Streifen wurde im Browser ein zweites Mal beschnitten.
+#
+# Der Ausschnitt sitzt bewusst NICHT mittig: der Fahrer steht im oberen
+# Drittel, ein mittiger Schnitt hat ihm den Helm abgeschnitten. 0.24 des
+# verfuegbaren Spielraums von oben laesst Luft ueber dem Helm und behaelt
+# unten das Vorderrad im Bild.
 _ta = Image.open(os.path.join(ROOT, "media/bilder/trial/trial_abteilung.jpg"))
-_ch = round(_ta.width * 9 / 16)
-_top = (_ta.height - _ch) // 2
+_ch = round(_ta.width * 3 / 4)
+_top = round((_ta.height - _ch) * 0.24)
 _crop = _ta.crop((0, _top, _ta.width, _top + _ch))
 for _w in [480, 800, 1179]:
-    _img = _crop if _w >= _crop.width else _crop.resize((_w, round(_ch * _w / _ta.width)), Image.LANCZOS)
+    _img = _crop if _w >= _crop.width else _crop.resize(
+        (_w, round(_crop.height * _w / _crop.width)), Image.LANCZOS)
     _out = os.path.join(ROOT, f"media/bilder/trial/trial_abteilung-{_w}.webp")
     _img.save(_out, "WEBP", quality=80, method=6)
     results.append((os.path.relpath(_out, ROOT), os.path.getsize(_out) // 1024, _img.size))

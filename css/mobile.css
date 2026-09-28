@@ -602,11 +602,14 @@
 
     /* ── Seitenmenue ────────────────────────────────────────────────
        300px fest waren auf einem 360px-Handy ein 60px-Streifen daneben. */
+    /* padding-top faellt weg: der Abstand zur Aussparung steckt jetzt in
+       .sidebar-kopf, damit Marke und Schliessen-Knopf gemeinsam rutschen. */
     aside {
         width: min(310px, 86vw);
-        padding-top: env(safe-area-inset-top);
         padding-bottom: calc(40px + env(safe-area-inset-bottom));
-        padding-left: max(16px, env(safe-area-inset-left));
+        /* Quer gehaltene Geraete mit Aussparung: der Rand waechst, und der
+           Kopf der Schublade waechst ueber die Variable mit. */
+        --panel-rand: max(16px, env(safe-area-inset-left));
     }
 
     aside nav ul li a {
@@ -615,12 +618,12 @@
         border-radius: 10px;
     }
 
+    /* Mit dem Finger sind 44px der Richtwert. "top" faellt weg: der Knopf
+       steht seit dem Umbau in der Kopfzeile der Schublade im Fluss, den
+       Abstand zur Aussparung setzt .sidebar-kopf einmal fuer beide. */
     .close-btn {
         width: 44px;
         height: 44px;
-        line-height: 44px;
-        border-radius: 10px;
-        top: max(14px, env(safe-area-inset-top));
     }
 }
 

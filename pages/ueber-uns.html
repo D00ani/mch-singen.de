@@ -384,14 +384,21 @@
     </footer>
 
     <aside id="side-menu">
-        <a href="../index.html" class="sidebar-brand">
-            <img src="../media/logos/mch-logo-128.png" alt="MCH Logo" class="sidebar-logo" width="128" height="128">
-            <div class="sidebar-brand-info">
-                <span class="sidebar-brand-name">MCH Singen</span>
-                <span class="sidebar-brand-tagline">Motorsport aus Leidenschaft</span>
-            </div>
-        </a>
-        <button class="close-btn" id="close-menu">&times;</button>
+        <!-- Marke und Schliessen-Knopf stehen in EINER Zeile. Vorher lag der
+             Knopf absolut ueber dem Markenblock und schnitt in den Text;
+             ausserdem verschob env(safe-area-inset-top) beide verschieden. -->
+        <div class="sidebar-kopf">
+            <a href="../index.html" class="sidebar-brand">
+                <img src="../media/logos/mch-logo-128.png" alt="MCH Logo" class="sidebar-logo" width="128" height="128">
+                <div class="sidebar-brand-info">
+                    <span class="sidebar-brand-name">MCH Singen</span>
+                    <span class="sidebar-brand-tagline">Motorsport aus Leidenschaft</span>
+                </div>
+            </a>
+            <button class="close-btn" id="close-menu" aria-label="Menü schließen">
+                <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+            </button>
+        </div>
         
         <div class="sidebar-search">
             <form action="suche.html" method="GET" class="sidebar-search-row">

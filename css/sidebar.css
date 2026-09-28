@@ -18,7 +18,12 @@ aside {
     width: 300px;
     background: #06112e;
     color: #fff;
-    padding: 0 16px 40px 16px;
+    /* Seitlicher Rand als Variable: der Kopf der Schublade zieht sich mit
+       einem negativen Rand genau darueber hinweg, damit seine Flaeche bis
+       an beide Kanten reicht. Beide muessen denselben Wert benutzen,
+       sonst bleibt links ein Streifen stehen. */
+    --panel-rand: 16px;
+    padding: 0 var(--panel-rand) 40px var(--panel-rand);
     box-shadow: 6px 0 36px rgba(0, 0, 0, 0.45);
     z-index: 1000;
     overflow-y: auto;
@@ -77,29 +82,52 @@ aside.open {
     .sidebar-scrim.open { transition-duration: 0s; }
 }
 
-/* ── Sidebar Brand/Logo-Bereich ── */
-/* Traegt jetzt denselben Verlauf und dieselbe goldene Abschlusskante wie
-   die Kopfzeile der Seite. Damit wiederholt die Schublade im Kleinen den
+/* ── Kopf der Schublade ──
+   Traegt denselben Verlauf und dieselbe goldene Abschlusskante wie die
+   Kopfzeile der Seite. Damit wiederholt die Schublade im Kleinen den
    Aufbau der Seite: blauer Kopf mit goldener Linie, dunkler Bereich
    darunter. Die negativen Seitenraender heben die 16px Polsterung des
-   Panels auf, damit die Flaeche bis an beide Kanten reicht. */
+   Panels auf, damit die Flaeche bis an beide Kanten reicht.
+
+   Marke und Schliessen-Knopf liegen in EINER Flexzeile. Vorher war der
+   Knopf absolut zur Schublade positioniert, waehrend der Markenblock im
+   Fluss stand: er lag damit ueber dem Text statt daneben, und auf Geraeten
+   mit Aussparung schob env(safe-area-inset-top) nur den Markenblock nach
+   unten, den Knopf aber nicht. Nebeneinander kann beides nicht mehr
+   auseinanderlaufen, und der Abstand nach oben wird nur einmal gesetzt. */
+.sidebar-kopf {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 16px var(--panel-rand);
+    padding-top: calc(16px + env(safe-area-inset-top));
+    margin: 0 calc(-1 * var(--panel-rand)) 10px;
+    background: linear-gradient(135deg, #0047cc, #001b5e);
+    border-bottom: 2px solid var(--accent);
+}
+
 .sidebar-brand {
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 18px 16px 16px 16px;
-    margin: 0 -16px 10px -16px;
-    background: linear-gradient(135deg, #0047cc, #001b5e);
-    border-bottom: 2px solid var(--accent);
-    position: relative;
+    /* Nimmt den Platz, der neben dem Knopf uebrig bleibt. min-width: 0 ist
+       noetig, damit der Vereinsname kuerzen darf statt den Knopf
+       hinauszudruecken - Flex-Elemente schrumpfen sonst nicht unter ihre
+       Inhaltsbreite. */
+    flex: 1;
+    min-width: 0;
+    padding: 0;
+    margin: 0;
+    background: none;
+    border: 0;
+    border-radius: 0;
     text-decoration: none !important;
     color: inherit;
-    transition: filter 0.2s ease;
-    border-radius: 0;
+    transition: opacity 0.2s ease;
 }
 
 .sidebar-brand:hover {
-    filter: brightness(1.12);
+    opacity: 0.82;
 }
 
 /* Die Blau-Gold-Verlaufslinie unter dem Logo ist entfallen. Dieselbe
@@ -144,30 +172,48 @@ aside.open {
 }
 
 /* ── Close-Button ── */
-/* Sitzt auf dem blauen Markenbereich und sieht deshalb genauso aus wie
-   die drei Icon-Knoepfe der Kopfzeile: gleiche Flaeche, gleiche Kante,
-   gleicher Radius. */
+/* Sitzt im blauen Kopf und sieht deshalb genauso aus wie die drei
+   Icon-Knoepfe der Kopfzeile: gleiche Flaeche, gleiche Kante, gleicher
+   Radius.
+
+   Zentriert wird ueber Flexbox statt ueber line-height. Im Knopf stand
+   vorher das Zeichen "&times;", das in Inter etwas ueber der Mitte sitzt -
+   mit einer festen Zeilenhoehe sah es dadurch verrutscht aus. Jetzt liegt
+   darin dasselbe fa-xmark wie im Schliessen-Knopf der Bildansicht, und
+   Flexbox zentriert es unabhaengig von den Schriftmassen. */
 .close-btn {
-    font-size: 1.4rem;
-    color: rgba(255, 255, 255, 0.72);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 1.05rem;
+    color: rgba(255, 255, 255, 0.78);
     background: rgba(255, 255, 255, 0.12);
     border: 1px solid rgba(255, 255, 255, 0.16);
     border-radius: 10px;
     cursor: pointer;
-    position: absolute;
-    top: 17px;
-    right: 14px;
+    position: static;
     width: 40px;
     height: 40px;
-    line-height: 38px;
-    text-align: center;
+    padding: 0;
     transition: color 0.2s ease, background 0.2s ease, border-color 0.2s ease;
 }
+
+/* Sonst schluckt das Symbol den Klick - gleiche Vorsorge wie bei den
+   Icon-Knoepfen der Kopfzeile (css/mobile.css, Abschnitt 16). */
+.close-btn i { pointer-events: none; }
 
 .close-btn:hover {
     color: #fff;
     background: rgba(255, 255, 255, 0.22);
     border-color: rgba(255, 255, 255, 0.3);
+}
+
+.close-btn:active { transform: scale(0.94); }
+
+.close-btn:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
 }
 
 nav { margin-top: 10px; }
