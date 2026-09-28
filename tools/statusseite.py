@@ -96,7 +96,7 @@ def baue_seite(heute=None):
             teile.append(f'<div class="karte" style="border-left-color: {farbe}">'
                          f"<b>{html_modul.escape(text)}</b>{zusatz}</div>")
     else:
-        teile.append('<div class="gut">Nichts Offenes — alles auf Stand.</div>')
+        teile.append('<div class="gut">Nichts Offenes - alles auf Stand.</div>')
 
     teile.append(FUSS)
     return "".join(teile)

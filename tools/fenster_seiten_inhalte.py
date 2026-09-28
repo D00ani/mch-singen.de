@@ -74,7 +74,7 @@ class RenntermineSeite(Seite):
             datum = f"{teile[0]}.{teile[1]}.{teile[2]}"
 
         if not teile[7]:
-            pdf = "—"
+            pdf = "-"
         elif ausschreibung_pdf.pdf_existiert(teile[7]):
             pdf = os.path.basename(teile[7])
         else:
@@ -170,7 +170,7 @@ class RenntermineSeite(Seite):
         werte = B.frage_formular(
             self.rahmen, self.s, f"Neuer {self.sportart.get()}-Termin", self._felder(zeilen),
             einleitung="Der Termin wird automatisch an die richtige Stelle der Saison "
-                       "einsortiert — um die Reihenfolge musst du dich nicht kümmern.")
+                       "einsortiert - um die Reihenfolge musst du dich nicht kümmern.")
         if not werte:
             return
         zeile = self._zu_zeile(werte)
@@ -303,7 +303,7 @@ class ArchivSeite(Seite):
              "text": f"BKC Gesamtwertung {jahr_jetzt} (PDF)",
              "pfad": f"../media/dokumente/archiv/{jahr_jetzt}/"
                      f"BKC_Gesamtauswertung_{jahr_jetzt}.pdf"},
-            einleitung="Die Saison wird nach Jahr einsortiert — die neueste steht oben. "
+            einleitung="Die Saison wird nach Jahr einsortiert - die neueste steht oben. "
                        "Ein erster Eintrag gehört gleich dazu.")
         if not werte:
             return
@@ -399,7 +399,7 @@ class ArchivSeite(Seite):
             if not lis:
                 messagebox.showinfo(
                     "Letzter Eintrag",
-                    "Das war der letzte Eintrag dieser Saison — der Kasten wird "
+                    "Das war der letzte Eintrag dieser Saison - der Kasten wird "
                     "mit entfernt.")
                 self._saison_entfernen(jahre, nummer)
             else:
@@ -410,7 +410,7 @@ class ArchivSeite(Seite):
         if not messagebox.askyesno(
                 "Ganze Saison löschen",
                 f"Saison {jahr['jahr']} mit allen {len(jahr['lis'])} Einträgen.\n\n"
-                "Die PDF-Dateien unter media/ bleiben liegen — nur der Kasten auf der "
+                "Die PDF-Dateien unter media/ bleiben liegen - nur der Kasten auf der "
                 "Seite verschwindet.\n\nWirklich löschen?"):
             return
         self._saison_entfernen(jahre, nummer)

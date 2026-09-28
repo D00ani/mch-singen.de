@@ -36,7 +36,7 @@ AUFRUF = "Aufruf „Werde Sponsor“"
 class SponsorenSeite(Seite):
     titel = "Sponsoren & Links"
     untertitel = ("Banden, befreundete Vereine, nützliche Links, die Zahlen im Kopf "
-                  "und der Sponsoren-Aufruf — die komplette Seite ohne HTML.")
+                  "und der Sponsoren-Aufruf - die komplette Seite ohne HTML.")
 
     VORNE = "Ganz vorne"
 
@@ -102,7 +102,7 @@ class SponsorenSeite(Seite):
                                  zeilenzahl=len(self.eintraege))
         for nummer, sponsor in enumerate(self.eintraege):
             masse = re.search(r'width="(\d+)"\s+height="(\d+)"', sponsor["match"].group(0))
-            groesse = f"{masse.group(1)}×{masse.group(2)}" if masse else "—"
+            groesse = f"{masse.group(1)}×{masse.group(2)}" if masse else "-"
             ziel = sponsor["link"] if sponsor["link"] not in ("#", "") else "(kein Link)"
 
             # Ein Logo kann selbst schon WebP sein - dann braucht es keine
@@ -118,7 +118,7 @@ class SponsorenSeite(Seite):
         tk.Label(self.inhalt, bg=B.FARBEN["grund"], fg=B.FARBEN["gedimmt"],
                  font=self.s.klein, justify="left", anchor="w", wraplength=640,
                  text=("Jedes Logo bekommt eine eigene Größe, damit alle dieselbe FLÄCHE "
-                       "einnehmen — sonst wirken hochkante Logos halb so groß wie "
+                       "einnehmen - sonst wirken hochkante Logos halb so groß wie "
                        "querformatige. Nach einem Logo-Tausch neu berechnen lassen.")).pack(
                            anchor="w", pady=(8, 0))
 
@@ -224,7 +224,7 @@ class SponsorenSeite(Seite):
             messagebox.showinfo(
                 "Kein freies Logo",
                 "In media/sponsoren/ liegt keine Datei, die noch keiner Bande "
-                "zugeordnet ist.\n\nBitte das Logo zuerst dort ablegen — "
+                "zugeordnet ist.\n\nBitte das Logo zuerst dort ablegen - "
                 "Dateiname klein, ohne Umlaute und Leerzeichen.")
             return
 
@@ -299,7 +299,7 @@ class SponsorenSeite(Seite):
         eintraege, start, ende, inhalt = sp.finde_links(html, liste["anker"])
         felder, vorgabe = self._link_felder()
 
-        werte = B.frage_formular(self.rahmen, self.s, f"Neuer Eintrag — {liste['name']}",
+        werte = B.frage_formular(self.rahmen, self.s, f"Neuer Eintrag - {liste['name']}",
                                  felder, {"sinnbild": vorgabe},
                                  einleitung="Wird unten an die Liste angehängt.")
         if not werte:
@@ -350,7 +350,7 @@ class SponsorenSeite(Seite):
             breite, hoehe = (int(alt.group(1)), int(alt.group(2))) if alt else (120, 80)
             messagebox.showwarning(
                 "Logo-Datei fehlt",
-                f"{sponsor['bild']} wurde nicht gefunden — die bisherige Größe "
+                f"{sponsor['bild']} wurde nicht gefunden - die bisherige Größe "
                 "bleibt stehen.")
 
         karte = sp.baue_karte(B.fuer_html(werte["name"]), werte["link"] or "#",
@@ -474,7 +474,7 @@ class SponsorenSeite(Seite):
             if not messagebox.askyesno(
                     "Bande löschen",
                     f"{B.lesbar(sponsor['name'])}\n\n"
-                    "Die Logo-Dateien bleiben liegen — nur die Bande verschwindet.\n\n"
+                    "Die Logo-Dateien bleiben liegen - nur die Bande verschwindet.\n\n"
                     "Wirklich löschen?"):
                 return
             html = sp.lade_html()

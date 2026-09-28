@@ -198,10 +198,10 @@ class StatistikenSeite(Seite):
             return
         felder = self._tabellen_felder(tabelle)
         werte = B.frage_formular(
-            self.rahmen, self.s, f"Neuer Eintrag — {tabelle['name']}",
+            self.rahmen, self.s, f"Neuer Eintrag - {tabelle['name']}",
             [{k: v for k, v in f.items() if k != "vorgabe"} for f in felder],
             {f["schluessel"]: f["vorgabe"] for f in felder},
-            einleitung="Wird nach Jahr bzw. Datum einsortiert — die neuesten stehen oben.")
+            einleitung="Wird nach Jahr bzw. Datum einsortiert - die neuesten stehen oben.")
         if not werte:
             return
 
@@ -228,7 +228,7 @@ class StatistikenSeite(Seite):
     def _tabelle_bearbeiten(self, tabelle, nummer):
         felder = self._tabellen_felder(tabelle, self.eintraege[nummer])
         werte = B.frage_formular(
-            self.rahmen, self.s, f"Eintrag bearbeiten — {tabelle['name']}",
+            self.rahmen, self.s, f"Eintrag bearbeiten - {tabelle['name']}",
             [{k: v for k, v in f.items() if k != "vorgabe"} for f in felder],
             {f["schluessel"]: f["vorgabe"] for f in felder},
             einleitung="Ändert sich das Jahr, wird der Eintrag neu einsortiert.")
@@ -250,8 +250,8 @@ class StatistikenSeite(Seite):
         werte = {"titel": B.lesbar(box["titel"])}
         for lauf, (label, wert) in enumerate(box["felder"]):
             felder += [
-                {"schluessel": f"label{lauf}", "beschriftung": f"Feld {lauf + 1} — Name"},
-                {"schluessel": f"wert{lauf}", "beschriftung": f"Feld {lauf + 1} — Wert",
+                {"schluessel": f"label{lauf}", "beschriftung": f"Feld {lauf + 1} - Name"},
+                {"schluessel": f"wert{lauf}", "beschriftung": f"Feld {lauf + 1} - Wert",
                  "pflicht": False},
             ]
             werte[f"label{lauf}"] = B.lesbar(label)
@@ -292,11 +292,11 @@ class StatistikenSeite(Seite):
                 {"schluessel": "zahl", "beschriftung": "Zahl",
                  "pruefer": h.ZAHL_VALIDIERER},
                 {"schluessel": "suffix", "beschriftung": "Zusatz", "pflicht": False,
-                 "hinweis": "steht direkt hinter der Zahl, z. B. „+“ — leer = keiner"},
+                 "hinweis": "steht direkt hinter der Zahl, z. B. „+“ - leer = keiner"},
             ],
             {"zahl": treffer.group(2), "suffix": self._suffix(treffer)},
             einleitung=f"Beschriftung: {text}\n\nDie Zahl zählt beim Aufruf der Seite "
-                       "von 0 hoch — das macht die Seite selbst.")
+                       "von 0 hoch - das macht die Seite selbst.")
         if not neu:
             return
 

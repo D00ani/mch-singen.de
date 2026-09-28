@@ -992,7 +992,7 @@ body.dark-mode .skill-bar-bg {
     margin: 20px 0;
 }
 
-/* Sichtbarkeit steuert der .pdf-wrapper (per JS) — hier kein display:none,
+/* Sichtbarkeit steuert der .pdf-wrapper (per JS) - hier kein display:none,
    sonst bleibt der Button auch bei eingeblendetem Wrapper unsichtbar */
 .countdown-pdf-btn {
     max-width: 300px;

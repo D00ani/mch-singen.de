@@ -29,7 +29,7 @@ SCHRITTE = [
     ("update_statistik.py", "Statistik-Diagramm",
      "Liest die BKC-Wertungs-PDF aus und schreibt data/statistik.json neu."),
     ("optimize_images.py", "Bilder als WebP",
-     "Erzeugt alle WebP-Fassungen neu — nötig, wenn ein Bild ersetzt wurde."),
+     "Erzeugt alle WebP-Fassungen neu - nötig, wenn ein Bild ersetzt wurde."),
     ("update_copyright_year.py", "Copyright-Jahr",
      "Setzt „© <Jahr>“ im Fußbereich aller Seiten auf das laufende Jahr."),
     ("build_assets.py", "CSS/JS-Bundles",
@@ -48,7 +48,7 @@ CHECKLISTE = [
 class TechnikSeite(Seite):
     titel = "Technisches Update"
     untertitel = ("Vier Schritte, die nach inhaltlichen Änderungen fällig werden. "
-                  "Veröffentlicht wird nichts — das läuft über die Leiste unten.")
+                  "Veröffentlicht wird nichts - das läuft über die Leiste unten.")
 
     def baue(self):
         self.knopf_start = self.knopf("Update starten", self.starten, "haupt")
@@ -143,6 +143,6 @@ class TechnikSeite(Seite):
                                    text="Erneut starten" if erfolg else "Nochmal versuchen")
         if erfolg:
             self._schreibe("Alle Schritte erledigt.\n\n"
-                           "Was sich geändert hat, steht unten in der Leiste — "
+                           "Was sich geändert hat, steht unten in der Leiste - "
                            "veröffentlicht wird erst auf Knopfdruck.\n")
         self.app.fuss_auffrischen()

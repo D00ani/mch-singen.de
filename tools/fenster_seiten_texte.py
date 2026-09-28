@@ -31,7 +31,7 @@ ROOT = h.ROOT
 
 class NewsSeite(Seite):
     titel = "News-Karten auf „Aktuelles“"
-    untertitel = ("Die Meldungen, die Besucher auf der Aktuelles-Seite sehen — "
+    untertitel = ("Die Meldungen, die Besucher auf der Aktuelles-Seite sehen - "
                   "gegliedert nach den Abschnitten der Seite.")
 
     OBEN = "Ganz oben im Abschnitt"
@@ -60,7 +60,7 @@ class NewsSeite(Seite):
 
         if not self.karten:
             B.karte(self.inhalt, self.s, uebersicht.INFO, "Keine News-Karte gefunden.",
-                    "Ohne bestehende Karte fehlt die Vorlage — bitte im Terminal anlegen.")
+                    "Ohne bestehende Karte fehlt die Vorlage - bitte im Terminal anlegen.")
             self.baum = None
             return
 
@@ -77,7 +77,7 @@ class NewsSeite(Seite):
                 extras.append("Schaltfläche")
             self.baum.insert("", "end", iid=str(nummer),
                              values=(B.lesbar(karte["abschnitt"]),
-                                     B.lesbar(karte["datum"]) or "—",
+                                     B.lesbar(karte["datum"]) or "-",
                                      B.lesbar(karte["titel"]) or "(ohne Titel)",
                                      ", ".join(extras)))
         self.baum.bind("<Double-1>", lambda _: self.bearbeiten())
@@ -115,7 +115,7 @@ class NewsSeite(Seite):
                 {"schluessel": "link_text", "beschriftung": "Link-Beschriftung",
                  "pflicht": False},
             ],
-            einleitung="Das Datum ist bei News Freitext und lässt sich nicht sortieren — "
+            einleitung="Das Datum ist bei News Freitext und lässt sich nicht sortieren - "
                        "die Stelle im Abschnitt wählst du gleich danach selbst.")
         if not werte:
             return
@@ -180,7 +180,7 @@ class NewsSeite(Seite):
         if not felder:
             messagebox.showinfo(
                 "Nichts zu ändern",
-                "Diese Karte hat weder Datum noch Titel oder Text — vermutlich "
+                "Diese Karte hat weder Datum noch Titel oder Text - vermutlich "
                 "besteht sie nur aus Schaltflächen. Die müssen im HTML bearbeitet werden.")
             return
 
@@ -233,7 +233,7 @@ class NewsSeite(Seite):
 class FaqSeite(Seite):
     titel = "Fragen & Antworten"
     untertitel = ("Die aufklappbaren Fragen auf der FAQ-Seite. Für Hervorhebungen und "
-                  "Links reicht eine einfache Schreibweise — kein HTML nötig.")
+                  "Links reicht eine einfache Schreibweise - kein HTML nötig.")
 
     SCHREIBWEISE = ("**wichtig**  ergibt fetten Text\n"
                     "[Kartsport](kartsport.html)  ergibt einen Link auf die Seite")
@@ -297,7 +297,7 @@ class FaqSeite(Seite):
             messagebox.showwarning(
                 "Link zeigt ins Leere",
                 "Diese verlinkten Seiten gibt es nicht:\n\n  " + "\n  ".join(fehlend) +
-                "\n\nDie Frage wurde trotzdem gespeichert — bitte den Link prüfen.")
+                "\n\nDie Frage wurde trotzdem gespeichert - bitte den Link prüfen.")
 
     def neu(self):
         werte = B.frage_formular(self.rahmen, self.s, "Neue Frage", self._felder(),
@@ -337,7 +337,7 @@ class FaqSeite(Seite):
             {"frage": B.lesbar(eintrag["frage"]),
              "antwort": B.lesbar(faq_pflege.html_zu_einfach(eintrag["antwort_html"]))},
             einleitung="Vorhandenes HTML wurde in die einfache Schreibweise "
-                       "zurückverwandelt — es geht nichts verloren.")
+                       "zurückverwandelt - es geht nichts verloren.")
         if not werte:
             return
 

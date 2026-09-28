@@ -34,7 +34,7 @@ ROOT = h.ROOT
 class VerlaufSeite(Seite):
     titel = "Verlauf und Wiederherstellen"
     untertitel = ("Vor jeder Änderung legt das Werkzeug eine Sicherung an. Hier stehen "
-                  "alle aufgehobenen Stände — nicht nur der letzte.")
+                  "alle aufgehobenen Stände - nicht nur der letzte.")
 
     def baue(self):
         self.knopf("Wiederherstellen", self.wiederherstellen, "haupt")
@@ -88,7 +88,7 @@ class VerlaufSeite(Seite):
         tk.Label(self.inhalt, bg=B.FARBEN["grund"], fg=B.FARBEN["gedimmt"],
                  font=self.s.klein, justify="left", anchor="w", wraplength=640,
                  text=("Der aktuelle Stand wird vor dem Wiederherstellen selbst noch "
-                       "gesichert — auch dieser Schritt lässt sich also zurücknehmen. "
+                       "gesichert - auch dieser Schritt lässt sich also zurücknehmen. "
                        f"Es werden die letzten {h.MAX_SICHERUNGEN} Änderungen "
                        "aufgehoben, ältere fallen heraus.")).pack(anchor="w", pady=(12, 0))
 
@@ -102,7 +102,7 @@ class VerlaufSeite(Seite):
         if "s" not in kennung:
             messagebox.showinfo("Datei gewählt",
                                 "Bitte einen einzelnen Stand unterhalb der Datei anklicken "
-                                "— dort steht, von wann er ist.")
+                                "- dort steht, von wann er ist.")
             return
 
         datei, lauf = (int(teil) for teil in kennung[1:].split("s"))
@@ -183,7 +183,7 @@ class BilderSeite(Seite):
                 with Image.open(pfad) as bild:
                     pixel = f"{bild.width}×{bild.height}"
             except OSError:
-                pixel = "—"
+                pixel = "-"
             kb = os.path.getsize(pfad) / 1024
             groesse = f"{kb/1024:.1f} MB" if kb > 1024 else f"{kb:.0f} KB"
             self.baum.insert("", "end", iid=str(nummer),
@@ -205,7 +205,7 @@ class BilderSeite(Seite):
         for eintrag in modul.VERWENDUNGEN:
             breiten = ("unverändert" if eintrag["breiten"] == [None]
                        else ", ".join(f"{b}px" for b in eintrag["breiten"]))
-            beschriftungen.append(f"{eintrag['name']} — {breiten}")
+            beschriftungen.append(f"{eintrag['name']} - {breiten}")
 
         werte = B.frage_formular(
             self.rahmen, self.s, "Bild aufnehmen", [
@@ -315,7 +315,7 @@ class BilderSeite(Seite):
                  font=self.s.klein, justify="left", anchor="w", wraplength=640,
                  text=("Bilder brauchen keinen Build-Schritt. Wird ein bestehendes Bild "
                        "ERSETZT (gleicher Dateiname), stattdessen das technische Update "
-                       "laufen lassen — das erzeugt die vorhandenen Fassungen neu.")).pack(
+                       "laufen lassen - das erzeugt die vorhandenen Fassungen neu.")).pack(
                            anchor="w", pady=(10, 0))
 
 
@@ -484,7 +484,7 @@ class AssistentSeite(Seite):
 
         if offen == 0:
             B.karte(self.inhalt, self.s, 2, "Alle Schritte erledigt.",
-                    "Veröffentlicht wird über die Leiste unten — dort steht auch, "
+                    "Veröffentlicht wird über die Leiste unten - dort steht auch, "
                     "was tatsächlich rausgeht.")
 
     def _springe(self, nummer, seite):
@@ -515,7 +515,7 @@ class RennwochenendeSeite(AssistentSeite):
         ("News-Karte auf „Aktuelles“",
          "Kurzer Bericht, den Besucher auf der Aktuelles-Seite sehen.", "news"),
         ("Bilder vom Rennen",
-         "Fotos vorher in media/bilder/ ablegen — die WebP-Fassungen entstehen hier.",
+         "Fotos vorher in media/bilder/ ablegen - die WebP-Fassungen entstehen hier.",
          "bilder"),
         ("Ergebnisliste ins Jahresarchiv",
          "Nur nötig, wenn es eine PDF zum Rennen oder zur Gesamtwertung gibt.",
@@ -550,7 +550,7 @@ class RennwochenendeSeite(AssistentSeite):
 
 class SaisonwechselSeite(AssistentSeite):
     titel = "Saisonwechsel"
-    untertitel = ("Alles, was zum Jahreswechsel ansteht — der Reihe nach. "
+    untertitel = ("Alles, was zum Jahreswechsel ansteht - der Reihe nach. "
                   "Jeder Schritt lässt sich überspringen.")
 
     SCHRITTE = [
@@ -565,7 +565,7 @@ class SaisonwechselSeite(AssistentSeite):
          "Kart- und Trial-Termine für Countdown und Kalender-Download.", "termine"),
         ("Diagramm der abgeschlossenen Saison einfrieren",
          "Endwerte eintragen und die Überschrift auf die abgelaufene Saison setzen. "
-         "Läuft im Terminal — die Diagramme sind der einzige Teil ohne Fensterseite.",
+         "Läuft im Terminal - die Diagramme sind der einzige Teil ohne Fensterseite.",
          None),
         ("Technisches Update",
          "Statistik-Diagramm, Bilder, Copyright-Jahr und die Bundles neu bauen.",
@@ -670,7 +670,7 @@ class FerienprogrammSeite(Seite):
              "rielasingen_link": daten["rielasingen"]["link"],
              "ort": daten["ort"]},
             einleitung="Die Datumsfelder dürfen leer bleiben, solange die Termine noch "
-                       "nicht feststehen — dann muss der Schalter aber auf "
+                       "nicht feststehen - dann muss der Schalter aber auf "
                        "„Programm gelaufen“ stehen.")
         if not werte:
             return

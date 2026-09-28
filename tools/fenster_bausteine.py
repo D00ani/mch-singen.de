@@ -214,7 +214,7 @@ class Formular(tk.Toplevel):
         kopf.pack(fill="x")
         tk.Label(kopf, text=titel, bg=FARBEN["tief"], fg=FARBEN["weiss"],
                  font=schriften.kopf).pack(anchor="w", padx=20, pady=(14, 2))
-        tk.Label(kopf, text=einleitung or "Pflichtfelder sind nicht besonders markiert — "
+        tk.Label(kopf, text=einleitung or "Pflichtfelder sind nicht besonders markiert - "
                                           "leer lassen geht nur, wo es dabeisteht.",
                  bg=FARBEN["tief"], fg=FARBEN["rail_text"], font=schriften.klein,
                  wraplength=520, justify="left").pack(anchor="w", padx=20, pady=(0, 14))

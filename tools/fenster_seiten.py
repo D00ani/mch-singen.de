@@ -125,7 +125,7 @@ class Seite:
 
 class UebersichtSeite(Seite):
     titel = "Was steht an?"
-    untertitel = "Alles, was gerade Aufmerksamkeit braucht — beim Start automatisch geprüft."
+    untertitel = "Alles, was gerade Aufmerksamkeit braucht - beim Start automatisch geprüft."
 
     def baue(self):
         self.knopf("Neu prüfen", self.aktualisieren)
@@ -151,7 +151,7 @@ class UebersichtSeite(Seite):
 
         if not offen:
             B.karte(self.inhalt, self.s, uebersicht.INFO,
-                    "Nichts Offenes — alles auf Stand.")
+                    "Nichts Offenes - alles auf Stand.")
 
     def _boxentafel(self):
         for kind in self.tafel.winfo_children():
@@ -163,12 +163,12 @@ class UebersichtSeite(Seite):
         for rennen in uebersicht.naechste_rennen():
             block = tk.Frame(innen, bg=B.FARBEN["tief"])
             block.pack(side="left", padx=(0, 34))
-            tk.Label(block, text=f"NÄCHSTES RENNEN — {rennen['sportart'].upper()}",
+            tk.Label(block, text=f"NÄCHSTES RENNEN - {rennen['sportart'].upper()}",
                      bg=B.FARBEN["tief"], fg=B.FARBEN["rail_text"],
                      font=self.s.label).pack(anchor="w")
 
             if rennen["tage"] is None:
-                tk.Label(block, text="—", bg=B.FARBEN["tief"], fg=B.FARBEN["gelb"],
+                tk.Label(block, text="-", bg=B.FARBEN["tief"], fg=B.FARBEN["gelb"],
                          font=self.s.zahl).pack(anchor="w")
                 tk.Label(block, text="kein Termin mehr eingetragen", bg=B.FARBEN["tief"],
                          fg=B.FARBEN["rail_text"], font=self.s.klein).pack(anchor="w")
@@ -210,7 +210,7 @@ class UebersichtSeite(Seite):
 class PruefenSeite(Seite):
     titel = "Webseite prüfen"
     untertitel = ("Findet das, was auf GitHub Pages kaputt wäre, hier aber "
-                  "funktioniert — und alles, was Besucher oder Google stört.")
+                  "funktioniert - und alles, was Besucher oder Google stört.")
 
     def baue(self):
         self.extern = tk.BooleanVar(value=False)
@@ -227,7 +227,7 @@ class PruefenSeite(Seite):
             self.leeren()
             B.karte(self.inhalt, self.s, uebersicht.INFO,
                     "Noch nicht geprüft.",
-                    "Oben rechts auf „Prüfung starten“ — dauert ohne Internet-Links "
+                    "Oben rechts auf „Prüfung starten“ - dauert ohne Internet-Links "
                     "unter einer Sekunde.")
 
     def starten(self):
@@ -272,7 +272,7 @@ class PruefenSeite(Seite):
         gefunden = [(stufe, name, eintraege) for stufe, name, eintraege in gruppen if eintraege]
         if not gefunden:
             B.karte(self.inhalt, self.s, uebersicht.INFO,
-                    "Alles in Ordnung — keine Probleme gefunden.",
+                    "Alles in Ordnung - keine Probleme gefunden.",
                     "Weder tote Verweise noch Schreibweise, Build, alt-Texte oder Meta-Angaben.")
             return
 
@@ -281,7 +281,7 @@ class PruefenSeite(Seite):
                     f"{fehler} Fehlergruppe(n), {len(gefunden) - fehler} Hinweisgruppe(n)")
 
         for stufe, name, eintraege in gefunden:
-            B.karte(self.inhalt, self.s, stufe, f"{name} — {len(eintraege)}")
+            B.karte(self.inhalt, self.s, stufe, f"{name} - {len(eintraege)}")
             kasten = tk.Text(self.inhalt, height=min(len(eintraege), 7), font=self.s.daten,
                              wrap="none", bg=B.FARBEN["karte"], fg=B.FARBEN["gedimmt"],
                              relief="solid", bd=1, padx=10, pady=6)
@@ -332,7 +332,7 @@ class MedienSeite(Seite):
 
         zeilen = []
         for pfad in daten["verwaist"]:
-            zeilen.append((medien_aufraeumen.kurz(pfad), "Verwaist — von keiner Seite verlinkt",
+            zeilen.append((medien_aufraeumen.kurz(pfad), "Verwaist - von keiner Seite verlinkt",
                            self._groesse(pfad)))
         for pfad in daten["nur_werkzeug"]:
             zeilen.append((medien_aufraeumen.kurz(pfad),
@@ -346,7 +346,7 @@ class MedienSeite(Seite):
 
         if not zeilen:
             B.karte(self.inhalt, self.s, uebersicht.INFO,
-                    "Nichts aufzuräumen — jede Datei wird gebraucht und ist handlich.")
+                    "Nichts aufzuräumen - jede Datei wird gebraucht und ist handlich.")
             return
 
         baum = self.tabelle(self.inhalt, ("Datei", "Zustand", "Größe"),
@@ -358,7 +358,7 @@ class MedienSeite(Seite):
         if daten["verwaist"]:
             frei = sum(os.path.getsize(p) for p in daten["verwaist"]) // 1024
             tk.Label(self.inhalt,
-                     text=f"{len(daten['verwaist'])} verwaiste Datei(en) — "
+                     text=f"{len(daten['verwaist'])} verwaiste Datei(en) - "
                           f"{frei} KB würden frei.",
                      bg=B.FARBEN["grund"], fg=B.FARBEN["gedimmt"],
                      font=self.s.klein).pack(anchor="w", pady=(10, 0))
@@ -380,7 +380,7 @@ class MedienSeite(Seite):
                        "Handy. Reihenfolge: Tonspur raus (bei „muted“ hört sie ohnehin "
                        "niemand), neu kodieren, zusätzlich ein modernes Format anbieten "
                        "(AV1 spart gegenüber H.264 etwa die Hälfte). Dafür wird ffmpeg "
-                       "gebraucht — kostenlos von ffmpeg.org.")).pack(anchor="w", pady=(0, 8))
+                       "gebraucht - kostenlos von ffmpeg.org.")).pack(anchor="w", pady=(0, 8))
 
         befehle = []
         for pfad, _ in videos:
@@ -470,7 +470,7 @@ class PdfSeite(Seite):
         tk.Label(self.inhalt, bg=B.FARBEN["grund"], fg=B.FARBEN["gedimmt"],
                  font=self.s.klein, justify="left", anchor="w", wraplength=640,
                  text=("Zeile auswählen, dann oben auf „PDF auswählen …“. Die Datei wird "
-                       "an die erwartete Stelle kopiert und richtig benannt — "
+                       "an die erwartete Stelle kopiert und richtig benannt - "
                        "abtippen ist nicht nötig.")).pack(anchor="w", pady=(12, 0))
 
     def _auswahl(self):
@@ -557,7 +557,7 @@ class PdfSeite(Seite):
         for pfad, termine in treffer.items():
             vorschlag = ausschreibung_pdf.sauberer_name(pfad)
             vorhanden = os.path.join(ROOT, pfad.lstrip("/"))
-            zusatz = ("\n\nDie Datei ist noch nicht hochgeladen — es ändert sich nur "
+            zusatz = ("\n\nDie Datei ist noch nicht hochgeladen - es ändert sich nur "
                       "der Eintrag im Termin.") if not os.path.isfile(vorhanden) else ""
             if not messagebox.askyesno(
                     "Umbenennen?",
@@ -585,7 +585,7 @@ class PdfSeite(Seite):
 
 class VorschauSeite(Seite):
     titel = "Vorschau im Browser"
-    untertitel = ("Zeigt die Seite so, wie sie online aussieht — nur auf diesem Rechner. "
+    untertitel = ("Zeigt die Seite so, wie sie online aussieht - nur auf diesem Rechner. "
                   "Es wird nichts veröffentlicht.")
 
     def baue(self):
@@ -607,13 +607,13 @@ class VorschauSeite(Seite):
                         functools.partial(webbrowser.open, adresse + pfad))
         else:
             B.karte(self.inhalt, self.s, uebersicht.INFO, "Vorschau läuft nicht.",
-                    "Oben rechts starten — dann öffnet sich der Browser.")
+                    "Oben rechts starten - dann öffnet sich der Browser.")
 
         tk.Label(self.inhalt, bg=B.FARBEN["grund"], fg=B.FARBEN["gedimmt"],
                  font=self.s.klein, justify="left", anchor="w", wraplength=640,
                  text=("Ein Doppelklick auf index.html reicht dafür nicht: der Browser lädt "
                        "die Datei dann über file:// und blockt genau das, was die Seite "
-                       "braucht — Countdown, Suche und Live-Timing holen ihre Daten "
+                       "braucht - Countdown, Suche und Live-Timing holen ihre Daten "
                        "nach und blieben leer.\n\n"
                        "Änderungen an HTML und Bildern sieht man sofort nach F5. Bei "
                        "Änderungen an CSS/JS vorher das technische Update laufen lassen, "

@@ -91,7 +91,7 @@ class TeamSeite(Seite):
 
         tk.Label(self.inhalt, bg=B.FARBEN["grund"], fg=B.FARBEN["gedimmt"],
                  font=self.s.klein, justify="left", anchor="w", wraplength=640,
-                 text=("Beim Bearbeiten werden nur die geänderten Felder ersetzt — "
+                 text=("Beim Bearbeiten werden nur die geänderten Felder ersetzt - "
                        "eigene Bildausschnitte und Instagram-Verlinkungen bleiben "
                        "erhalten. Ein neuer Name zieht automatisch in Überschrift, "
                        "Bildbeschriftung und Bildbeschreibung mit.")).pack(
@@ -150,7 +150,7 @@ class TeamSeite(Seite):
                            "optionen": [self.VORNE] +
                                        [f"Nach {B.lesbar(p['name'])}" for p in personen]})
 
-        werte = B.frage_formular(self.rahmen, self.s, f"Neue Person — {bereich['name']}",
+        werte = B.frage_formular(self.rahmen, self.s, f"Neue Person - {bereich['name']}",
                                  felder,
                                  einleitung="Das Foto muss schon im Ordner liegen. "
                                             "Die WebP-Fassung wird automatisch "
@@ -234,7 +234,7 @@ class TeamSeite(Seite):
         if not messagebox.askyesno(
                 "Person entfernen",
                 f"{team_pflege.beschreibe(person)}\n\n"
-                "Das Foto bleibt im Ordner liegen — nur die Karte verschwindet.\n\n"
+                "Das Foto bleibt im Ordner liegen - nur die Karte verschwindet.\n\n"
                 "Wirklich entfernen?"):
             return
 

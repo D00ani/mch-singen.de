@@ -90,7 +90,12 @@ def beschreibe_termin(zeile):
     teile = zeile.split(";")
     if len(teile) >= 6:
         tag, monat, jahr, uhrzeit, verein, ort = teile[:6]
-        return f"{tag}.{monat}.{jahr} {uhrzeit} - {verein} {ort}"
+        # Spalte 9 ist der volle Name eines Termins, der kein Rennen ist
+        # (z. B. "BKC-Gesamtsiegerehrung in Singen"). Steht sie da, hat sie
+        # Vorrang vor "Verein Ort" - sonst meldet die Uebersicht die
+        # Siegerehrung als "Naechstes Kart-Rennen".
+        name = teile[8].strip() if len(teile) >= 9 and teile[8].strip() else f"{verein} {ort}"
+        return f"{tag}.{monat}.{jahr} {uhrzeit} - {name}"
     return zeile
 
 

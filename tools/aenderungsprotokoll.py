@@ -228,7 +228,7 @@ def geaenderte_dateien_sicher():
 def zeige(zeilen=None):
     zeilen = sammle() if zeilen is None else zeilen
     if not zeilen:
-        print("\nNichts geändert — es gibt nichts zu veröffentlichen.")
+        print("\nNichts geändert - es gibt nichts zu veröffentlichen.")
         return
 
     print(f"\nDiese {len(zeilen)} Änderung(en) gehen raus:")

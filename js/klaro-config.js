@@ -85,7 +85,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
     }
-    // Klaro rendert asynchron ins DOM — Observer fängt Notice UND späteres Modal ab
+    // Klaro rendert asynchron ins DOM - Observer fängt Notice UND späteres Modal ab
     var klaroObserver = new MutationObserver(fixKlaroDialogName);
     klaroObserver.observe(document.body, { childList: true, subtree: true });
     fixKlaroDialogName();
