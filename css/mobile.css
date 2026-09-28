@@ -537,7 +537,7 @@
         align-items: center;
         justify-content: center;
         gap: 3px;
-        min-height: 56px;
+        min-height: calc(var(--tabbar-hoehe) - 2px);   /* 2px Oberkante */
         padding: 7px 2px 8px;
         color: rgba(255, 255, 255, 0.62);
         text-decoration: none;
@@ -577,25 +577,19 @@
         .tabbar-link:active { transform: none; }
     }
 
-    /* ── Platz fuer die Leiste ───────────────────────────────────────
-       Ohne diesen Abstand liegt sie ueber dem letzten Absatz und ueber
-       dem Fussbereich.
-
-       ACHTUNG, Bau-Reihenfolge: tools/build_assets.py haengt style.css
-       ANS ENDE des Bundles, hinter mobile.css - genauso, wie der Browser
-       eine Datei mit @import-Zeilen aufloesen wuerde. Dort steht
-       "body { padding: 0 10px 10px 10px }" als Kurzschreibweise. Ein
-       schlichtes "body" hier waere also gleich spezifisch, kaeme aber
-       frueher - und der Abstand waere still wieder weg. "html body"
-       liegt eine Stufe darueber und setzt sich durch. */
-    html body { padding-bottom: calc(58px + env(safe-area-inset-bottom)); }
+    /* Der Platz UNTER der Leiste steht bewusst in css/style.css: das
+       Bundle haengt style.css ans Ende, und die dortigen body-Regeln sind
+       spezifischer. Eine Regel an dieser Stelle waere wirkungslos - die
+       Begruendung steht dort ausfuehrlich. */
 
     /* Der Nach-oben-Knopf (css/modules.css, Abschnitt 12) steht auf dem
        Handy auf bottom: 20px und liegt mit z-index: 800 unter der Leiste
        (940) - er verschwaende also dahinter. 70px setzen ihn mit 12px
        Luft darueber. Groesse und rechter Abstand bleiben, wie modules.css
        sie fuer schmale Fenster schon festlegt. */
-    #scroll-to-top { bottom: calc(70px + env(safe-area-inset-bottom)); }
+    #scroll-to-top {
+        bottom: calc(var(--tabbar-hoehe) + 12px + env(safe-area-inset-bottom));
+    }
 
     /* Klaro setzt das Cookie-Banner auf schmalen Fenstern auf bottom: 0 mit
        voller Breite und z-index 999 - es laege also genau auf der Leiste und
@@ -603,7 +597,7 @@
        hebt es um die Leistenhoehe an, dann sind beide bedienbar.
        !important ist hier der uebliche Weg, siehe css/cookie.css. */
     .klaro .cookie-notice:not(.cookie-modal-notice) {
-        bottom: calc(58px + env(safe-area-inset-bottom)) !important;
+        bottom: calc(var(--tabbar-hoehe) + env(safe-area-inset-bottom)) !important;
     }
 
     /* ── Seitenmenue ────────────────────────────────────────────────

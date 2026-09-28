@@ -56,6 +56,12 @@
        Kante beim Umschalten nicht auseinanderlaeuft. */
     --gutter-left: 93px;
 
+    /* Hoehe der Leiste am unteren Rand (nur Handy, css/mobile.css
+       Abschnitt 17). Steht hier, weil vier Regeln in drei Dateien mit
+       diesem Wert rechnen: die Leiste selbst, der Abstand darunter, der
+       Nach-oben-Knopf und das Cookie-Banner. */
+    --tabbar-hoehe: 58px;
+
     --font-body:    'Inter', system-ui, sans-serif;
     --font-heading: 'Outfit', system-ui, sans-serif;
     /* Orbitron ist ab jetzt reine Zahlen-Schrift (Countdown, Live-Timing,
@@ -1158,6 +1164,29 @@ body:not(.dark-mode) main a:hover {
         padding-left: 10px;
         padding-right: 10px;
         padding-bottom: 10px;
+    }
+}
+
+/* Platz fuer die Leiste am unteren Rand (css/mobile.css, Abschnitt 17).
+   Ohne diesen Abstand verdeckt sie die Unterzeile des Fussbereichs mit
+   Impressum und Cookie-Einstellungen.
+
+   Warum die Regel HIER steht und nicht in css/mobile.css, wo sie
+   thematisch hingehoert: tools/build_assets.py haengt style.css ans Ende
+   des Bundles, hinter mobile.css - genauso, wie ein Browser eine Datei
+   mit @import-Zeilen aufloesen wuerde. Die beiden Regeln oben sind
+   ausserdem "body:not(.dark-mode)" und damit spezifischer als ein
+   schlichtes "body". Eine Regel in mobile.css haette also gleich zweimal
+   verloren - und weil beide nur den hellen Modus treffen, waere der
+   Fehler im Dark Mode nicht einmal aufgefallen.
+
+   Beide Modi werden einzeln genannt, damit die Spezifitaet (0,1,1) die
+   der Regeln darueber erreicht; den Ausschlag gibt dann die spaetere
+   Position. */
+@media (max-width: 768px) {
+    body:not(.dark-mode),
+    body.dark-mode {
+        padding-bottom: calc(var(--tabbar-hoehe) + env(safe-area-inset-bottom));
     }
 }
 
