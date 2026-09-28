@@ -231,8 +231,15 @@ def tabelle_loeschen():
 # Vereinsbestleistungen (Rekord-Boxen)
 # ------------------------------------------------------------------
 
+# Das Icon in der Ueberschrift ist freiwillig: auf pages/statistiken.html
+# stehen die Rekord-Boxen ohne eines. Die Gruppe war bisher Pflicht, das
+# Muster hat deshalb KEINE einzige Box gefunden - der Menuepunkt
+# "Rekord-Boxen bearbeiten" blieb leer. Die innere Klammer ist bewusst
+# nicht erfassend und das Fragezeichen steht darum herum: so nimmt die
+# Gruppe 2 im Zweifel den leeren Text auf statt None, und das
+# Zusammensetzen beim Speichern (m.group(2)) funktioniert unveraendert.
 RECORD_BOX_MUSTER = re.compile(
-    r'(<div class="record-box">\s*<h3>)(<i[^>]*></i>\s*)([^<]*?)(\s*</h3>\s*<p>)(.*?)(</p>\s*</div>)',
+    r'(<div class="record-box">\s*<h3>)((?:<i[^>]*></i>\s*)?)([^<]*?)(\s*</h3>\s*<p>)(.*?)(</p>\s*</div>)',
     re.DOTALL
 )
 
