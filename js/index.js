@@ -227,6 +227,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     ort:      (parts[5] || '').trim(),
                     link:     (parts[6] || '').trim(),
                     pdf:      (parts[7] || '').trim(),
+                    // Spalte 9 ist freiwillig und nur fuer Termine gedacht,
+                    // die kein Rennen sind (z. B. die Siegerehrung). Steht
+                    // dort etwas, ist es der volle Name der Veranstaltung.
+                    titel:    (parts[8] || '').trim(),
                 });
             }
         }
@@ -331,7 +335,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const now      = Date.now();
             const distance = ev.timestamp - now;
-            const name     = `${ev.verein} ${ev.ort}`.trim();
+            // Termine mit eigenem Titel (Spalte 9) sind keine Rennen. Fuer sie
+            // passt weder der Kopf aus dem Markup ("Naechstes Rennen beim ...")
+            // noch die Zielflagge - beides wuerde die Siegerehrung zu einem
+            // Lauf machen. Ohne Spalte 9 bleibt alles wie bisher.
+            const eigenerTitel = ev.titel;
+            const name     = (eigenerTitel || `${ev.verein} ${ev.ort}`).trim();
             const nameHtml = ev.link
                 ? `<a href="${alsText(ev.link)}" target="_blank" rel="noopener noreferrer" style="color:#ffcc00;text-decoration:underline;">${alsText(name)}</a>`
                 : alsText(name);
@@ -340,14 +349,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (headEl)  headEl.style.display = 'none';
                 if (cdBoxEl) cdBoxEl.style.display = 'none';
                 if (cdMsgEl) {
-                    setzeHtml(cdMsgEl, `HEUTE! ${nameHtml} 🏁`);
+                    setzeHtml(cdMsgEl,
+                        `HEUTE! ${nameHtml} ${eigenerTitel ? '🏆' : '🏁'}`);
                     cdMsgEl.style.display = 'block';
                 }
             } else {
                 if (headEl) {
                     headEl.style.display = 'block';
-                    setzeHtml(headEl,
-                        `${kopfAnfang}${name ? ' beim ' + nameHtml : ''}${kopfEnde}`);
+                    setzeHtml(headEl, eigenerTitel
+                        ? `${nameHtml}${kopfEnde}`
+                        : `${kopfAnfang}${name ? ' beim ' + nameHtml : ''}${kopfEnde}`);
                 }
                 const d = Math.floor(distance / 86400000);
                 const h = Math.floor((distance % 86400000) / 3600000);

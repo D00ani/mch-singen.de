@@ -4,4 +4,4 @@
 26;July;2026;09:00;MCH;Singen;https://maps.app.goo.gl/6XPEY7VjdMwcb7KN8;media/dokumente/kurzausschreibungmchsingen2026.pdf
 20;September;2026;09:00;AC;Singen;https://maps.app.goo.gl/KwhkrBTtwZZVutny9;media/dokumente/kurzausschreibungacsingen2026.pdf
 27;September;2026;09:00;AC;Singen;https://maps.app.goo.gl/KwhkrBTtwZZVutny9;media/dokumente/kurzausschreibungacsingen2026.pdf
-04;October;2026;09:00;MSC;Steißlingen;https://maps.app.goo.gl/2S4dx5ZM1jy8kBtR6;media/dokumente/kurzausschreibungmscsteißlingen2026.pdf
+25;October;2026;12:30;BKC;Singen;https://maps.google.com/?q=Am+Rehbuck+2,+78224+Singen;media/dokumente/einladungbkcgesamtsiegerehrung2026.pdf;BKC-Gesamtsiegerehrung in Singen

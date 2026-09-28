@@ -4,6 +4,15 @@ Interaktiv Renntermine (Kart oder Trial) in data/timer.txt bzw.
 data/timer_trial.txt hinzufuegen, bearbeiten oder loeschen - statt die
 Dateien von Hand mit Semikolons zu bearbeiten.
 
+Aufbau einer Zeile:
+    Tag;Monat;Jahr;Uhrzeit;Verein;Ort;Maps-Link;PDF-Pfad[;Titel]
+
+Die neunte Spalte "Titel" ist freiwillig und wird hier nicht abgefragt. Sie
+steht nur bei Terminen, die kein Rennen sind - etwa
+"BKC-Gesamtsiegerehrung in Singen". Der Countdown auf der Startseite zeigt
+dann diesen Namen statt "Naechstes Rennen beim <Verein> <Ort>", und im
+Kalender-Download heisst der Termin ebenso. Von Hand eintragen.
+
 Ausfuehren: python tools/termine_verwalten.py
 """
 import os
@@ -257,9 +266,10 @@ def termin_bearbeiten(zieldatei):
 
     idx = waehle_zeile(zeilen, "bearbeiten")
     alt = zeilen[idx].split(";")
-    while len(alt) < 8:
+    while len(alt) < 9:
         alt.append("")
-    alt_tag, alt_monat, alt_jahr, alt_uhrzeit, alt_verein, alt_ort, alt_link, alt_pdf = alt[:8]
+    (alt_tag, alt_monat, alt_jahr, alt_uhrzeit, alt_verein, alt_ort,
+     alt_link, alt_pdf, alt_titel) = alt[:9]
 
     print(f"\nAktuell: {zeilen[idx]}")
     print("Enter = aktuellen Wert behalten, x = ein Feld zurueck.\n")
@@ -293,7 +303,14 @@ def termin_bearbeiten(zieldatei):
         print("Abgebrochen.")
         return
 
-    neue_zeile = ";".join([tag, monat_en, jahr, uhrzeit, verein, ort, link, pdf_link])
+    # Spalte 9 (eigener Titel, z. B. "BKC-Gesamtsiegerehrung in Singen") wird
+    # hier nicht abgefragt, aber unveraendert weitergereicht - sonst wuerde ein
+    # Bearbeiten des Termins den Titel stillschweigend loeschen und aus der
+    # Siegerehrung wieder ein "Rennen" machen.
+    felder = [tag, monat_en, jahr, uhrzeit, verein, ort, link, pdf_link]
+    if alt_titel:
+        felder.append(alt_titel)
+    neue_zeile = ";".join(felder)
     print(f"\nAlt: {zeilen[idx]}")
     print(f"Neu: {neue_zeile}")
     if frage("Aendern? (j/n): ", JN_VALIDIERER).lower() != "j":

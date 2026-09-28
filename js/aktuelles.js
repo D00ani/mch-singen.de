@@ -125,7 +125,9 @@ async function ladeUndGeneriereICS(zielGruppe) {
 }
 
 // ---- Kart-Renntermine als ICS herunterladen ----
-// Format pro Zeile: Tag;Monat;Jahr;Startzeit;Verein;Ort;MapsLink
+// Format pro Zeile: Tag;Monat;Jahr;Startzeit;Verein;Ort;MapsLink;PDF;Titel
+// Die letzte Spalte ist freiwillig und steht nur bei Terminen, die kein
+// Rennen sind (z. B. der Siegerehrung). Sie ersetzt dann den Titel im Kalender.
 async function ladeRenntermineICS() {
     try {
         const res  = await fetch('../data/timer.txt');
@@ -144,10 +146,11 @@ async function ladeRenntermineICS() {
             const verein   = p[4]?.trim() ?? "";
             const ort      = p[5]?.trim() ?? "Unbekannt";
             const mapsLink = p[6]?.trim() ?? "";
+            const eigener  = p[8]?.trim() ?? "";
 
             ics += icsTermin({
                 kennung:      icsKennung(['kart', jahr, monat, tag, verein, ort]),
-                titel:        `Rennen beim ${verein} ${ort}`,
+                titel:        eigener || `Rennen beim ${verein} ${ort}`,
                 start:        `${jahr}${monat}${tag}T${zeit}00`,
                 ende:         icsEndzeit(jahr, monat, tag, zeit, 8),
                 ort:          ort,
