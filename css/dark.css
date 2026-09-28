@@ -364,12 +364,12 @@ body.dark-mode .breadcrumb-gruppe-feld a[aria-current="page"] {
 }
 
 /* Schnellzugriff unten (css/mobile.css, Abschnitt 17).
-   Die Leiste ist auch im hellen Modus dunkel - im Dark Mode wird sie nur
-   eine Spur tiefer, damit sie sich vom Seitenhintergrund (#121212) abhebt
-   statt mit ihm zu verschwimmen. */
+   Die Flaeche bleibt in beiden Modi #06112e - derselbe Wert wie beim
+   Seitenmenue (css/sidebar.css). Die Bedienung der Seite soll EINE dunkle
+   Flaeche haben; wuerde nur die Leiste im Dark Mode nachdunkeln, haette
+   man wieder zwei Toene fuer dieselbe Sache. Vom Seitenhintergrund
+   (#121212) trennt sie ohnehin die Oberkante und der Schatten - sie ist
+   blaeulicher und dunkler, nicht heller. */
 @media (max-width: 768px) {
-    body.dark-mode .tabbar {
-        background: #10141d;
-        border-top-color: #2c313d;
-    }
+    body.dark-mode .tabbar { border-top-color: rgba(255, 255, 255, 0.14); }
 }

@@ -4,14 +4,19 @@
 
 /* Einfarbige Flaeche statt Verlauf von #0a1535 nach #111111. Der alte
    Verlauf wechselte ueber die Panelhoehe von Markennavy zu praktisch
-   Schwarz - alle anderen Flaechen der Seite sind einfarbig. */
+   Schwarz - alle anderen Flaechen der Seite sind einfarbig.
+
+   Der Farbwert ist derselbe wie bei der Leiste am unteren Rand
+   (css/mobile.css, Abschnitt 17). Vorher waren drei verschiedene
+   Dunkelblaus im Umlauf - Kopfzeile, Schublade und Leiste. Jetzt hat die
+   Bedienung EINE dunkle Flaeche und EINEN blauen Verlauf. */
 aside {
     position: fixed;
     top: 0;
     bottom: 0;
     left: 0;
     width: 300px;
-    background: #0c142e;
+    background: #06112e;
     color: #fff;
     padding: 0 16px 40px 16px;
     box-shadow: 6px 0 36px rgba(0, 0, 0, 0.45);
@@ -73,22 +78,28 @@ aside.open {
 }
 
 /* ── Sidebar Brand/Logo-Bereich ── */
+/* Traegt jetzt denselben Verlauf und dieselbe goldene Abschlusskante wie
+   die Kopfzeile der Seite. Damit wiederholt die Schublade im Kleinen den
+   Aufbau der Seite: blauer Kopf mit goldener Linie, dunkler Bereich
+   darunter. Die negativen Seitenraender heben die 16px Polsterung des
+   Panels auf, damit die Flaeche bis an beide Kanten reicht. */
 .sidebar-brand {
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 20px 4px 18px 4px;
-    margin-bottom: 4px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+    padding: 18px 16px 16px 16px;
+    margin: 0 -16px 10px -16px;
+    background: linear-gradient(135deg, #0047cc, #001b5e);
+    border-bottom: 2px solid var(--accent);
     position: relative;
     text-decoration: none !important;
     color: inherit;
-    transition: background 0.2s ease;
-    border-radius: 10px 10px 0 0;
+    transition: filter 0.2s ease;
+    border-radius: 0;
 }
 
 .sidebar-brand:hover {
-    background: rgba(255, 255, 255, 0.05);
+    filter: brightness(1.12);
 }
 
 /* Die Blau-Gold-Verlaufslinie unter dem Logo ist entfallen. Dieselbe
@@ -133,26 +144,30 @@ aside.open {
 }
 
 /* ── Close-Button ── */
+/* Sitzt auf dem blauen Markenbereich und sieht deshalb genauso aus wie
+   die drei Icon-Knoepfe der Kopfzeile: gleiche Flaeche, gleiche Kante,
+   gleicher Radius. */
 .close-btn {
     font-size: 1.4rem;
-    color: rgba(255, 255, 255, 0.6);
-    background: rgba(255, 255, 255, 0.08);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.72);
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.16);
     border-radius: 10px;
     cursor: pointer;
     position: absolute;
-    top: 18px;
-    right: 16px;
-    width: 36px;
-    height: 36px;
-    line-height: 36px;
+    top: 17px;
+    right: 14px;
+    width: 40px;
+    height: 40px;
+    line-height: 38px;
     text-align: center;
-    transition: color 0.2s, background 0.2s;
+    transition: color 0.2s ease, background 0.2s ease, border-color 0.2s ease;
 }
 
 .close-btn:hover {
     color: #fff;
-    background: rgba(255, 255, 255, 0.16);
+    background: rgba(255, 255, 255, 0.22);
+    border-color: rgba(255, 255, 255, 0.3);
 }
 
 nav { margin-top: 10px; }
@@ -173,7 +188,7 @@ nav ul li a {
     align-items: center;
     padding: 10px 12px;
     background: transparent;
-    border-radius: 8px;
+    border-radius: 10px;
     border-left: 3px solid transparent;
     transition: background-color 0.18s ease, color 0.18s ease;
     font-size: var(--text-sm);
@@ -189,10 +204,13 @@ nav ul li a:hover {
     color: #fff;
 }
 
-/* Aktive Seite: flaeche plus goldene Kante. Vorher zusaetzlich ein
-   horizontaler Verlauf und ein blauer Schatten. */
+/* Aktive Seite: helle Flaeche plus goldene Kante - dieselbe Formel wie
+   bei den Reitern der Desktop-Navigation und bei der Leiste am unteren
+   Rand. Vorher war die Flaeche hier blau eingefaerbt, also ein drittes
+   Muster fuer denselben Zustand. Die goldene Kante sitzt links, weil in
+   einer senkrechten Liste links die fuehrende Kante ist. */
 nav ul li a.menu_current {
-    background-color: rgba(0, 71, 204, 0.32);
+    background-color: rgba(255, 255, 255, 0.12);
     border-left-color: var(--accent);
     font-weight: 600;
     color: #fff;
@@ -235,8 +253,8 @@ nav ul li.nav-section-label {
     min-width: 0;
     padding: 9px 12px;
     background: rgba(255, 255, 255, 0.09);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 10px;
     color: #fff;
     font-size: 0.85rem;
     font-family: inherit;
@@ -273,7 +291,7 @@ nav ul li.nav-section-label {
     padding: 9px 13px;
     background: var(--primary-blue);
     border: none;
-    border-radius: 8px;
+    border-radius: 10px;
     color: #fff;
     cursor: pointer;
     font-size: 0.9rem;

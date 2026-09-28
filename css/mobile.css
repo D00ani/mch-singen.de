@@ -579,8 +579,23 @@
 
     /* ── Platz fuer die Leiste ───────────────────────────────────────
        Ohne diesen Abstand liegt sie ueber dem letzten Absatz und ueber
-       dem Fussbereich. */
-    body { padding-bottom: calc(58px + env(safe-area-inset-bottom)); }
+       dem Fussbereich.
+
+       ACHTUNG, Bau-Reihenfolge: tools/build_assets.py haengt style.css
+       ANS ENDE des Bundles, hinter mobile.css - genauso, wie der Browser
+       eine Datei mit @import-Zeilen aufloesen wuerde. Dort steht
+       "body { padding: 0 10px 10px 10px }" als Kurzschreibweise. Ein
+       schlichtes "body" hier waere also gleich spezifisch, kaeme aber
+       frueher - und der Abstand waere still wieder weg. "html body"
+       liegt eine Stufe darueber und setzt sich durch. */
+    html body { padding-bottom: calc(58px + env(safe-area-inset-bottom)); }
+
+    /* Der Nach-oben-Knopf (css/modules.css, Abschnitt 12) steht auf dem
+       Handy auf bottom: 20px und liegt mit z-index: 800 unter der Leiste
+       (940) - er verschwaende also dahinter. 70px setzen ihn mit 12px
+       Luft darueber. Groesse und rechter Abstand bleiben, wie modules.css
+       sie fuer schmale Fenster schon festlegt. */
+    #scroll-to-top { bottom: calc(70px + env(safe-area-inset-bottom)); }
 
     /* Klaro setzt das Cookie-Banner auf schmalen Fenstern auf bottom: 0 mit
        voller Breite und z-index 999 - es laege also genau auf der Leiste und
