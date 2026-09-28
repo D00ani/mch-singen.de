@@ -88,9 +88,18 @@ def main():
     print("\n[2/5] Aenderungen committen ...")
     if git_text(["status", "--porcelain"]):
         git(["add", "-A"], still=True)
-        if git(["commit", "-m", args.nachricht], still=True).returncode != 0:
+        # Nach dem Hinzufuegen kann trotzdem nichts uebrig sein. build_assets.py
+        # schreibt die Bundles mit LF, im Arbeitsordner liegen sie mit CRLF -
+        # "status" meldet sie deshalb als geaendert, beim Hinzufuegen
+        # normalisiert Git die Zeilenenden aber wieder weg. Ohne diese Pruefung
+        # scheitert der Commit an genau diesem Nichts und der ganze Push bricht
+        # ab, obwohl alles in Ordnung ist.
+        if git(["diff", "--cached", "--quiet"], still=True).returncode == 0:
+            print("  nichts zu committen (nur Zeilenenden), Stand ist schon gesichert")
+        elif git(["commit", "-m", args.nachricht], still=True).returncode != 0:
             abbruch("git commit fehlgeschlagen.", zurueck_auf_arbeit=False)
-        print(f"  committet: {args.nachricht}")
+        else:
+            print(f"  committet: {args.nachricht}")
     else:
         print("  nichts zu committen, Stand ist schon gesichert")
 
