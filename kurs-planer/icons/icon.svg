@@ -1,0 +1,4 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="104" fill="#1f3a5f"/>
+  <g fill="#dfe3e8" stroke="#8d97a3" stroke-width="6"><rect x="104" y="224" width="64" height="64" rx="6"/><rect x="224" y="224" width="64" height="64" rx="6"/><rect x="344" y="224" width="64" height="64" rx="6"/></g><path d="M60 256 C84 196 110 172 136 172 C172 172 184 216 196 256 C208 296 220 340 256 340 C292 340 304 296 316 256 C328 216 340 172 376 172 C404 172 424 198 438 232" fill="none" stroke="#ff9326" stroke-width="22" stroke-linecap="round" stroke-linejoin="round"/><polygon points="456,272 414,246 464,222" fill="#ff9326"/>
+</svg>

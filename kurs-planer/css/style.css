@@ -1,0 +1,453 @@
+:root {
+  --bg: #dfe3e8;
+  --panel: #f4f5f7;
+  --border: #c2c8cf;
+  --text: #1f2933;
+  --muted: #5f6b7a;
+  --accent: #1a73e8;
+}
+
+* { box-sizing: border-box; }
+
+/* Ausgeblendet bleibt ausgeblendet, auch wenn eine Regel weiter unten display setzt. */
+[hidden] { display: none !important; }
+
+html, body { height: 100%; margin: 0; }
+
+body {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  font: 13px/1.4 system-ui, "Segoe UI", sans-serif;
+  color: var(--text);
+  background: var(--bg);
+  overflow: hidden;
+  touch-action: manipulation;          /* kein Doppeltipp-Zoom auf den Bedienelementen */
+}
+
+/* ---------- Menüleiste ---------- */
+
+.menubar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 0;
+  padding: 6px 10px;
+  background: var(--panel);
+  border-bottom: 1px solid var(--border);
+}
+
+.app-title {
+  font-weight: 600;
+  margin-right: 14px;
+}
+
+.tool-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 12px;
+  border-left: 1px solid var(--border);
+}
+
+.menubar button,
+.menubar select,
+.menubar input {
+  font: inherit;
+  color: inherit;
+  height: 26px;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  background: #fff;
+}
+
+.menubar button {
+  padding: 0 9px;
+  cursor: pointer;
+}
+
+.menubar button:hover:not(:disabled) { border-color: var(--accent); }
+.menubar button:disabled { color: #a0a7b0; cursor: default; }
+
+.menubar input[type="number"] {
+  width: 56px;
+  padding: 0 4px;
+}
+
+.menubar label { color: var(--muted); margin-right: 2px; }
+
+.menubar label.check {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  margin-left: 8px;
+  color: var(--text);
+}
+
+.menubar label.check input { height: auto; }
+
+/* Hilfe ganz rechts */
+.tool-help {
+  margin-left: auto;
+  border-left: 0;
+}
+
+.tool-help button {
+  width: 26px;
+  padding: 0;
+  font-weight: 600;
+  border-radius: 50%;
+}
+
+.zoom-label {
+  min-width: 48px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Arbeitsbereich ---------- */
+
+.workspace {
+  display: grid;
+  grid-template-columns: 210px 1fr;
+  min-height: 0;
+}
+
+.toolbox {
+  padding: 10px;
+  background: var(--panel);
+  border-right: 1px solid var(--border);
+  overflow-y: auto;
+}
+
+.toolbox h2 {
+  margin: 14px 0 8px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.toolbox h2:first-child { margin-top: 0; }
+
+.palette {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+.palette-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 5px 4px;
+  font-size: 11px;
+  line-height: 1.2;
+  text-align: center;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  cursor: grab;
+  user-select: none;
+}
+
+.palette-item { touch-action: pan-y; }   /* senkrecht scrollt die Toolbar, seitlich wird gezogen */
+.palette-item:hover { border-color: var(--accent); }
+.palette-item:active { cursor: grabbing; }
+
+.palette-item img {
+  width: 44px;
+  height: 44px;
+  flex: none;
+}
+
+.palette-count {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--muted);
+}
+
+.palette-count input {
+  width: 44px;
+  font: inherit;
+  padding: 1px 2px;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+}
+
+.canvas-wrap {
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+}
+
+#stage {
+  position: absolute;
+  inset: 0;
+}
+
+/* Gesten auf der Arbeitsfläche wertet das Programm selbst aus. */
+#stage,
+#stage * {
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+
+/* Vorschaubild, das beim Ziehen aus der Toolbar am Zeiger hängt */
+.drag-ghost {
+  position: fixed;
+  z-index: 20;
+  width: 56px;
+  height: 56px;
+  transform: translate(-50%, -50%);
+  opacity: 0.8;
+  pointer-events: none;
+}
+
+/* Dateiauswahl: unsichtbar, aber vorhanden – iOS öffnet sie sonst nicht */
+.file-input {
+  position: fixed;
+  left: -100px;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+/* ---------- Fenster (Hilfe, App) ---------- */
+
+.dialog-box {
+  width: min(460px, calc(100vw - 32px));
+  max-height: calc(100vh - 32px);
+  overflow-y: auto;
+  padding: 18px 20px;
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+}
+
+.dialog-box::backdrop { background: rgba(31, 41, 51, 0.35); }
+
+.dialog-box h2 {
+  margin: 0 0 6px;
+  font-size: 15px;
+}
+
+.dialog-box h3 {
+  margin: 16px 0 4px;
+  font-size: 13px;
+}
+
+.dialog-box p { margin: 0 0 8px; }
+
+.dialog-box ol {
+  margin: 0 0 8px;
+  padding-left: 22px;
+}
+
+.dialog-box ul {
+  margin: 0 0 8px;
+  padding-left: 18px;
+}
+
+.dialog-box li { margin-bottom: 5px; }
+
+.shortcuts {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 4px 14px;
+  margin: 0 0 8px;
+}
+
+.shortcuts dt { font-weight: 600; }
+.shortcuts dd { margin: 0; }
+
+.dialog-box details { border-top: 1px solid var(--border); }
+
+.dialog-box summary {
+  padding: 6px 0;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.dialog-box input[type="text"] {
+  width: 100%;
+  padding: 7px 8px;
+  font: inherit;
+  font-size: 16px;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+}
+
+.dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.dialog-note {
+  margin-top: 10px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.dialog-box a { color: var(--accent); }
+
+.dialog-credit {
+  margin-top: 16px;
+  padding-top: 10px;
+  font-size: 12px;
+  color: var(--muted);
+  border-top: 1px solid var(--border);
+}
+
+/* Symbol im Text der Anleitung, z. B. „Teilen“ von iOS */
+.step-icon {
+  width: 18px;
+  height: 18px;
+  vertical-align: -4px;
+  color: var(--accent);
+}
+
+.dialog-box button,
+.dialog-box .button {
+  display: inline-block;
+  padding: 5px 12px;
+  font: inherit;
+  color: inherit;
+  text-decoration: none;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.dialog-box button:hover,
+.dialog-box .button:hover { border-color: var(--accent); }
+
+.dialog-box .primary {
+  color: #fff;
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.dialog-box > form {
+  margin-top: 18px;
+  text-align: right;
+}
+
+/* Fenster, die nur aus einem Formular bestehen (Beschriftung) */
+.dialog-box > form:only-child {
+  margin-top: 0;
+  text-align: left;
+}
+
+/* ---------- Kontextmenü ---------- */
+
+.context-menu {
+  position: fixed;
+  z-index: 10;
+  display: grid;
+  min-width: 150px;
+  padding: 4px;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+}
+
+.context-menu[hidden] { display: none; }
+
+.context-menu button {
+  padding: 5px 10px;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  background: none;
+  border: 0;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.context-menu button:hover:not(:disabled) { background: #e8f0fe; }
+.context-menu button:disabled { color: #a0a7b0; cursor: default; }
+
+/* ---------- Statusleiste ---------- */
+
+.statusbar {
+  display: flex;
+  gap: 24px;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+  background: var(--panel);
+  border-top: 1px solid var(--border);
+}
+
+#status-pos { min-width: 170px; }
+#status-message { color: var(--text); }
+.status-scale { margin-left: auto; }
+.status-credit { white-space: nowrap; }
+
+/* ---------- Schmale Bildschirme (Handy, Tablet hochkant) ---------- */
+
+@media (max-width: 760px) {
+  .menubar {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+
+  .menubar > * { flex: none; }
+
+  /* Arbeitsfläche oben, Toolbar als waagerechte Leiste darunter */
+  .workspace {
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr auto;
+  }
+
+  .toolbox {
+    order: 2;
+    padding: 6px;
+    border-right: 0;
+    border-top: 1px solid var(--border);
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+
+  #palette {
+    display: flex;
+    align-items: stretch;
+    gap: 6px;
+  }
+
+  .toolbox h2 { display: none; }
+
+  .palette {
+    display: flex;
+    gap: 6px;
+  }
+
+  .palette-item {
+    flex: none;
+    width: 76px;
+    touch-action: pan-x;               /* waagerecht scrollt die Leiste, nach oben wird gezogen */
+  }
+
+  .statusbar {
+    gap: 12px;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+
+  #status-pos,
+  .status-scale { display: none; }
+
+  .status-credit { margin-left: auto; }
+}

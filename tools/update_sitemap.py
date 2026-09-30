@@ -39,7 +39,11 @@ def url_zu_datei(url):
     pfad = (url[len(BASIS_URL):] if url.startswith(BASIS_URL) else url).strip("/")
     if not pfad:
         pfad = "index.html"  # die Startseite wird ohne Dateinamen verlinkt
-    return os.path.join(ROOT, pfad.replace("/", os.sep))
+    datei = os.path.join(ROOT, pfad.replace("/", os.sep))
+    if os.path.isdir(datei):
+        # Ordner-Adresse wie /kurs-planer/ - ausgeliefert wird dessen index.html
+        datei = os.path.join(datei, "index.html")
+    return datei
 
 
 def ist_noindex(pfad):

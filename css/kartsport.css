@@ -110,3 +110,51 @@ body.dark-mode table.stats-table tr.kart-class-adult td {
 }
 
 /* Lightbox styles are now in modules.css (shared) */
+
+/* =========================================
+   KURS-PLANER (Karte unter dem Regelwerk)
+   ========================================= */
+
+/* Vorschaubild links, Text rechts. Am Handy untereinander. */
+.kursplaner-card {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+    gap: 25px;
+    align-items: center;
+}
+
+.kursplaner-bild {
+    display: block;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid var(--border-soft);
+}
+
+/* Das Bild ist ein Bildschirmfoto mit hellem Grund - der Rahmen traegt die
+   Kante, die Vorgaben aus "main img" (Abstand, Schatten) stoeren hier. */
+.kursplaner-bild img {
+    width: 100%;
+    margin: 0;
+    border-radius: 0;
+    box-shadow: none;
+}
+
+body.dark-mode .kursplaner-bild {
+    border-color: rgba(255, 255, 255, 0.09);
+}
+
+.kursplaner-hinweis {
+    font-size: 0.9rem;
+    color: var(--text-light);
+}
+
+body.dark-mode .kursplaner-hinweis {
+    color: #aaa;
+}
+
+@media (max-width: 700px) {
+    .kursplaner-card {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+}

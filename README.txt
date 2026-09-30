@@ -22,8 +22,9 @@ Texteditor (z. B. Notepad, Notepad++, VS Code).
 /js/                      -> Eigene Steuerungs-Skripte (Timer, Kalender-Downloads etc.)
 /js/vendor/               -> Eingebundene Bibliotheken (chart.js, klaro.js) - NICHT bearbeiten!
 /webfonts/                -> Schriftarten
+/kurs-planer/             -> Kurs-Planer, Kopie aus eigenem Repo - NICHT bearbeiten! (Abschnitt 14)
 
-/tools/                   -> Alle Pflege- und Hilfsskripte (siehe Abschnitt 10!)
+/tools/                  -> Alle Pflege- und Hilfsskripte (siehe Abschnitt 10!)
 
 /data/                    -> Textdateien und JSON für Timer, Countdown und Live-Daten
   timer.txt               -> Kart-Renntermine und Countdown
@@ -892,6 +893,52 @@ NACH EINER AENDERUNG AN css/index.css:
   Ohne diesen Schritt bleibt die Aenderung unsichtbar - die Seite laedt
   css/index.min.css, nicht css/index.css (siehe Abschnitt 9).
   Aenderungen NUR an index.html brauchen keinen Build.
+
+-------------------------------------------------------
+14. KURS-PLANER (Ordner kurs-planer/)
+-------------------------------------------------------
+
+Der Kurs-Planer zeichnet Streckenplaene fuer den Kartslalom. Er ist ein
+eigenes Programm mit eigenem Repo:
+
+      https://github.com/D00ani/BKC_Strecken_Planer
+
+Auf der Webseite liegt davon eine unveraenderte Kopie im Ordner
+kurs-planer/, erreichbar unter https://mch-singen.de/kurs-planer/.
+
+WO WAS STEHT:
+
+  kurs-planer/            Das Programm selbst. NICHTS von Hand aendern -
+                          der naechste Abgleich ueberschreibt es.
+  pages/kartsport.html    Die Karte mit Bild und Knopf, unter dem Regelwerk.
+                          Suche nach: <section class="info-card kursplaner-card"
+  css/kartsport.css       Die Gestaltung der Karte, Abschnitt "KURS-PLANER".
+  js/suche.js             Der Eintrag fuer die Suche der Webseite.
+  sitemap.xml             Der Eintrag fuer Suchmaschinen.
+
+DEN KURS-PLANER AKTUALISIEREN:
+
+  1. Die Aenderung im Repo des Kurs-Planers machen und dort pushen.
+  2. Hier einmal ausfuehren:
+
+      python tools/kursplaner_sync.py
+
+  3. Wie gewohnt veroeffentlichen.
+
+  Das Werkzeug holt den aktuellen Stand, schreibt neue und geaenderte
+  Dateien und loescht, was es im Repo nicht mehr gibt.
+
+GUT ZU WISSEN:
+
+  - Der Kurs-Planer bringt einen Service Worker mit (kurs-planer/sw.js),
+    damit er als App ohne Internet laeuft. Der gilt NUR fuer Adressen
+    unter /kurs-planer/ - die uebrige Webseite hat weiterhin keinen.
+  - Das Vorschaubild der Karte ist ein Bildschirmfoto:
+    media/bilder/kartsport/kurs-planer.png. Sieht der Kurs-Planer spaeter
+    deutlich anders aus, das Foto ersetzen (1200 x 750) und danach
+    python tools/optimize_images.py ausfuehren.
+  - tools/pruefe_seite.py und tools/update_sitemap.py sehen nur die
+    Hauptebene und pages/. Den Ordner kurs-planer/ pruefen sie nicht.
 
 
 =======================================================

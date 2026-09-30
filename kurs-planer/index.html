@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Kurs-Planer – Streckenplan Kart-Slalom</title>
+  <meta name="theme-color" content="#1f3a5f">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <header class="menubar">
+    <span class="app-title">Kurs-Planer</span>
+
+    <div class="tool-group">
+      <button id="btn-open" type="button" title="Gespeicherten Streckenplan öffnen (Strg/Cmd+O)">Öffnen</button>
+      <button id="btn-save" type="button" title="Streckenplan als Datei speichern (Strg/Cmd+S)">Speichern</button>
+      <button id="btn-export" type="button" title="Streckenplan als PDF speichern (DIN A4)">PDF</button>
+      <button id="btn-app" type="button" title="Als App installieren oder herunterladen – läuft dann ohne Internet">App</button>
+    </div>
+
+    <div class="tool-group">
+      <button id="btn-undo" type="button" title="Rückgängig (Strg/Cmd+Z)">↶ Zurück</button>
+      <button id="btn-redo" type="button" title="Wiederholen (Strg+Y, Cmd+Umschalt+Z)">↷ Vor</button>
+    </div>
+
+    <div class="tool-group">
+      <button id="btn-rotate-left" type="button" title="15° gegen den Uhrzeigersinn drehen (Umschalt+R)">↺ Drehen</button>
+      <button id="btn-rotate-right" type="button" title="15° im Uhrzeigersinn drehen (R)">↻ Drehen</button>
+      <button id="btn-mirror" type="button" title="Auswahl spiegeln (M)">Spiegeln</button>
+      <button id="btn-delete" type="button" title="Auswahl löschen (Entf)">Löschen</button>
+    </div>
+
+    <div class="tool-group">
+      <button id="btn-zoom-out" type="button" title="Verkleinern">−</button>
+      <span id="zoom-label" class="zoom-label">100 %</span>
+      <button id="btn-zoom-in" type="button" title="Vergrößern">+</button>
+      <button id="btn-fit" type="button" title="Ganzen Platz anzeigen">Einpassen</button>
+    </div>
+
+    <div class="tool-group">
+      <label for="snap-step">Einrasten</label>
+      <select id="snap-step">
+        <option value="0">aus</option>
+        <option value="0.1">0,10 m</option>
+        <option value="0.25" selected>0,25 m</option>
+        <option value="0.5">0,50 m</option>
+        <option value="1">1,00 m</option>
+      </select>
+      <label class="check" title="Beim Verschieben anzeigen, wenn Kanten oder Mitte in einer Flucht mit anderen Elementen liegen">
+        <input id="guides" type="checkbox" checked> Hilfslinien
+      </label>
+    </div>
+
+    <div class="tool-group">
+      <label for="field-width">Platz</label>
+      <input id="field-width" type="number" min="10" max="200" step="1" value="50" title="Breite in Metern">
+      <span>×</span>
+      <input id="field-height" type="number" min="10" max="200" step="1" value="30" title="Tiefe in Metern">
+      <span>m</span>
+    </div>
+
+    <div class="tool-group">
+      <label for="track-width">Spurbreite Kart</label>
+      <input id="track-width" type="number" min="0.8" max="1.6" step="0.05" value="1.10"
+             title="Fahrspurbreite der Figuren = Spurbreite + 40 cm. Gilt für neu platzierte Figuren.">
+      <span>m</span>
+    </div>
+
+    <div class="tool-group tool-help">
+      <button id="btn-help" type="button" title="Hilfe und Tastenkürzel" aria-label="Hilfe">?</button>
+    </div>
+  </header>
+
+  <div class="workspace">
+    <aside class="toolbox">
+      <div id="palette"></div>
+    </aside>
+
+    <main class="canvas-wrap">
+      <div id="stage"></div>
+    </main>
+  </div>
+
+  <footer class="statusbar">
+    <span id="status-pos">x: – &nbsp; y: –</span>
+    <span id="status-selection">Keine Auswahl</span>
+    <span id="status-count">0 Elemente</span>
+    <span id="status-message" role="status"></span>
+    <span class="status-scale">1 Kästchen = 1 m</span>
+    <span class="status-credit">Design: Daniel Krieger · © 2026 MCH Singen</span>
+  </footer>
+
+  <input id="file-input" class="file-input" type="file" accept=".json,application/json" tabindex="-1" aria-hidden="true">
+
+  <dialog id="help-dialog" class="dialog-box">
+    <h2>Hilfe</h2>
+
+    <h3>Elemente platzieren</h3>
+    <ul>
+      <li>Element aus der Leiste auf die Arbeitsfläche ziehen – oder antippen, dann landet es in der Bildmitte.</li>
+      <li>Pfeile, Sperrfläche und Sperrlinie: Größe über die Griffe am Auswahlrahmen ändern.</li>
+      <li>Schweizer Slalom: Anzahl der Pylonen direkt an der Kachel einstellen.</li>
+    </ul>
+
+    <h3>Auswählen und bearbeiten</h3>
+    <ul>
+      <li><strong>Klick</strong> wählt die ganze Figur samt Pfeilen.</li>
+      <li><strong>Doppelklick</strong> geht eine Ebene tiefer: erst das Teil (Gasse, Pfeil, Pylonengruppe), dann die einzelne Pylone – zum Verschieben oder Löschen.</li>
+      <li><strong>Rechtsklick</strong> (Touch: lange drücken) öffnet das Menü mit „Pfeile spiegeln“, „Text ändern“ und „Löschen“.</li>
+      <li>Sperrfläche beschriften: Doppelklick auf die Fläche (Touch: doppelt tippen oder lange drücken → „Text ändern“), dann den Text eingeben, z. B. den Namen des Gebäudes.</li>
+      <li>Beim Verschieben zeigen Hilfslinien, wenn Elemente in einer Flucht liegen.</li>
+    </ul>
+
+    <h3>Ansicht</h3>
+    <ul>
+      <li>Maus: Mausrad zoomt. Rechte oder mittlere Taste – oder Leertaste + Ziehen – verschiebt die Ansicht. Ziehen auf freier Fläche wählt mehrere Elemente.</li>
+      <li>Touch: ein Finger auf freier Fläche verschiebt, zwei Finger zoomen.</li>
+    </ul>
+
+    <h3>Tastenkürzel</h3>
+    <dl class="shortcuts">
+      <dt>Strg/Cmd + Z</dt><dd>Rückgängig</dd>
+      <dt>Strg + Y, Cmd + Umschalt + Z</dt><dd>Wiederholen</dd>
+      <dt>Strg/Cmd + S</dt><dd>Speichern</dd>
+      <dt>Strg/Cmd + O</dt><dd>Öffnen</dd>
+      <dt>R, Umschalt + R</dt><dd>Drehen um 15°</dd>
+      <dt>M</dt><dd>Spiegeln</dd>
+      <dt>Entf</dt><dd>Löschen</dd>
+      <dt>Strg/Cmd + A</dt><dd>Alles auswählen</dd>
+      <dt>Esc</dt><dd>Auswahl aufheben</dd>
+    </dl>
+
+    <p class="dialog-credit">
+      Design: Daniel Krieger · © 2026 MCH Singen<br>
+      Verwendet Konva und jsPDF (beide MIT-Lizenz).
+    </p>
+
+    <form method="dialog">
+      <button type="submit">Schließen</button>
+    </form>
+  </dialog>
+
+  <dialog id="app-dialog" class="dialog-box">
+    <h2>Kurs-Planer ohne Internet nutzen</h2>
+
+    <h3>Als App installieren</h3>
+    <p id="install-hint"></p>
+    <div id="install-tutorial"></div>
+    <button id="btn-install" type="button" class="primary" hidden>Installieren</button>
+
+    <div id="download-section">
+      <h3>Als Datei herunterladen</h3>
+      <div id="single-file">
+        <p>Für Windows und Mac: eine einzige Datei <code>Kurs-Planer.html</code>. Ein Doppelklick öffnet den Kurs-Planer im Browser – ohne Internet, ohne Entpacken und unabhängig von dieser Seite.</p>
+        <button id="btn-download" type="button">Datei herunterladen</button>
+      </div>
+      <p class="dialog-note">
+        Alle Einzeldateien gibt es auch <a id="zip-link">als ZIP</a>. Das ZIP muss erst entpackt werden:
+        Ein Doppelklick auf <code>index.html</code> direkt im ZIP zeigt die Seite ohne Gestaltung.
+      </p>
+    </div>
+
+    <div id="other-tutorials"></div>
+
+    <form method="dialog">
+      <button type="submit">Schließen</button>
+    </form>
+  </dialog>
+
+  <dialog id="text-dialog" class="dialog-box">
+    <form method="dialog">
+      <h2><label for="text-input">Beschriftung der Sperrfläche</label></h2>
+      <input id="text-input" type="text" maxlength="40" autocomplete="off" placeholder="z. B. Halle, Gebäude, Grünstreifen">
+      <p class="dialog-note">Leer lassen, um die Beschriftung zu entfernen.</p>
+      <div class="dialog-actions">
+        <button id="text-cancel" type="button">Abbrechen</button>
+        <button type="submit" value="ok" class="primary">Übernehmen</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div id="context-menu" class="context-menu" hidden>
+    <button type="button" data-action="flip-arrows">Pfeile spiegeln</button>
+    <button type="button" data-action="text">Text ändern</button>
+    <button type="button" data-action="delete">Löschen</button>
+  </div>
+
+  <script src="vendor/konva.min.js"></script>
+  <script src="vendor/jspdf.umd.min.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/elements.js"></script>
+  <script src="js/editor.js"></script>
+  <script src="js/export.js"></script>
+  <script src="js/file.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

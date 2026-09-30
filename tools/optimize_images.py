@@ -93,6 +93,8 @@ results += webp("media/bilder/ueber-uns/platzhalter.jpg")
 # Werksfoto mach1-kart.png abgeloest - das war ein Haendlerbild mit
 # eingebranntem weissem Rahmen und zeigte nicht unser Kart.
 results += webp("media/bilder/kartsport/mach1-kart.jpg", [480, 800])
+# Bildschirmfoto des Kurs-Planers fuer die Karte auf der Kartsport-Seite
+results += webp("media/bilder/kartsport/kurs-planer.png", [480, 800, 1200])
 
 # --- Fotos vom Gemeinschaftslauf 2026 ---
 # Gehoeren zum Block, den tools/gemeinschaftslauf_entfernen.py wieder
