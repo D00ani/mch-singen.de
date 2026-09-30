@@ -17,6 +17,7 @@ html, body { height: 100%; margin: 0; }
 body {
   display: grid;
   grid-template-rows: auto 1fr auto;
+  grid-template-columns: minmax(0, 1fr);   /* nie breiter als das Fenster, auch bei langen Leisten */
   font: 13px/1.4 system-ui, "Segoe UI", sans-serif;
   color: var(--text);
   background: var(--bg);
@@ -97,6 +98,9 @@ body {
   font-weight: 600;
   border-radius: 50%;
 }
+
+/* Klammer um Ansicht und Einstellungen – am PC ohne eigenes Kästchen */
+.menubar-settings { display: contents; }
 
 .zoom-label {
   min-width: 48px;
@@ -283,6 +287,19 @@ body {
   border-radius: 3px;
 }
 
+.field-label {
+  display: block;
+  margin: 10px 0 4px;
+  font-weight: 600;
+}
+
+.dialog-box label.check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 8px 0;
+}
+
 .dialog-actions {
   display: flex;
   justify-content: flex-end;
@@ -393,61 +410,147 @@ body {
 #status-pos { min-width: 170px; }
 #status-message { color: var(--text); }
 .status-scale { margin-left: auto; }
-.status-credit { white-space: nowrap; }
 
-/* ---------- Schmale Bildschirme (Handy, Tablet hochkant) ---------- */
+.status-credit {
+  margin-left: auto;
+  white-space: nowrap;
+}
 
-@media (max-width: 760px) {
-  .menubar {
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    white-space: nowrap;
-  }
+.status-scale:not([hidden]) + .status-credit { margin-left: 0; }
 
-  .menubar > * { flex: none; }
+/* ---------- Gestapelte Anordnung: schmale Fenster und Handy ---------- */
 
-  /* Arbeitsfläche oben, Toolbar als waagerechte Leiste darunter */
-  .workspace {
-    grid-template-columns: 1fr;
-    grid-template-rows: 1fr auto;
-  }
+/* Die Klassen setzt js/config.js: „stacked“ bei schmalem Fenster oder auf dem
+   Handy, „handy“ nur auf dem Handy. */
 
-  .toolbox {
-    order: 2;
-    padding: 6px;
-    border-right: 0;
-    border-top: 1px solid var(--border);
-    overflow-x: auto;
-    overflow-y: hidden;
-  }
+/* Arbeitsfläche oben, Elemente als waagerechte Leiste darunter */
+.stacked .workspace {
+  grid-template-columns: 1fr;
+  grid-template-rows: 1fr auto;
+}
 
-  #palette {
-    display: flex;
-    align-items: stretch;
-    gap: 6px;
-  }
+.stacked .toolbox {
+  order: 2;
+  padding: 6px;
+  border-right: 0;
+  border-top: 1px solid var(--border);
+  overflow-x: auto;
+  overflow-y: hidden;
+}
 
-  .toolbox h2 { display: none; }
+.stacked #palette {
+  display: flex;
+  align-items: stretch;
+  gap: 6px;
+}
 
-  .palette {
-    display: flex;
-    gap: 6px;
-  }
+.stacked .toolbox h2 { display: none; }
 
-  .palette-item {
-    flex: none;
-    width: 76px;
-    touch-action: pan-x;               /* waagerecht scrollt die Leiste, nach oben wird gezogen */
-  }
+.stacked .palette {
+  display: flex;
+  gap: 6px;
+}
 
-  .statusbar {
-    gap: 12px;
-    overflow-x: auto;
-    white-space: nowrap;
-  }
+.stacked .palette-item {
+  flex: none;
+  width: 76px;
+  touch-action: pan-x;                 /* waagerecht scrollt die Leiste, nach oben wird gezogen */
+}
 
-  #status-pos,
-  .status-scale { display: none; }
+.stacked .statusbar {
+  gap: 12px;
+  overflow-x: auto;
+  white-space: nowrap;
+}
 
-  .status-credit { margin-left: auto; }
+.stacked #status-pos,
+.stacked .status-scale { display: none; }
+
+/* Schmales Fenster am PC: die Menüleiste bleibt einzeilig und lässt sich schieben. */
+.stacked:not(.handy) .menubar {
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  white-space: nowrap;
+}
+
+.stacked:not(.handy) .menubar > * { flex: none; }
+
+/* ---------- Handy-Version (hochkant) ---------- */
+
+/* Dieselben Knöpfe wie am PC, nichts hinter einem Menü versteckt:
+   Zeile 1 Datei und Hilfe, Zeile 2 Bearbeiten, Zeile 3 Ansicht und
+   Einstellungen zum seitlichen Wischen. */
+.handy .menubar {
+  gap: 6px 8px;
+  padding: 6px;
+}
+
+.handy .app-title { display: none; }
+.handy .btn-text { display: none; }    /* Zurück, Vor, Drehen nur als Pfeil */
+
+.handy .tool-group {
+  padding: 0;
+  border-left: 0;
+}
+
+.handy .group-file { order: 1; }
+
+.handy .tool-help {
+  order: 2;
+  margin-left: auto;
+}
+
+.handy .group-edit { order: 3; }
+
+.handy .menubar-settings {
+  order: 4;
+  display: flex;
+  flex: 0 0 100%;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+  overflow-x: auto;
+  white-space: nowrap;
+}
+
+.handy .menubar-settings > * { flex: none; }
+
+.handy .menubar button,
+.handy .menubar select,
+.handy .menubar input {
+  height: 36px;
+  font-size: 16px;                     /* ab 16 px zoomt iOS beim Antippen nicht hinein */
+}
+
+.handy .menubar button {
+  min-width: 36px;
+  padding: 0 8px;
+}
+
+.handy .menubar input[type="number"] { width: 64px; }
+
+.handy .menubar label.check { margin-left: 4px; }
+
+.handy .menubar label.check input {
+  width: 22px;
+  height: 22px;
+}
+
+.handy .tool-help button { width: 36px; }
+
+.handy .palette-count input {
+  width: 54px;
+  height: 30px;
+  font-size: 16px;
+}
+
+.handy .context-menu button {
+  padding: 12px 16px;
+  font-size: 16px;
+}
+
+.handy .dialog-box button,
+.handy .dialog-box .button {
+  padding: 9px 14px;
+  font-size: 16px;
 }

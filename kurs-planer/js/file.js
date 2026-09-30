@@ -83,6 +83,13 @@
     load(await file.text(), file.name);
   });
 
+  // Neues Blatt: ein Schritt im Verlauf, „Zurück“ holt den alten Plan wieder.
+  document.getElementById('btn-new').addEventListener('click', () => {
+    handle = null;
+    KP.editor.loadState(KP.editor.defaultState());
+    KP.editor.notify('Neues Blatt. „Zurück“ holt den vorigen Plan wieder.');
+  });
+
   document.getElementById('btn-save').addEventListener('click', save);
   document.getElementById('btn-open').addEventListener('click', open);
 
@@ -98,9 +105,10 @@
     }
   });
 
-  // Beim Schließen warnen, solange ungespeicherte Änderungen bestehen.
+  // Beim Schließen nur warnen, wenn sich der Browser den Stand nicht merken
+  // konnte – sonst ist er beim nächsten Öffnen ohnehin wieder da.
   window.addEventListener('beforeunload', (e) => {
-    if (!KP.editor.isDirty()) return;
+    if (!KP.editor.isDirty() || KP.editor.remembers()) return;
     e.preventDefault();
     e.returnValue = '';
   });

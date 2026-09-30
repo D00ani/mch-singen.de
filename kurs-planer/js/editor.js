@@ -18,7 +18,9 @@
   // Finger brauchen größere Griffe als der Mauszeiger.
   const COARSE = window.matchMedia('(pointer: coarse)').matches;
 
-  const field = { width: 50, height: 30 };
+  const field = { width: KP.SHEET.width, height: KP.SHEET.height };
+  let showGrid = false;               // kariertes Blatt, 1 Kästchen = 1 m
+  let pdfOptions = Object.assign({}, KP.PDF_DEFAULTS);   // Kopfzeile des PDFs, gehört zum Plan
   let snapStep = 0.25;
 
   const $ = (id) => document.getElementById(id);
@@ -64,8 +66,10 @@
 
       c.fillStyle = '#ffffff';
       c.fillRect(0, 0, w, h);
-      if (pxPerM >= 8) lines(1, '#e4e7eb');
-      lines(5, '#b4bcc6');
+      if (showGrid) {
+        if (pxPerM >= 8) lines(1, '#e4e7eb');
+        lines(5, '#b4bcc6');
+      }
       c.strokeStyle = '#4a5560';
       c.lineWidth = 1.5 * px;
       c.strokeRect(0, 0, w, h);
@@ -89,8 +93,13 @@
     $('zoom-label').textContent = Math.round((pxPerM / BASE_PX_PER_M) * 100) + ' %';
   }
 
+  // Solange niemand selbst gezoomt oder verschoben hat, bleibt das ganze Blatt
+  // im Bild – auch wenn sich die Fläche ändert (Handy gedreht, Fenster gezogen).
+  let autoFit = true;
+
   // point: Bildschirmposition, die beim Zoomen an Ort und Stelle bleibt
   function zoomAt(point, factor) {
+    autoFit = false;
     const old = stage.scaleX();
     const pxPerM = clamp(old * factor, MIN_PX_PER_M, MAX_PX_PER_M);
     const world = { x: (point.x - stage.x()) / old, y: (point.y - stage.y()) / old };
@@ -102,6 +111,7 @@
   }
 
   function fitView() {
+    autoFit = true;
     const pxPerM = clamp(
       Math.min(
         (stage.width() - 2 * FIT_MARGIN) / field.width,
@@ -337,6 +347,8 @@
     return {
       version: 1,
       field: { width: field.width, height: field.height },
+      grid: showGrid,
+      pdf: Object.assign({}, pdfOptions),
       trackWidth: KP.settings.trackWidth,
       idCount,
       elements: allElements().map((node) => ({
@@ -360,6 +372,10 @@
     field.height = state.field.height;
     $('field-width').value = field.width;
     $('field-height').value = field.height;
+    // Pläne aus der Zeit vor dieser Einstellung waren immer kariert.
+    showGrid = state.grid === undefined ? true : Boolean(state.grid);
+    $('grid').checked = showGrid;
+    pdfOptions = Object.assign({}, KP.PDF_DEFAULTS, state.pdf);
     KP.settings.trackWidth = state.trackWidth || KP.settings.trackWidth;
     $('track-width').value = KP.settings.trackWidth.toFixed(2);
     idCount = Math.max(idCount, state.idCount || 0);
@@ -388,6 +404,7 @@
       history.stack.push(state);
       history.index = history.stack.length - 1;
     }
+    remember();
     updateUi();
   }
 
@@ -397,6 +414,7 @@
     if (target < 0 || target >= history.stack.length) return;
     history.index = target;
     applyState(JSON.parse(history.stack[target]));
+    remember();
   }
 
   const isDirty = () => history.stack[history.index] !== history.saved;
@@ -404,6 +422,49 @@
   function markSaved() {
     history.saved = history.stack[history.index];
     updateUi();
+  }
+
+  // Name und Kopfzeilen-Angaben des PDFs ändern; wird mit dem Plan gemerkt.
+  function setPdfOptions(options) {
+    pdfOptions = Object.assign({}, KP.PDF_DEFAULTS, options);
+    commit();
+  }
+
+  // Leeres Blatt in der Standardgröße
+  function defaultState() {
+    return {
+      version: 1,
+      field: { width: KP.SHEET.width, height: KP.SHEET.height },
+      grid: false,
+      trackWidth: KP.settings.trackWidth,
+      idCount,
+      elements: []
+    };
+  }
+
+  // Letzter Stand: Plan und Einstellungen bleiben im Browser auf diesem Gerät
+  // gespeichert und sind beim nächsten Öffnen wieder da.
+  const MEMORY_KEY = 'kurs-planer-letzter-stand';
+  let remembered = false;               // ist der letzte Schreibversuch gelungen?
+
+  function remember() {
+    try {
+      localStorage.setItem(MEMORY_KEY, JSON.stringify({
+        plan: getState(), snap: snapStep, guides: guidesEnabled
+      }));
+      remembered = true;
+    } catch (err) {
+      remembered = false;               // Speicher gesperrt oder voll
+    }
+  }
+
+  function recall() {
+    try {
+      const data = JSON.parse(localStorage.getItem(MEMORY_KEY));
+      return data && data.plan && data.plan.field && Array.isArray(data.plan.elements) ? data : null;
+    } catch (err) {
+      return null;
+    }
   }
 
   // Plan aus einer Datei; das Laden ist selbst ein Schritt im Verlauf.
@@ -463,9 +524,15 @@
     commit();
   }
 
-  // Kehrt die Fahrtrichtung um: jeder Pfeil der Auswahl zeigt auf demselben
-  // Weg in die Gegenrichtung.
-  const arrowsInSelection = () => selection.filter((n) => defOf(n).arrow);
+  // Kehrt die Fahrtrichtung um: jeder Pfeil zeigt auf demselben Weg in die
+  // Gegenrichtung. Betroffen sind die gewählten Pfeile – oder, wenn keiner
+  // gewählt ist, alle Pfeile der Figur, zu der die Auswahl gehört.
+  function arrowsInSelection() {
+    const chosen = selection.filter((n) => defOf(n).arrow);
+    if (chosen.length) return chosen;
+    const figures = new Set(selection.map((n) => n.getAttr('figure')).filter(Boolean));
+    return allElements().filter((n) => defOf(n).arrow && figures.has(n.getAttr('figure')));
+  }
 
   function flipArrows() {
     arrowsInSelection().forEach((node) => {
@@ -656,6 +723,7 @@
       const dy = e.clientY - pan.clientY;
       if (!pan.moved && Math.hypot(dx, dy) < 4) return;
       pan.moved = true;
+      autoFit = false;
       container.style.cursor = 'grabbing';
       setView(stage.scaleX(), { x: pan.x + dx, y: pan.y + dy });
     } else if (marqueeStart) {
@@ -731,7 +799,7 @@
   const canDrill = (element) =>
     enteredDepth(pathOf(element)) < pathOf(element).length || element.find('.pylon').length > 1;
 
-  // ---------- Beschriftung (Sperrfläche) ----------
+  // ---------- Beschriftung (Sperrfläche, Start/Ziel, Nummern) ----------
 
   const textDialog = $('text-dialog');
   let textTarget = null;
@@ -755,9 +823,27 @@
   textDialog.querySelector('form').addEventListener('submit', () => {
     const node = textTarget;
     if (!node || !node.getLayer()) return;
+    const text = $('text-input').value.trim();
     const size = node.getAttr('boxSize');
-    node.getAttr('options').text = $('text-input').value.trim();
-    KP.setElementSize(node, size.width, size.height);
+    if (size) {
+      // Sperrfläche: die Beschriftung passt sich der Fläche an, leer = ohne Text
+      node.getAttr('options').text = text;
+      KP.setElementSize(node, size.width, size.height);
+    } else if (!text) {
+      // Ein Kästchen ohne Text gibt es nicht – es wird entfernt.
+      setSelection([]);
+      node.destroy();
+    } else {
+      // Kästchen mit dem neuen Text neu zeichnen
+      const fresh = KP.createElement(node.getAttr('elementType'), Object.assign({}, node.getAttr('options'), { text }));
+      fresh.position(node.position());
+      fresh.rotation(node.rotation());
+      setPath(fresh, pathOf(node));
+      elementLayer.add(fresh);
+      node.destroy();
+      sortElements();
+      setSelection([fresh]);
+    }
     commit();
   });
 
@@ -839,7 +925,11 @@
           press = null;
           if (drag) return;
           suppressTap = true;
-          openMenu(element, touch.clientX, touch.clientY);
+          // Langes Drücken wählt das Teil unter dem Finger einzeln – eine Ebene
+          // tiefer, wie ein Doppelklick – und öffnet das Menü dazu.
+          drill(element);
+          if (element.getLayer() && !selection.includes(element)) setSelection([element]);
+          if (selection.length) openMenu(selection[0], touch.clientX, touch.clientY);
         }, LONG_PRESS)
       };
     } else if (e.target === stage) {
@@ -867,7 +957,10 @@
     e.evt.preventDefault();
     const dx = touch.clientX - touchPan.clientX;
     const dy = touch.clientY - touchPan.clientY;
-    if (Math.hypot(dx, dy) > 4) suppressTap = true;
+    if (Math.hypot(dx, dy) > 4) {
+      suppressTap = true;
+      autoFit = false;
+    }
     setView(stage.scaleX(), { x: touchPan.x + dx, y: touchPan.y + dy });
   });
 
@@ -1072,6 +1165,7 @@
     ['btn-rotate-left', 'btn-rotate-right', 'btn-mirror', 'btn-delete'].forEach((id) => {
       $(id).disabled = selection.length === 0;
     });
+    $('status-scale').hidden = !showGrid;
     $('btn-undo').disabled = history.index <= 0;
     $('btn-redo').disabled = history.index >= history.stack.length - 1;
     document.title = (isDirty() ? '• ' : '') + TITLE;
@@ -1128,14 +1222,31 @@
 
   $('snap-step').addEventListener('change', (e) => {
     snapStep = Number(e.target.value);
+    remember();
   });
   $('guides').addEventListener('change', (e) => {
     guidesEnabled = e.target.checked;
+    remember();
+  });
+  $('grid').addEventListener('change', (e) => {
+    showGrid = e.target.checked;
+    gridLayer.batchDraw();
+    commit();
+  });
+
+  // Blatt zurück auf DIN A4 quer
+  $('btn-a4').addEventListener('click', () => {
+    field.width = KP.SHEET.width;
+    field.height = KP.SHEET.height;
+    $('field-width').value = field.width;
+    $('field-height').value = field.height;
+    fitView();
+    commit();
   });
 
   function onFieldSizeChange() {
     const read = (input, fallback) => {
-      const value = Math.round(Number(input.value));
+      const value = Math.round(Number(input.value) * 10) / 10;
       const size = Number.isFinite(value) && value > 0
         ? clamp(value, Number(input.min), Number(input.max))
         : fallback;
@@ -1163,17 +1274,38 @@
 
   new ResizeObserver(() => {
     stage.size({ width: container.clientWidth, height: container.clientHeight });
+    if (autoFit) fitView();
   }).observe(container);
 
   // ---------- Start ----------
 
   buildPalette();
+  $('field-width').value = field.width;
+  $('field-height').value = field.height;
+
+  // Den letzten Stand von diesem Gerät wiederherstellen, falls es einen gibt.
+  const last = recall();
+  if (last) {
+    try {
+      $('snap-step').value = String(last.snap);
+      if ($('snap-step').value === String(last.snap)) snapStep = Number(last.snap);
+      $('snap-step').value = String(snapStep);
+      guidesEnabled = last.guides !== false;
+      $('guides').checked = guidesEnabled;
+      applyState(last.plan);
+    } catch (err) {
+      applyState(defaultState());       // unlesbarer Stand: mit leerem Blatt beginnen
+    }
+  }
   fitView();
   commit();
   markSaved();
 
   KP.editor = {
     stage, elementLayer, field, addElement, fitView, renderPlan,
-    getState, loadState, isDirty, markSaved, notify
+    getState, loadState, defaultState, isDirty, markSaved, notify,
+    remembers: () => remembered,
+    pdfOptions: () => Object.assign({}, pdfOptions),
+    setPdfOptions
   };
 })(window.KP);

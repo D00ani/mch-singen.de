@@ -259,22 +259,10 @@
           stroke: INK, strokeWidth: LINE_WIDTH, hitStrokeWidth: 0.6
         }));
       },
-      // Beschriftungskästchen bei (x, y) mit Pfeil auf (tx, ty)
+      // Beschriftungskästchen bei (x, y) mit Pfeil auf (tx, ty) – ein eigenes
+      // Element, damit es sich verschieben, umbenennen und löschen lässt
       callout: (text, x, y, tx, ty) => {
-        const label = textBox(text, mx(x), y);
-        label.listening(false);
-        const w = label.width() * TEXT_SCALE;
-        const h = label.height() * TEXT_SCALE;
-        group.add(new Konva.Arrow({
-          name: 'note',
-          points: [
-            mx(x) + (Math.sign(mx(tx) - mx(x)) * w) / 2, y + (Math.sign(ty - y) * h) / 2,
-            mx(tx), ty
-          ],
-          stroke: INK, fill: INK, strokeWidth: 0.03,
-          pointerLength: 0.3, pointerWidth: 0.22, listening: false
-        }));
-        group.add(label);
+        extras.push({ id: 'beschriftung', x, y, options: { text, tx: tx - x, ty: ty - y } });
       },
       // Drehpunkt festlegen (sonst: Mitte der Pylonen)
       origin: (x, y) => { origin = pt(mx(x), y); },
@@ -476,10 +464,34 @@
 
   // Nummernkästchen für die Reihenfolge (Brezel)
   KP.registerElement({
-    id: 'nummer', label: 'Nummer', category: 'Fahrtrichtung', hidden: true,
+    id: 'nummer', label: 'Nummer', category: 'Fahrtrichtung', hidden: true, editableText: true,
     build(options) {
       const group = new Konva.Group();
       group.add(textBox(options.text || '1', 0, 0));
+      return group;
+    }
+  });
+
+  // Beschriftungskästchen mit Hinweispfeil, wie „Haltelinie“ im Regelwerk.
+  // options.tx/ty: Ziel des Pfeils, gemessen von der Mitte des Kästchens
+  KP.registerElement({
+    id: 'beschriftung', label: 'Beschriftung', category: 'Start / Ziel', hidden: true, editableText: true,
+    build(options) {
+      const group = new Konva.Group();
+      const label = textBox(options.text || 'Text', 0, 0);
+      const tx = (options.mirror ? -1 : 1) * (options.tx || 0);
+      const ty = options.ty || 0;
+      if (tx || ty) {
+        const w = label.width() * TEXT_SCALE;
+        const h = label.height() * TEXT_SCALE;
+        group.add(new Konva.Arrow({
+          name: 'note',
+          points: [(Math.sign(tx) * w) / 2, (Math.sign(ty) * h) / 2, tx, ty],
+          stroke: INK, fill: INK, strokeWidth: 0.03,
+          pointerLength: 0.3, pointerWidth: 0.22, hitStrokeWidth: 0.5
+        }));
+      }
+      group.add(label);
       return group;
     }
   });
@@ -527,16 +539,20 @@
 
   // ---------- Start / Ziel ----------
 
-  // Start-/Ziellinie: geschlossene Linie zwischen zwei Pylonen (6.2 a)
-  register('Start / Ziel', 'start', 'Start', (fig) => {
+  // Start- bzw. Ziellinie: geschlossene Linie zwischen zwei Pylonen (6.2 a).
+  // Beschriftung und Richtungspfeil sind eigene Teile und lassen sich entfernen.
+  const gateLine = (text) => (fig) => {
     const inner = R.finishLane.width / 2;
     const row = inner + F / 2;
     fig.standing(0, -row);
     fig.standing(0, row);
     fig.line([0, -inner, 0, inner]);
-    fig.callout('Start', 1.6, -row - 1.1, 0, -inner * 0.5);
+    fig.callout(text, 1.6, -row - 1.1, 0, -inner * 0.5);
     fig.direction(-1.8, 0, 1.8, 0);
-  });
+  };
+
+  register('Start / Ziel', 'start', 'Start', gateLine('Start'));
+  register('Start / Ziel', 'ziel-linie', 'Ziel', gateLine('Ziel'));
 
   // Halteraum / Zielgasse wie in der Skizze: 2,50 m breit, 8–10 m lang,
   // Seitenlinien an der Innenkante der Pylonen, Haltelinie am Ende.

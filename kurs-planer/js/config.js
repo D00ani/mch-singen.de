@@ -32,6 +32,28 @@
     courseMaxLength: 400                                  // 6.2 b
   });
 
+  // Handy-Version: nur auf Geräten mit Fingerbedienung und kleinem Bildschirm
+  // (kurze Seite bis 600 px). Tablets und PCs behalten die normale Ansicht.
+  KP.handy = window.matchMedia('(pointer: coarse)').matches &&
+    Math.min(window.screen.width, window.screen.height) <= 600;
+
+  // Gestapelte Anordnung (Arbeitsfläche oben, Elemente als Leiste darunter):
+  // auf dem Handy immer, sonst nur in schmalen Fenstern.
+  const narrow = window.matchMedia('(max-width: 760px)');
+  const applyLayout = () => {
+    document.documentElement.classList.toggle('handy', KP.handy);
+    document.documentElement.classList.toggle('stacked', KP.handy || narrow.matches);
+  };
+  narrow.addEventListener('change', applyLayout);
+  applyLayout();
+
+  // Standardblatt: DIN A4 (297 × 210 mm) im Maßstab 1:200, in Metern –
+  // am PC quer, auf dem Handy hochkant.
+  KP.SHEET = Object.freeze(KP.handy ? { width: 42, height: 59.4 } : { width: 59.4, height: 42 });
+
+  // Kopfzeile des PDFs: Name (Überschrift und Dateiname), Maße, Stand
+  KP.PDF_DEFAULTS = Object.freeze({ title: 'Streckenplan Kart-Slalom', size: true, date: true });
+
   // Einstellungen, die der Veranstalter im Programm ändern kann.
   KP.settings = {
     trackWidth: 1.10         // Spurbreite des Karts – steht nicht im Regelwerk

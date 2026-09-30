@@ -15,25 +15,29 @@
   <header class="menubar">
     <span class="app-title">Kurs-Planer</span>
 
-    <div class="tool-group">
+    <div class="tool-group group-file">
+      <button id="btn-new" type="button" title="Neues, leeres Blatt beginnen">Neu</button>
       <button id="btn-open" type="button" title="Gespeicherten Streckenplan öffnen (Strg/Cmd+O)">Öffnen</button>
       <button id="btn-save" type="button" title="Streckenplan als Datei speichern (Strg/Cmd+S)">Speichern</button>
-      <button id="btn-export" type="button" title="Streckenplan als PDF speichern (DIN A4)">PDF</button>
+      <button id="btn-export" type="button" title="Streckenplan als PDF speichern (DIN A4) – Name und Kopfzeile wählbar">PDF</button>
       <button id="btn-app" type="button" title="Als App installieren oder herunterladen – läuft dann ohne Internet">App</button>
     </div>
 
-    <div class="tool-group">
-      <button id="btn-undo" type="button" title="Rückgängig (Strg/Cmd+Z)">↶ Zurück</button>
-      <button id="btn-redo" type="button" title="Wiederholen (Strg+Y, Cmd+Umschalt+Z)">↷ Vor</button>
+    <!-- Die Texte in „btn-text“ blendet die Handy-Version aus, dort bleibt der Pfeil. -->
+    <div class="tool-group group-edit">
+      <button id="btn-undo" type="button" title="Rückgängig (Strg/Cmd+Z)" aria-label="Rückgängig">↶<span class="btn-text"> Zurück</span></button>
+      <button id="btn-redo" type="button" title="Wiederholen (Strg+Y, Cmd+Umschalt+Z)" aria-label="Wiederholen">↷<span class="btn-text"> Vor</span></button>
     </div>
 
-    <div class="tool-group">
-      <button id="btn-rotate-left" type="button" title="15° gegen den Uhrzeigersinn drehen (Umschalt+R)">↺ Drehen</button>
-      <button id="btn-rotate-right" type="button" title="15° im Uhrzeigersinn drehen (R)">↻ Drehen</button>
+    <div class="tool-group group-edit">
+      <button id="btn-rotate-left" type="button" title="15° gegen den Uhrzeigersinn drehen (Umschalt+R)" aria-label="Nach links drehen">↺<span class="btn-text"> Drehen</span></button>
+      <button id="btn-rotate-right" type="button" title="15° im Uhrzeigersinn drehen (R)" aria-label="Nach rechts drehen">↻<span class="btn-text"> Drehen</span></button>
       <button id="btn-mirror" type="button" title="Auswahl spiegeln (M)">Spiegeln</button>
       <button id="btn-delete" type="button" title="Auswahl löschen (Entf)">Löschen</button>
     </div>
 
+    <!-- Am PC nur eine Klammer; in der Handy-Version eine eigene Zeile zum Wischen. -->
+    <div class="menubar-settings">
     <div class="tool-group">
       <button id="btn-zoom-out" type="button" title="Verkleinern">−</button>
       <span id="zoom-label" class="zoom-label">100 %</span>
@@ -50,17 +54,21 @@
         <option value="0.5">0,50 m</option>
         <option value="1">1,00 m</option>
       </select>
+      <label class="check" title="Blatt kariert anzeigen: 1 Kästchen = 1 m">
+        <input id="grid" type="checkbox"> Raster
+      </label>
       <label class="check" title="Beim Verschieben anzeigen, wenn Kanten oder Mitte in einer Flucht mit anderen Elementen liegen">
         <input id="guides" type="checkbox" checked> Hilfslinien
       </label>
     </div>
 
     <div class="tool-group">
-      <label for="field-width">Platz</label>
-      <input id="field-width" type="number" min="10" max="200" step="1" value="50" title="Breite in Metern">
+      <label for="field-width">Blatt</label>
+      <input id="field-width" type="number" min="10" max="200" step="0.1" value="59.4" title="Breite des Platzes in Metern">
       <span>×</span>
-      <input id="field-height" type="number" min="10" max="200" step="1" value="30" title="Tiefe in Metern">
+      <input id="field-height" type="number" min="10" max="200" step="0.1" value="42" title="Tiefe des Platzes in Metern">
       <span>m</span>
+      <button id="btn-a4" type="button" title="Blatt auf DIN A4 im Maßstab 1:200 zurücksetzen – am PC quer, auf dem Handy hochkant">A4</button>
     </div>
 
     <div class="tool-group">
@@ -68,6 +76,7 @@
       <input id="track-width" type="number" min="0.8" max="1.6" step="0.05" value="1.10"
              title="Fahrspurbreite der Figuren = Spurbreite + 40 cm. Gilt für neu platzierte Figuren.">
       <span>m</span>
+    </div>
     </div>
 
     <div class="tool-group tool-help">
@@ -90,7 +99,7 @@
     <span id="status-selection">Keine Auswahl</span>
     <span id="status-count">0 Elemente</span>
     <span id="status-message" role="status"></span>
-    <span class="status-scale">1 Kästchen = 1 m</span>
+    <span id="status-scale" class="status-scale" hidden>1 Kästchen = 1 m</span>
     <span class="status-credit">Design: Daniel Krieger · © 2026 MCH Singen</span>
   </footer>
 
@@ -110,9 +119,17 @@
     <ul>
       <li><strong>Klick</strong> wählt die ganze Figur samt Pfeilen.</li>
       <li><strong>Doppelklick</strong> geht eine Ebene tiefer: erst das Teil (Gasse, Pfeil, Pylonengruppe), dann die einzelne Pylone – zum Verschieben oder Löschen.</li>
-      <li><strong>Rechtsklick</strong> (Touch: lange drücken) öffnet das Menü mit „Pfeile spiegeln“, „Text ändern“ und „Löschen“.</li>
-      <li>Sperrfläche beschriften: Doppelklick auf die Fläche (Touch: doppelt tippen oder lange drücken → „Text ändern“), dann den Text eingeben, z. B. den Namen des Gebäudes.</li>
+      <li><strong>Rechtsklick</strong> öffnet das Menü mit „Pfeile spiegeln“, „Text ändern“ und „Löschen“.</li>
+      <li><strong>Touch:</strong> Lange drücken wählt das Teil unter dem Finger einzeln (wie ein Doppelklick) und öffnet dasselbe Menü.</li>
+      <li>Beschriftungen – Sperrfläche, „Start“, „Ziel“, „Haltelinie“, Nummern – lassen sich über „Text ändern“ umbenennen. Bei „Start“ und „Ziel“ sind Beschriftung und Richtungspfeil eigene Teile: einzeln wählen und löschen, wenn sie nicht gebraucht werden.</li>
       <li>Beim Verschieben zeigen Hilfslinien, wenn Elemente in einer Flucht liegen.</li>
+    </ul>
+
+    <h3>Blatt</h3>
+    <ul>
+      <li>Das Blatt entspricht einem DIN-A4-Blatt im Maßstab 1:200: am PC quer (59,4 × 42 m), in der Handy-Version hochkant (42 × 59,4 m). Die Größe lässt sich oben ändern; „A4“ stellt sie wieder her.</li>
+      <li>„Raster“ zeigt das Blatt kariert (1 Kästchen = 1 m). Einrasten und Hilfslinien funktionieren auch ohne Raster.</li>
+      <li>Der letzte Stand bleibt auf diesem Gerät gespeichert und ist beim nächsten Öffnen wieder da. „Neu“ beginnt ein leeres Blatt.</li>
     </ul>
 
     <h3>Ansicht</h3>
@@ -171,10 +188,25 @@
     </form>
   </dialog>
 
+  <dialog id="pdf-dialog" class="dialog-box">
+    <form method="dialog">
+      <h2>PDF exportieren</h2>
+      <label class="field-label" for="pdf-title">Name</label>
+      <input id="pdf-title" type="text" maxlength="60" autocomplete="off" placeholder="z. B. Bodensee-Kart-Cup Singen 2026">
+      <p class="dialog-note">Steht als Überschrift auf dem Blatt und wird der Dateiname. Leer lassen für ein Blatt ohne Überschrift.</p>
+      <label class="check"><input id="pdf-size" type="checkbox"> Maße anzeigen (Blattgröße, Maßstab)</label>
+      <label class="check"><input id="pdf-date" type="checkbox"> Stand (Datum) anzeigen</label>
+      <div class="dialog-actions">
+        <button id="pdf-cancel" type="button">Abbrechen</button>
+        <button type="submit" value="ok" class="primary">PDF speichern</button>
+      </div>
+    </form>
+  </dialog>
+
   <dialog id="text-dialog" class="dialog-box">
     <form method="dialog">
-      <h2><label for="text-input">Beschriftung der Sperrfläche</label></h2>
-      <input id="text-input" type="text" maxlength="40" autocomplete="off" placeholder="z. B. Halle, Gebäude, Grünstreifen">
+      <h2><label for="text-input">Beschriftung</label></h2>
+      <input id="text-input" type="text" maxlength="40" autocomplete="off" placeholder="z. B. Halle, Start / Ziel">
       <p class="dialog-note">Leer lassen, um die Beschriftung zu entfernen.</p>
       <div class="dialog-actions">
         <button id="text-cancel" type="button">Abbrechen</button>
