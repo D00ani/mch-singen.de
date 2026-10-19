@@ -13,6 +13,15 @@
      4. Weiterlesen     - langer Text zum Aufklappen
      5. Aktionsknoepfe  - drei Knoepfe nebeneinander
      6. Trialsport      - Bildkacheln, Fahrerprofil, Termine und Kontakt
+     7. Sprungleiste    - Chips zu den Abschnitten (Aktuelles)
+     8. Umschalter      - eine von mehreren Gruppen zeigen (Statistiken,
+                          Mitglied werden)
+     9. Aktuelles       - Termin-Downloads als Knopfgitter
+    10. Statistiken     - Ergebniszeilen, Wanderpokal-Liste, Diagramme
+    11. Ueber uns       - Personen als Kacheln
+    12. Mitglied werden - Preiskacheln
+    13. Ferienprogramm  - Status-Streifen, Kacheln Auf einen Blick,
+                          Anmeldung als Zeilen
 
    Kart-eigene Teile (Video, Galerie, Klassen, Pokalfoto, Kurs-Planer)
    stehen in css/kartsport.css - die Datei wird auf der Kartsport-Seite
@@ -36,13 +45,19 @@
 .aktions-knoepfe,
 .skill-hinweis,
 .link-zeilen,
-.link-zeilen-hinweis {
+.link-zeilen-hinweis,
+.sprungleiste,
+.umschalter,
+.umschalter-titel {
     display: none;
 }
 
 /* Am Desktop ist der Wrapper unsichtbar - die Absaetze stehen wie vorher
    direkt im Inhalt. */
 .klapp-text { display: contents; }
+
+/* Leeres Sprungziel vor einer Ueberschrift (aktuelles.html#termine) */
+.sprung-anker { display: block; }
 
 @media (max-width: 768px) {
 
@@ -636,6 +651,645 @@
     body.dark-mode .link-zeilen-icon--gold { background: var(--accent); color: #0b1430; }
     body.dark-mode .link-zeilen-text span,
     body.dark-mode .link-zeilen-pfeil { color: #9aa3c0; }
+
+
+    /* =========================================
+       7. SPRUNGLEISTE (Aktuelles)
+       =========================================
+       js/main.js (Abschnitt 26) legt je Abschnittsueberschrift einen Chip
+       an und markiert den Abschnitt, in dem man gerade liest. Die Leiste
+       bleibt beim Scrollen oben stehen - die Kopfzeile scrollt am Handy
+       ohnehin weg. */
+    .sprungleiste:not([hidden]) {
+        display: flex;
+        gap: 6px;
+        position: sticky;
+        top: env(safe-area-inset-top, 0px);
+        z-index: 50;
+        margin: 0 -16px 8px;
+        padding: 10px 16px;
+        overflow-x: auto;
+        scrollbar-width: none;
+        background: var(--surface);
+        border-block: 1px solid var(--border-soft);
+    }
+
+    .sprungleiste::-webkit-scrollbar { display: none; }
+
+    .sprungleiste a {
+        flex: none;
+        display: inline-flex;
+        align-items: center;
+        height: 32px;
+        padding: 0 12px;
+        border-radius: 999px;
+        background: var(--surface-muted);
+        color: var(--text-main) !important;
+        font-size: 0.8rem;
+        font-weight: 600;
+        white-space: nowrap;
+        text-decoration: none !important;
+    }
+
+    .sprungleiste a.ist-aktiv {
+        background: var(--dark-blue);
+        color: var(--accent) !important;
+    }
+
+    /* Beim Anspringen nicht unter der Leiste verschwinden */
+    main > h2,
+    .sprung-anker { scroll-margin-top: 64px; }
+
+    body.dark-mode .sprungleiste { background: #1a1c2b; border-color: rgba(255, 255, 255, 0.09); }
+    body.dark-mode .sprungleiste a { background: #252943; color: #e8eaf2 !important; }
+    body.dark-mode .sprungleiste a.ist-aktiv { background: #001b5e; color: var(--accent) !important; }
+
+    /* =========================================
+       8. UMSCHALTER
+       =========================================
+       Elemente mit data-umschalter="gruppe" zeigt js/main.js (Abschnitt 27)
+       am Handy einzeln, mit einer Knopfreihe darueber. Steht am ersten
+       Element data-umschalter-ueberschrift, kommt darueber eine sichtbare
+       Zeile mit diesem Text; die eigenen Ueberschriften der Gruppen stehen
+       dann nur noch fuer Vorleseprogramme da. */
+    .umschalter-titel {
+        display: block;
+        margin: 32px 0 10px;
+        font-family: var(--font-heading);
+        font-size: var(--text-xl);
+        font-weight: 700;
+        line-height: 1.3;
+        color: var(--text-main);
+    }
+
+    .umschalter {
+        display: grid;
+        grid-auto-flow: column;
+        grid-auto-columns: 1fr;
+        gap: 4px;
+        margin: 4px 0 12px;
+        padding: 4px;
+        border-radius: 12px;
+        background: var(--surface-muted);
+    }
+
+    .umschalter button {
+        min-height: 40px;
+        padding: 0 6px;
+        border: 0;
+        border-radius: 9px;
+        background: transparent;
+        color: var(--text-light);
+        font-family: inherit;
+        font-size: 0.85rem;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    .umschalter button[aria-pressed="true"] {
+        background: var(--surface);
+        color: var(--text-main);
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.12);
+    }
+
+    .umschalter-aus { display: none !important; }
+
+    .umschalter-panel.mit-titel > h2 {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        margin: -1px;
+        padding: 0;
+        overflow: hidden;
+        clip: rect(0 0 0 0);
+        white-space: nowrap;
+        border: 0;
+    }
+
+    body.dark-mode .umschalter-titel { color: #f2f4fb; }
+    body.dark-mode .umschalter { background: #252943; }
+    body.dark-mode .umschalter button { color: #9aa3c0; }
+    body.dark-mode .umschalter button[aria-pressed="true"] { background: #20233a; color: #f2f4fb; box-shadow: none; }
+
+    /* =========================================
+       9. AKTUELLES: TERMIN-DOWNLOADS ALS KNOPFGITTER
+       ========================================= */
+    .termine-grid .button-group {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+    }
+
+    .termine-grid .button-group .action-btn {
+        width: auto;
+        min-height: 48px;
+        margin: 0;
+        padding: 8px 10px;
+        gap: 8px;
+        justify-content: flex-start;
+        font-size: 0.78rem;
+        line-height: 1.25;
+        text-align: left;
+    }
+
+    .termine-grid .button-group .news-icon { font-size: 0.95rem; }
+
+    /* =========================================
+       10. STATISTIKEN
+       ========================================= */
+
+    /* Alle drei Diagramme gleich hoch - es steht ja immer nur eines da */
+    .charts-wrapper .chart-box > div[style*="height"] { height: 260px !important; }
+
+    /* Die Huellen der Tabellen brauchen am Handy weder Schatten noch Grund */
+    .table-responsive:has(> .ergebnis-tabelle),
+    .table-responsive:has(> .pokal-tabelle) {
+        background: none;
+        box-shadow: none;
+        border-radius: 0;
+    }
+
+    /* Top-Platzierungen: eine Zeile je Platzierung. Spalten im Markup:
+       1 Datum, 2 Fahrer/in, 3 Klasse, 4 Veranstaltung, 5 Platzierung. */
+    table.ergebnis-tabelle tbody,
+    table.pokal-tabelle tbody {
+        display: block;
+        overflow: hidden;
+        border: 1px solid var(--border-soft);
+        border-bottom: 0;
+        border-radius: 14px;
+        background: var(--surface);
+    }
+
+    table.ergebnis-tabelle tbody tr {
+        display: grid;
+        grid-template-columns: auto auto minmax(0, 1fr) auto;
+        grid-template-areas:
+            "platz name  name  klasse"
+            "platz datum info  info";
+        align-items: center;
+        gap: 2px 10px;
+        padding: 12px 14px;
+        border-bottom: 1px solid var(--border-soft);
+    }
+
+    table.ergebnis-tabelle tbody td,
+    table.pokal-tabelle tbody td {
+        display: block;
+        padding: 0;
+        border: 0;
+        text-align: left;
+        line-height: 1.35;
+        background: none;
+    }
+
+    table.ergebnis-tabelle tbody td::before,
+    table.pokal-tabelle tbody td::before { content: none; display: none; }
+
+    table.ergebnis-tabelle td:nth-child(1) { grid-area: datum; font-size: 0.75rem; color: var(--text-light); }
+    table.ergebnis-tabelle td:nth-child(1)::after { content: " ·"; }
+    table.ergebnis-tabelle td:nth-child(2) { grid-area: name; font-family: var(--font-heading); font-size: 0.95rem; font-weight: 700; }
+    table.ergebnis-tabelle td:nth-child(4) { grid-area: info; min-width: 0; font-size: 0.75rem; color: var(--text-light); }
+
+    table.ergebnis-tabelle td:nth-child(3),
+    table.pokal-tabelle td:nth-child(3) {
+        grid-area: klasse;
+        padding: 3px 9px;
+        border-radius: 8px;
+        background: rgba(0, 71, 204, 0.08);
+        color: var(--primary-blue);
+        font-family: var(--font-display);
+        font-size: 0.72rem;
+        font-weight: 800;
+    }
+
+    /* Platz als gelbe Tafel. "Platz" steht nur fuer Vorleseprogramme
+       (statistiken.js trennt es ab); ohne Skript steht "1. Platz" darin. */
+    table.ergebnis-tabelle td:nth-child(5) {
+        grid-area: platz;
+        display: grid;
+        place-items: center;
+        /* mobile.css setzt fuer alle Tabellenzellen space-between - das
+           schob die Spalte im Raster nach links. */
+        place-content: center;
+        width: 44px;
+        min-height: 44px;
+        border-radius: 11px;
+        background: var(--accent);
+        color: #0b1430;
+        font-family: var(--font-display);
+        font-size: 0.85rem;
+        font-weight: 800;
+        text-align: center;
+    }
+
+    .platz-wort {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip: rect(0 0 0 0);
+        white-space: nowrap;
+    }
+
+    /* Wanderpokale: Jahr, Name, Klasse in einer Zeile */
+    table.pokal-tabelle tbody tr {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 14px;
+        border-bottom: 1px solid var(--border-soft);
+    }
+
+    table.pokal-tabelle td:nth-child(1) {
+        min-width: 52px;
+        font-family: var(--font-display);
+        font-size: 0.95rem;
+        font-weight: 800;
+        color: var(--primary-blue);
+    }
+
+    table.pokal-tabelle td:nth-child(2) {
+        flex: 1;
+        min-width: 0;
+        font-family: var(--font-heading);
+        font-size: 0.95rem;
+        font-weight: 700;
+    }
+
+    body.dark-mode table.ergebnis-tabelle tbody,
+    body.dark-mode table.pokal-tabelle tbody { background: #1a1c2b; border-color: rgba(255, 255, 255, 0.1); }
+    body.dark-mode table.ergebnis-tabelle tbody tr,
+    body.dark-mode table.pokal-tabelle tbody tr { border-bottom-color: rgba(255, 255, 255, 0.1); }
+    body.dark-mode table.ergebnis-tabelle td:nth-child(3),
+    body.dark-mode table.pokal-tabelle td:nth-child(3) { background: rgba(66, 133, 244, 0.16); color: #78a6ff; }
+    body.dark-mode table.pokal-tabelle td:nth-child(1) { color: #78a6ff; }
+    body.dark-mode table.ergebnis-tabelle td:nth-child(1),
+    body.dark-mode table.ergebnis-tabelle td:nth-child(4) { color: #9aa3c0; }
+
+    /* =========================================
+       11. UEBER UNS: PERSONEN ALS KACHELN
+       =========================================
+       Die Karten kommen aus tools/team_pflege.py und bleiben im Markup wie
+       sie sind - hier nur das Aussehen am Handy. */
+
+    /* Das Mannschaftsfoto steht am Handy in der Buehne. */
+    .seite-team .team-foto { display: none; }
+
+    .seiten-buehne--team:not(:has(.seiten-buehne-bild)) {
+        background-image: url("../media/bilder/mch_pic-640.webp");
+    }
+
+    .seite-team .trainer-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin: 16px 0 24px;
+    }
+
+    .seite-team .trainer-card {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        padding: 8px 8px 12px;
+        border-radius: 14px;
+    }
+
+    .seite-team .trainer-card:hover { transform: none; }
+
+    .seite-team .trainer-img-wrapper {
+        aspect-ratio: 1;
+        border-radius: 10px;
+    }
+
+    .seite-team picture { display: block; height: 100%; }
+
+    .seite-team .trainer-img {
+        height: 100% !important;
+        margin: 0;
+        border-radius: 0;
+    }
+
+    .seite-team .trainer-card:hover .trainer-img { transform: none; }
+
+    /* Das Ueberblend-Feld gibt es nur fuer die Maus. */
+    .seite-team .trainer-img-overlay { display: none; }
+
+    .seite-team .trainer-info {
+        padding: 0 2px;
+        text-align: center;
+    }
+
+    body .seite-team .trainer-name {
+        margin: 0;
+        font-size: 0.95rem;
+        line-height: 1.2;
+    }
+
+    body .seite-team .member-role {
+        margin: 3px 0 0;
+        font-size: 0.6rem;
+        font-weight: 700;
+        line-height: 1.35;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--primary-blue);
+    }
+
+    body .seite-team .trainer-quote {
+        margin: 3px 0 0;
+        font-size: 0.75rem;
+        line-height: 1.35;
+    }
+
+    /* E-Mail als runder Knopf oben rechts auf dem Foto. Der Text der
+       Adresse bleibt fuer Vorleseprogramme im Link (font-size: 0). */
+    /* max-width: none ist noetig - "main p" begrenzt Absaetze auf 74ch,
+       und ch schrumpft mit font-size: 0 auf null. Der Knopf rutschte
+       dadurch ueber den Kartenrand. */
+    .seite-team .member-contact {
+        position: absolute;
+        top: 14px;
+        right: 14px;
+        max-width: none;
+        margin: 0 !important;
+        font-size: 0 !important;
+    }
+
+    .seite-team .member-contact a {
+        display: grid;
+        place-items: center;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        background: rgba(0, 13, 58, 0.85);
+    }
+
+    .seite-team .member-contact i {
+        margin: 0 !important;
+        color: #fff !important;
+        font-size: 0.8rem;
+    }
+
+    /* Trainer mit Instagram-Verweis: dasselbe Zeichen als runder Knopf */
+    .seite-team a.trainer-card::after {
+        content: "\f16d";
+        position: absolute;
+        top: 14px;
+        right: 14px;
+        display: grid;
+        place-items: center;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        background: rgba(225, 48, 108, 0.9);
+        color: #fff;
+        font-family: "Font Awesome 7 Brands";
+        font-weight: 400;
+        font-size: 0.85rem;
+    }
+
+    body.dark-mode .seite-team .member-role { color: var(--blue-light); }
+
+    /* =========================================
+       12. MITGLIED WERDEN: PREISKACHELN
+       =========================================
+       "body main" vorne: die Regeln fuer .price-box und .price-row in
+       style.css stehen im Bundle hinter dieser Datei. */
+    body main .beitraege .price-box,
+    body.dark-mode main .beitraege .price-box {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        padding: 0;
+        background: none;
+        border: 0;
+        box-shadow: none;
+    }
+
+    body main .beitraege .price-row {
+        display: flex;
+        flex-direction: column-reverse;
+        align-items: flex-start;
+        justify-content: flex-end;
+        gap: 2px;
+        padding: 12px;
+        border: 1px solid var(--border-soft);
+        border-radius: 12px;
+        background: var(--surface);
+    }
+
+    body main .beitraege .price-value {
+        font-family: var(--font-display);
+        font-size: 1.35rem;
+        font-weight: 800;
+        line-height: 1.15;
+    }
+
+    body main .beitraege .price-title {
+        font-size: 0.78rem;
+        line-height: 1.3;
+        color: var(--text-light);
+    }
+
+    .beitraege .note-box {
+        margin-top: 12px;
+        font-size: 0.82rem;
+        line-height: 1.5;
+    }
+
+    /* Kosten pro Training / Renngebuehren: Preise in Orbitron */
+    body main [data-umschalter="kosten"] .price-value {
+        font-family: var(--font-display);
+        font-size: 0.9rem;
+        font-weight: 800;
+    }
+
+    body.dark-mode main .beitraege .price-row { background: #191c2e; border-color: rgba(255, 255, 255, 0.09); }
+    body.dark-mode main .beitraege .price-title { color: #9aa3c0; }
+
+    /* =========================================
+       13. FERIENPROGRAMM
+       ========================================= */
+
+    /* Der Terminkasten des Werkzeugs als blauer Status-Streifen. Die
+       Zeile darueber steht in data-kicker (js/main.js, Abschnitt 28). */
+    body main .ferien-status .note-box {
+        margin: 12px -4px 0 !important;
+        padding: 12px 14px;
+        border: 0;
+        border-radius: 16px;
+        background: linear-gradient(135deg, var(--primary-blue), var(--dark-blue)) !important;
+        box-shadow: 0 8px 20px rgba(0, 27, 94, 0.28);
+        color: rgba(255, 255, 255, 0.86);
+        font-size: 0.78rem;
+        line-height: 1.45;
+    }
+
+    body main .ferien-status .note-box[data-kicker]::before {
+        content: attr(data-kicker);
+        display: block;
+        margin-bottom: 3px;
+        font-size: 0.64rem;
+        font-weight: 700;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--accent);
+    }
+
+    body main .ferien-status .note-box strong {
+        display: block;
+        margin-bottom: 2px;
+        color: #fff;
+        font-family: var(--font-heading);
+        font-size: 1rem;
+        line-height: 1.25;
+    }
+
+    .ferien-status .note-box > i:first-of-type { display: none; }
+    .ferien-status .note-box i { color: var(--accent) !important; }
+
+    /* Die drei Hinweiskaesten stehen als Kacheln in "Auf einen Blick". */
+    body main .ferien-hinweis { display: none; }
+
+    /* "Auf einen Blick" als Kacheln mit Symbol (rueckt per Skript nach oben) */
+    body main .event-list.auf-einen-blick {
+        margin: 22px 0 8px;
+        padding: 0;
+        background: none;
+        border: 0;
+        box-shadow: none;
+    }
+
+    .auf-einen-blick h3 {
+        margin: 0 0 10px !important;
+        color: var(--text-main) !important;
+        font-size: 1.3rem;
+    }
+
+    /* !important: style.css setzt unter 600px ".event-list ul" mit
+       !important auf eine Spalte. */
+    body main .auf-einen-blick ul {
+        display: grid;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 8px;
+    }
+
+    body main .auf-einen-blick li {
+        max-width: none;
+        padding: 11px 10px 11px 36px;
+        border: 1px solid var(--border-soft);
+        border-radius: 12px;
+        background: var(--surface);
+        font-size: 0.76rem;
+        font-weight: 500;
+        line-height: 1.35;
+    }
+
+    body main .auf-einen-blick li::before {
+        top: 10px;
+        left: 11px;
+        font-family: "Font Awesome 7 Free";
+        font-size: 0.95rem;
+    }
+
+    /* Symbole nach der Reihenfolge der Punkte im Markup */
+    .auf-einen-blick li:nth-child(1)::before { content: "\f073"; }
+    .auf-einen-blick li:nth-child(2)::before { content: "\f3c5"; }
+    .auf-einen-blick li:nth-child(3)::before { content: "\e4e1"; }
+    .auf-einen-blick li:nth-child(4)::before { content: "\f058"; }
+    .auf-einen-blick li:nth-child(5)::before { content: "\f505"; }
+    .auf-einen-blick li:nth-child(6)::before { content: "\f071"; }
+    .auf-einen-blick li:nth-child(7)::before { content: "\f54b"; }
+    .auf-einen-blick li:nth-child(8)::before { content: "\f08e"; }
+
+    .auf-einen-blick li:nth-child(1),
+    .auf-einen-blick li:nth-child(8) { grid-column: 1 / -1; }
+
+    /* Pflichten (Elternteil, Kleidung) gelb */
+    .auf-einen-blick li:nth-child(5),
+    .auf-einen-blick li:nth-child(6) {
+        background: #fff8db;
+        border-color: #f0c419;
+    }
+
+    .auf-einen-blick li:nth-child(5)::before,
+    .auf-einen-blick li:nth-child(6)::before { color: #b38f00; }
+
+    body.dark-mode .auf-einen-blick h3 { color: #f2f4fb !important; }
+    body.dark-mode .auf-einen-blick li { background: #191c2e; border-color: rgba(255, 255, 255, 0.09); color: #e0e4f0; }
+    body.dark-mode .auf-einen-blick li:nth-child(5),
+    body.dark-mode .auf-einen-blick li:nth-child(6) { background: #2a2412; border-color: #a8851c; }
+    body.dark-mode .auf-einen-blick li:nth-child(5)::before,
+    body.dark-mode .auf-einen-blick li:nth-child(6)::before { color: var(--accent); }
+
+    /* Anmeldung: die Portal-Knoepfe des Werkzeugs als Zeilen */
+    /* .price-box.anmelde-box: "body:not(.dark-mode) .price-box" in
+       style.css ist sonst spezifischer und laesst Rahmen und Grund stehen. */
+    body main .price-box.anmelde-box,
+    body.dark-mode main .price-box.anmelde-box {
+        margin-top: 24px !important;
+        padding: 0;
+        background: none;
+        border: 0;
+        box-shadow: none;
+        text-align: left !important;
+    }
+
+    .anmelde-box h3 {
+        margin-bottom: 8px !important;
+        color: var(--text-main) !important;
+        font-size: 1.3rem;
+    }
+
+    .anmelde-box > p { margin-bottom: 12px !important; font-size: 0.9rem; }
+    .anmelde-box br { display: none; }
+
+    /* Der Satz mit dem Kontaktformular steht als eigene Zeile darunter */
+    .anmelde-box p:has(a[href="kontakt.html"]) { display: none; }
+
+    .anmelde-box a.action-btn {
+        display: flex !important;
+        align-items: center;
+        gap: 12px;
+        width: 100%;
+        min-height: 56px;
+        margin: 0 !important;
+        padding: 13px 14px !important;
+        border: 1px solid var(--border-soft);
+        border-radius: 0 !important;
+        background: var(--surface) !important;
+        box-shadow: none;
+        color: var(--text-main) !important;
+        font-size: 0.9rem !important;
+        font-weight: 700;
+        justify-content: flex-start;
+        text-align: left;
+    }
+
+    .anmelde-box a.action-btn:first-of-type { border-radius: 14px 14px 0 0 !important; }
+    .anmelde-box a.action-btn ~ a.action-btn { border-top: 0; }
+    .anmelde-box a.action-btn:last-of-type { border-radius: 0 0 14px 14px !important; }
+    .anmelde-box a.action-btn:only-of-type { border-radius: 14px !important; }
+
+    .anmelde-box a.action-btn i {
+        display: grid;
+        place-items: center;
+        flex-shrink: 0;
+        width: 38px;
+        height: 38px;
+        margin: 0 !important;
+        border-radius: 11px;
+        background: rgba(0, 71, 204, 0.08);
+        color: var(--primary-blue);
+        font-size: 0.95rem;
+    }
+
+    .ferien-kontakt { margin-top: 8px; }
+    body main .fragen-zeile { display: none; }
+
+    body.dark-mode .anmelde-box h3 { color: #f2f4fb !important; }
+    body.dark-mode .anmelde-box a.action-btn { background: #1a1c2b !important; border-color: rgba(255, 255, 255, 0.1); color: #e8eaf2 !important; }
+    body.dark-mode .anmelde-box a.action-btn i { background: rgba(66, 133, 244, 0.16); color: #78a6ff; }
 
     @media (prefers-reduced-motion: reduce) {
         .weiterlesen i { transition: none; }

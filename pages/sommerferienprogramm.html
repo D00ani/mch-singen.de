@@ -130,9 +130,21 @@
             <span class="breadcrumb-sep" aria-hidden="true">/</span>
             <span aria-current="page">Sommerferienprogramm</span>
         </nav>
-        <div class="page-head">
-            <p class="page-kicker">Sport</p>
+        <!-- Seitenkopf. Am Handy die Foto-Buehne wie bei Kart und Trial
+             (css/unterseiten-handy.css). Foto, Satz und Knoepfe sind am
+             Desktop ausgeblendet. -->
+        <div class="page-head seiten-buehne seiten-buehne--ferien">
+            <picture class="seiten-buehne-bild">
+                <source type="image/webp" srcset="../media/bilder/mch_pic-480.webp 480w, ../media/bilder/mch_pic-640.webp 640w" sizes="100vw">
+                <img src="../media/bilder/mch_pic.jpg" alt="" loading="lazy" width="640" height="480" decoding="async">
+            </picture>
+            <p class="page-kicker">Sport<span class="seiten-buehne-zusatz"> · Für 8- bis 12-Jährige</span></p>
             <h1>Sommerferienprogramm</h1>
+            <p class="seiten-buehne-satz">Kart fahren und Trial kennenlernen, im Ferienprogramm Singen und Rielasingen-Worblingen.</p>
+            <div class="seiten-buehne-knoepfe">
+                <a class="seiten-buehne-knopf seiten-buehne-knopf--hell" href="#anmeldung">Anmeldung <i class="fa-solid fa-chevron-down" aria-hidden="true"></i></a>
+                <a class="seiten-buehne-knopf seiten-buehne-knopf--glas" href="kontakt.html"><i class="fa-solid fa-envelope" aria-hidden="true"></i> Fragen?</a>
+            </div>
             <p class="page-lead">Jedes Jahr beteiligt sich der MCH Singen Motorsportclub "Hohentwiel" e.V. im DMV am offiziellen <strong>Ferienprogramm der Stadt Singen</strong> sowie am <strong>Ferienprogramm der Gemeinde Rielasingen-Worblingen</strong>. Kinder und Jugendliche haben dabei die Chance, unsere Karts hautnah zu erleben - sicher, betreut und mit viel Spaß!</p>
         </div>
 
@@ -143,6 +155,12 @@
              Umschalten und Termine pflegen:
              Pflege-Fenster -> Inhalte pflegen -> Sommerferienprogramm
              ═══════════════════════════════════════════════════════════ -->
+        <!-- Huelle: am Handy wird der Terminkasten zum blauen Status-Streifen
+             unter der Buehne. Die Zeile darueber ("Termine 2027 folgen" bzw.
+             "Termine 2026") setzt js/main.js (Abschnitt 28) aus
+             data/ferienprogramm.json. Der Kasten selbst bleibt Sache des
+             Werkzeugs - die Huelle steht bewusst AUSSERHALB der FP-Marker. -->
+        <div class="ferien-status">
         <!-- FP:TERMINKASTEN -->
         <div class="note-box" style="margin-top: 20px; margin-bottom: 30px;">
             <i class="fa-solid fa-calendar-days" style="color: #d4a000; margin-right: 8px;"></i>
@@ -155,6 +173,7 @@
             Stattgefunden hat es wie immer bei uns auf dem Gelände: Münchriedstraße 10, 78224 Singen (Hohentwiel)
         </div>
         <!-- /FP:TERMINKASTEN -->
+        </div>
 
         <!-- Was erwartet die Kinder? -->
         <h2>Was erwartet euch?</h2>
@@ -213,8 +232,10 @@
             Eine Vorerfahrung im Motorsport ist <strong>nicht erforderlich</strong> - unsere Trainer begleiten alle Teilnehmer sicher durch den Tag.
         </div>
 
+        <!-- Die drei Hinweiskaesten sind am Handy ausgeblendet: dort steht
+             "Auf einen Blick" als Kacheln weiter oben, mit denselben Pflichten. -->
         <!-- Begleitpflicht -->
-        <div class="note-box" style="background: #e8f4fd; border-left-color: #1565c0; margin-bottom: 15px;">
+        <div class="note-box ferien-hinweis" style="background: #e8f4fd; border-left-color: #1565c0; margin-bottom: 15px;">
             <p style="margin: 0; font-weight: 700; color: #1565c0; font-size: 1rem; margin-bottom: 8px;">
                 <i class="fa-solid fa-user-shield" style="margin-right: 8px;"></i> Begleitpflicht:
             </p>
@@ -225,7 +246,7 @@
         </div>
 
         <!-- Kleidungshinweis als eigene Box (Sicherheit!) -->
-        <div class="note-box" style="background: #fff3e0; border-left-color: #e65100; margin-bottom: 15px;">
+        <div class="note-box ferien-hinweis" style="background: #fff3e0; border-left-color: #e65100; margin-bottom: 15px;">
             <p style="margin: 0; font-weight: 700; color: #bf360c; font-size: 1rem; margin-bottom: 8px;">
                 <i class="fa-solid fa-triangle-exclamation" style="margin-right: 8px;"></i> Pflichtkleidung aus Sicherheitsgründen:
             </p>
@@ -234,12 +255,17 @@
                 <li><strong>Langes Oberteil</strong> (Langarm-Shirt oder Jacke) - zwingend erforderlich</li>
             </ul>
         </div>
-        <div class="note-box" style="margin-bottom: 25px;">
+        <div class="note-box ferien-hinweis" style="margin-bottom: 25px;">
             <i class="fa-solid fa-shoe-prints" style="color: #d4a000; margin-right: 8px;"></i>
             <strong>Schuhwerk:</strong> Empfohlen wird geschlossenes Schuhwerk (z.B. Sneaker). Offene Schuhe oder Sandalen sollten vermieden werden - kein dickes Sohlenprofil.
         </div>
 
-        <div class="event-list">
+        <!-- Am Handy rueckt dieser Kasten direkt unter den Status-Streifen
+             (js/main.js, Abschnitt 28) und wird zu Kacheln mit Symbol. Die
+             Symbole haengen an der Reihenfolge der Punkte (css/unterseiten-handy.css):
+             Termine, Ort, Zielgruppe, Vorkenntnisse, Elternteil, Kleidung,
+             Schuhwerk, Anmeldung - beim Umstellen dort mitziehen. -->
+        <div class="event-list auf-einen-blick">
             <h3 style="margin-bottom: 15px; color: var(--primary-blue);">Auf einen Blick</h3>
             <ul>
                 <!-- FP:BLICK -->
@@ -255,7 +281,7 @@
             </ul>
         </div>
 
-        <div class="price-box" style="text-align: center; margin-top: 30px;">
+        <div class="price-box anmelde-box" id="anmeldung" style="text-align: center; margin-top: 30px;">
             <!-- FP:ANMELDUNG -->
             <h3 style="color: var(--primary-blue); margin-bottom: 10px;">Anmeldung für 2027</h3>
             <p style="margin-bottom: 20px;">Die Anmeldung läuft immer über die offiziellen Ferienprogramm-Portale der
@@ -279,7 +305,14 @@
             <!-- /FP:ANMELDUNG -->
         </div>
 
-        <p style="text-align: center; margin-top: 30px;">
+        <!-- Nur Handy: die Portal-Knoepfe oben stehen dort als Zeilen, diese
+             dritte Zeile fuehrt zum Kontaktformular. Den Satz dazu im Kasten
+             und "Noch Fragen?" darunter blendet das Handy dafuer aus. -->
+        <ul class="link-zeilen ferien-kontakt">
+            <li><a href="kontakt.html"><span class="link-zeilen-icon link-zeilen-icon--gold"><i class="fa-solid fa-envelope" aria-hidden="true"></i></span><span class="link-zeilen-text"><strong>Nichts verpassen</strong><span>Schreib uns, dann melden wir uns, sobald die Termine stehen</span></span><i class="fa-solid fa-chevron-right link-zeilen-pfeil" aria-hidden="true"></i></a></li>
+        </ul>
+
+        <p class="fragen-zeile" style="text-align: center; margin-top: 30px;">
             Noch Fragen? Schreib uns einfach über unser <a href="kontakt.html">Kontaktformular</a>.
         </p>
     </main>

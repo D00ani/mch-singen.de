@@ -988,4 +988,163 @@ document.addEventListener('DOMContentLoaded', () => {
         huelle.parentNode.insertBefore(gruppe, huelle);
     })();
 
+    // --- 26. SPRUNGLEISTE (nur Handy, Aktuelles) ---
+    // Ein Chip je Abschnittsueberschrift (main > h2). Die Leiste ergibt
+    // sich also aus der Seite selbst und passt, auch wenn zur naechsten
+    // Saison Abschnitte dazukommen oder wegfallen. Steht direkt vor einer
+    // Ueberschrift ein .sprung-anker mit id, wird der als Ziel genommen
+    // (so bleibt z. B. aktuelles.html#termine von der Startseite gueltig).
+    // Die Ueberschriften selbst bekommen ihre id nur hier im Browser - im
+    // Markup muessen sie schlichte <h2> bleiben (tools/news_pflege.py).
+    (function initSprungleiste() {
+        const leiste = document.querySelector('[data-sprungleiste]');
+        if (!leiste) return;
+        const ueberschriften = Array.from(document.querySelectorAll('main > h2'));
+        if (ueberschriften.length < 2) return;
+
+        // "Termine 2025/2026" -> "Termine", "Aktuelle Wertungen" -> "Wertungen"
+        const kurz = text => text.replace(/\s+/g, ' ').trim()
+            .replace(/\s*\d{4}(\s*\/\s*\d{2,4})?$/, '')
+            .replace(/^Aktuelle\s+/, '');
+
+        const eintraege = ueberschriften.map((h2, i) => {
+            const davor = h2.previousElementSibling;
+            const ziel = davor && davor.classList.contains('sprung-anker') && davor.id ? davor : h2;
+            if (!ziel.id) ziel.id = `abschnitt-${i + 1}`;
+            const link = document.createElement('a');
+            link.href = `#${ziel.id}`;
+            link.textContent = kurz(h2.textContent);
+            leiste.appendChild(link);
+            return { h2, link };
+        });
+        leiste.hidden = false;
+
+        let aktiv = null;
+        let geplant = false;
+        function markieren() {
+            geplant = false;
+            const grenze = leiste.getBoundingClientRect().bottom + 24;
+            let neu = eintraege[0];
+            eintraege.forEach(e => { if (e.h2.getBoundingClientRect().top <= grenze) neu = e; });
+            if (neu === aktiv) return;
+            aktiv = neu;
+            eintraege.forEach(e => e.link.classList.toggle('ist-aktiv', e === aktiv));
+            // Den aktiven Chip in der Leiste sichtbar halten
+            const l = aktiv.link;
+            if (l.offsetLeft < leiste.scrollLeft || l.offsetLeft + l.offsetWidth > leiste.scrollLeft + leiste.clientWidth) {
+                leiste.scrollLeft = l.offsetLeft - 16;
+            }
+        }
+        window.addEventListener('scroll', () => {
+            if (!geplant) { geplant = true; requestAnimationFrame(markieren); }
+        }, { passive: true });
+        markieren();
+    })();
+
+    // --- 27. UMSCHALTER (nur Handy) ---
+    // Mehrere Elemente mit demselben data-umschalter="gruppe" zeigt das Handy
+    // einzeln, mit einer Knopfreihe davor (css/unterseiten-handy.css,
+    // Abschnitt 8). Benutzt fuer die Diagramme und Wanderpokale auf
+    // statistiken.html und die Kosten auf mitglied-werden.html.
+    //   data-umschalter-titel         Beschriftung des Knopfs; fehlt sie,
+    //                                 kommt sie aus der Ueberschrift im Teil
+    //                                 ("Saison 2025" -> "2025")
+    //   data-umschalter-reihe         Reihenfolge der Knoepfe (Zahl)
+    //   data-umschalter-ueberschrift  (am ersten Teil) sichtbare Zeile ueber
+    //                                 den Knoepfen; die Ueberschriften der
+    //                                 Teile bleiben dann nur fuer Vorlese-
+    //                                 programme stehen
+    // Am Desktop greift keine der Regeln, dort steht alles wie gehabt.
+    (function initUmschalter() {
+        const gruppen = {};
+        document.querySelectorAll('[data-umschalter]').forEach(teil => {
+            (gruppen[teil.dataset.umschalter] = gruppen[teil.dataset.umschalter] || []).push(teil);
+        });
+
+        function knopftext(teil) {
+            if (teil.dataset.umschalterTitel) return teil.dataset.umschalterTitel;
+            const kopf = teil.querySelector('h2, h3');
+            const text = kopf ? kopf.textContent.replace(/\s+/g, ' ').trim() : '';
+            let treffer = text.match(/seit\s+(\d{4})/i);
+            if (treffer) return `Seit ${treffer[1]}`;
+            treffer = text.match(/\b(\d{4})\b/);
+            if (treffer) return treffer[1];
+            return text.replace(/\s*\(.*?\)\s*/g, ' ').trim() || 'Ansicht';
+        }
+
+        Object.values(gruppen).forEach(teile => {
+            if (teile.length < 2) return;
+            const erstes = teile[0];
+            const reihe = teile.slice().sort((a, b) =>
+                (Number(a.dataset.umschalterReihe) || 0) - (Number(b.dataset.umschalterReihe) || 0));
+            const ueberschrift = erstes.dataset.umschalterUeberschrift;
+
+            const leiste = document.createElement('div');
+            leiste.className = 'umschalter';
+            leiste.setAttribute('role', 'group');
+            leiste.setAttribute('aria-label', ueberschrift ? `${ueberschrift}: Ansicht wählen` : 'Ansicht wählen');
+
+            const knoepfe = reihe.map(teil => {
+                const knopf = document.createElement('button');
+                knopf.type = 'button';
+                knopf.textContent = knopftext(teil);
+                knopf.addEventListener('click', () => zeigen(teil));
+                leiste.appendChild(knopf);
+                teil.classList.add('umschalter-panel');
+                if (ueberschrift) teil.classList.add('mit-titel');
+                return knopf;
+            });
+
+            function zeigen(aktiv) {
+                reihe.forEach((teil, i) => {
+                    teil.classList.toggle('umschalter-aus', teil !== aktiv);
+                    knoepfe[i].setAttribute('aria-pressed', String(teil === aktiv));
+                });
+            }
+
+            erstes.parentNode.insertBefore(leiste, erstes);
+            if (ueberschrift) {
+                const titel = document.createElement('p');
+                titel.className = 'umschalter-titel';
+                titel.setAttribute('aria-hidden', 'true');
+                titel.textContent = ueberschrift;
+                leiste.before(titel);
+            }
+            zeigen(reihe[0]);
+        });
+    })();
+
+    // --- 28. SOMMERFERIENPROGRAMM (nur Handy) ---
+    // a) Zeile ueber dem Status-Streifen aus data/ferienprogramm.json -
+    //    derselbe Datensatz, aus dem tools/ferienprogramm_pflege.py den
+    //    Terminkasten schreibt. Ohne Datei bleibt die Zeile einfach weg.
+    // b) "Auf einen Blick" rueckt am Handy direkt unter den Streifen und
+    //    beim Breiterziehen wieder an seinen Platz zurueck.
+    (function initFerienprogramm() {
+        const kasten = document.querySelector('.ferien-status .note-box');
+        const blick = document.querySelector('.auf-einen-blick');
+        if (!kasten) return;
+
+        fetch('../data/ferienprogramm.json')
+            .then(r => (r.ok ? r.json() : null))
+            .then(daten => {
+                if (!daten || !daten.jahr) return;
+                const jahr = Number(daten.jahr);
+                kasten.dataset.kicker = daten.aktiv ? `Termine ${jahr}` : `Termine ${jahr + 1} folgen`;
+            })
+            .catch(() => {});
+
+        if (!blick) return;
+        const huelle = kasten.closest('.ferien-status');
+        const platz = document.createComment(' Platz von "Auf einen Blick" am Desktop ');
+        blick.before(platz);
+        const handy = window.matchMedia('(max-width: 768px)');
+        function stellen() {
+            if (handy.matches) huelle.after(blick);
+            else platz.after(blick);
+        }
+        stellen();
+        handy.addEventListener('change', stellen);
+    })();
+
 });

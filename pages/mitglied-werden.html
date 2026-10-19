@@ -133,9 +133,12 @@
             <strong>Unser Versprechen:</strong> Wir bemühen uns, alle Mitgliedsbeiträge und Trainingsgebühren so gering wie möglich zu halten. Wir arbeiten ehrenamtlich und unser oberstes Ziel ist es, den Motorsport für jeden erschwinglich und zugänglich zu machen! Wir freuen uns über jedes neue Gesicht.
         </div>
 
-        <div class="membership-grid">
+        <!-- Am Handy (css/unterseiten-handy.css): Jahresbeitraege als vier
+             Preiskacheln, Training und Rennen als eine Liste mit Umschalter
+             (js/main.js, Abschnitt 27). Am Desktop drei Spalten wie gehabt. -->
+        <div class="membership-grid gebuehren">
             
-            <div>
+            <div class="beitraege">
                 <h2>Jahresbeiträge</h2>
                 <div class="price-box">
                     <div class="price-row">
@@ -163,7 +166,7 @@
                 </div>
             </div>
 
-            <div>
+            <div data-umschalter="kosten" data-umschalter-titel="Pro Training" data-umschalter-ueberschrift="Kosten">
                 <h2>Kosten pro Training</h2>
                 <div class="price-box">
                     <div class="price-row">
@@ -189,7 +192,7 @@
                 </div>
             </div>
 
-            <div>
+            <div data-umschalter="kosten" data-umschalter-titel="Renngebühren">
                 <h2>Renngebühren</h2>
                 <div class="price-box">
                     <div class="price-row">

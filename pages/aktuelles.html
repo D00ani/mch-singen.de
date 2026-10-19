@@ -147,6 +147,16 @@
             <p class="page-lead">Hier findest du die neuesten Ergebnisse, News und alle wichtigen Daten für die aktuelle Saison. Lade dir die Pläne einfach bequem herunter!</p>
         </div>
 
+        <!-- Sprungleiste (nur Handy): js/main.js (Abschnitt 26) fuellt sie mit
+             je einem Chip pro Abschnittsueberschrift dieser Seite - sie passt
+             sich also von selbst an, wenn Abschnitte dazukommen oder wegfallen.
+             ACHTUNG: die Abschnittsueberschriften muessen schlichte h2-Tags
+             ohne Attribute bleiben, tools/news_pflege.py erkennt die
+             Abschnitte genau daran (und Kommentare duerfen kein h2-Tag in
+             spitzen Klammern enthalten). Sprungziele deshalb als eigenes
+             Element davor. -->
+        <nav class="sprungleiste" data-sprungleiste aria-label="Abschnitte dieser Seite" hidden></nav>
+
         <!-- ---- Saisonabschluss ---- -->
         <!-- Stand 28.09.2026: Der letzte BKC-Lauf beim MSC Steisslingen am
              04.10. wurde abgesagt, damit ist die Kart-Saison 2026 gelaufen.
@@ -254,8 +264,13 @@
         <div class="section-divider"></div>
 
         <!-- ---- Termine 2025/2026 ---- -->
-        <h2 id="termine">Termine 2025/2026</h2>
-        <div class="news-grid">
+        <!-- Sprungziel fuer "Kalender" auf der Startseite (index.html#termine).
+             Steht vor der Ueberschrift statt an ihr, siehe Hinweis oben. -->
+        <span class="sprung-anker" id="termine"></span>
+        <h2>Termine 2025/2026</h2>
+        <!-- termine-grid: am Handy stehen die Knoepfe dieser Karten als
+             Gitter aus zwei Spalten (css/unterseiten-handy.css). -->
+        <div class="news-grid termine-grid">
             <!-- Kart-Termine -->
             <div class="news-card">
                 <span class="news-badge news-badge-termin">Termine</span>

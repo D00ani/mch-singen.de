@@ -271,4 +271,20 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         });
     });
+
+    // --- HANDY: PLATZ ALS GELBE TAFEL ---
+    // Am Handy steht die Platzierung der Top-Platzierungen als kleine gelbe
+    // Tafel (css/unterseiten-handy.css, Abschnitt 10). Dafuer wird "Platz"
+    // abgetrennt und nur noch fuer Vorleseprogramme gefuehrt - in der Tafel
+    // steht "1.". Am Desktop ist das Wort weiter zu sehen.
+    document.querySelectorAll('table.ergebnis-tabelle tbody td:nth-child(5)').forEach(zelle => {
+        const ziel = zelle.querySelector('strong') || zelle;
+        const treffer = ziel.textContent.trim().match(/^(\d+\.)\s*(Platz)$/);
+        if (!treffer) return;
+        const wort = document.createElement('span');
+        wort.className = 'platz-wort';
+        wort.textContent = ` ${treffer[2]}`;
+        ziel.textContent = treffer[1];
+        ziel.appendChild(wort);
+    });
 });

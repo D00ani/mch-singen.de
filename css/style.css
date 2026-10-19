@@ -943,8 +943,11 @@ body.dark-mode .faq-icon { color: var(--blue-light); }
 }
 
 .event-list li::before { 
-    content: '\f058'; 
-    font-family: 'Font Awesome 6 Free'; 
+    content: '\f058';
+    /* "Font Awesome 6 Free" gibt es im Symbol-Subset nicht (css/all.min.css
+       kennt "Font Awesome 7 Free") - statt des Hakens stand ein leeres
+       Kaestchen da (Ferienprogramm, Geschichte). */
+    font-family: 'Font Awesome 7 Free';
     font-weight: 900; 
     color: var(--primary-blue); 
     position: absolute; 
