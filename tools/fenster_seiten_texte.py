@@ -306,22 +306,23 @@ class FaqSeite(Seite):
             return
 
         antwort_html = faq_pflege.einfach_zu_html(B.fuer_html(werte["antwort"]))
-        block = faq_pflege.baue_eintrag(B.fuer_html(werte["frage"]), antwort_html)
 
         html = self._html()
+        nl = faq_pflege.zeilenende(html)
+        block = faq_pflege.baue_eintrag(B.fuer_html(werte["frage"]), antwort_html, nl=nl)
         if self.fragen:
             stelle = self.fragen[-1]["match"].end()
-            neu = html[:stelle] + "\r\n" + block + html[stelle:]
+            neu = html[:stelle] + nl + nl + block + html[stelle:]
         else:
             pos = html.find(faq_pflege.CONTAINER_ANKER)
             if pos == -1:
                 messagebox.showerror("Nicht möglich",
                                      "Der Anker für die FAQ-Liste wurde nicht gefunden.")
                 return
-            stelle = html.find("\r\n", pos) + 2
-            neu = html[:stelle] + block + "\r\n" + html[stelle:]
+            stelle = html.find("\n", pos) + 1
+            neu = html[:stelle] + block + nl + html[stelle:]
 
-        h.schreibe_datei(faq_pflege.FAQ_HTML, neu)
+        faq_pflege.speichere_html(neu)
         self._pruefe_links(antwort_html)
         self.aktualisieren()
         self.app.fuss_auffrischen()
@@ -331,27 +332,44 @@ class FaqSeite(Seite):
         if nummer is None:
             return
         eintrag = self.fragen[nummer]
+        alte_antwort = B.lesbar(faq_pflege.html_zu_einfach(eintrag["antwort_html"]))
+        sonderinhalt = faq_pflege.hat_sonderinhalt(eintrag["antwort_html"])
+
+        if sonderinhalt:
+            einleitung = ("Diese Antwort enthält ein Bild oder eine Formatierung, die die "
+                          "einfache Schreibweise nicht kennt. Bleibt die Antwort unverändert, "
+                          "bleibt beides erhalten - wird sie geändert, geht es verloren.")
+        else:
+            einleitung = ("Vorhandenes HTML wurde in die einfache Schreibweise "
+                          "zurückverwandelt - es geht nichts verloren.")
 
         werte = B.frage_formular(
             self.rahmen, self.s, "Frage bearbeiten", self._felder(),
-            {"frage": B.lesbar(eintrag["frage"]),
-             "antwort": B.lesbar(faq_pflege.html_zu_einfach(eintrag["antwort_html"]))},
-            einleitung="Vorhandenes HTML wurde in die einfache Schreibweise "
-                       "zurückverwandelt - es geht nichts verloren.")
+            {"frage": B.lesbar(eintrag["frage"]), "antwort": alte_antwort},
+            einleitung=einleitung)
         if not werte:
             return
 
-        antwort_html = faq_pflege.einfach_zu_html(B.fuer_html(werte["antwort"]))
-        block = faq_pflege.baue_eintrag(B.fuer_html(werte["frage"]), antwort_html)
+        if werte["antwort"] == alte_antwort:
+            # Antwort nicht angefasst -> Original-HTML behalten (Bilder, Absätze)
+            antwort_html = eintrag["antwort_html"]
+        else:
+            if sonderinhalt and not messagebox.askyesno(
+                    "Bild geht verloren",
+                    "Die geänderte Antwort wird ohne das Bild bzw. die besondere "
+                    "Formatierung gespeichert.\n\nTrotzdem speichern?"):
+                return
+            antwort_html = faq_pflege.einfach_zu_html(B.fuer_html(werte["antwort"]))
 
         html = self._html()
+        block = faq_pflege.baue_eintrag(B.fuer_html(werte["frage"]), antwort_html,
+                                        nl=faq_pflege.zeilenende(html))
         treffer = eintrag["match"]
         start = treffer.start()
         # Eigene Einrueckung des Blocks - die vorhandene muss weichen
         while start > 0 and html[start - 1] in " \t":
             start -= 1
-        h.schreibe_datei(faq_pflege.FAQ_HTML,
-                         html[:start] + block + html[treffer.end():])
+        faq_pflege.speichere_html(html[:start] + block + html[treffer.end():])
         self._pruefe_links(antwort_html)
         self.aktualisieren()
         self.app.fuss_auffrischen()
@@ -371,8 +389,8 @@ class FaqSeite(Seite):
         start, ende = treffer.start(), treffer.end()
         while start > 0 and html[start - 1] in " \t":
             start -= 1
-        if html[ende:ende + 2] == "\r\n":
-            ende += 2
-        h.schreibe_datei(faq_pflege.FAQ_HTML, html[:start] + html[ende:])
+        while ende < len(html) and html[ende] in "\r\n":
+            ende += 1
+        faq_pflege.speichere_html(html[:start] + html[ende:])
         self.aktualisieren()
         self.app.fuss_auffrischen()

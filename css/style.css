@@ -822,15 +822,21 @@ body.dark-mode .form-fehler {
 }
 
 /* Der Pfeil zeigt, ob die Antwort offen ist. Ohne diese Regel stand er
-   dauerhaft nach unten - egal ob auf- oder zugeklappt. */
+   dauerhaft nach unten - egal ob auf- oder zugeklappt.
+   Umgeklappt statt gedreht: Mit rotate(180deg) zeigte der Pfeil auf halbem
+   Weg zur Seite, und weil die Font-Awesome-Glyphe etwas unter der Mitte
+   ihrer Box sitzt, eierte er beim Drehen seitlich und sprang am Ende nach
+   oben. scaleY bewegt nur senkrecht; der Drehpunkt liegt auf der Mitte der
+   Glyphe (56 % der Box-Hoehe, ausgemessen) statt auf der Mitte der Box. */
 .faq-icon {
     flex-shrink: 0;
     color: var(--primary-blue);
+    transform-origin: 50% 56%;
     transition: transform 0.3s ease;
 }
 
 .faq-item.active .faq-icon {
-    transform: rotate(180deg);
+    transform: scaleY(-1);
 }
 
 body.dark-mode .faq-icon { color: var(--blue-light); }

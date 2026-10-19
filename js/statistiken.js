@@ -68,14 +68,19 @@ document.addEventListener("DOMContentLoaded", () => {
     const PODIUM_ORDER  = [1, 0, 2];
     const PODIUM_LABELS = ['2. Platz', '1. Platz', '3. Platz'];
 
-    // Werte über den Balken
+    // Werte über den Balken. Gezeichnet wird nicht gleich der Endwert,
+    // sondern der Wert, den der Balken gerade erreicht hat - so zaehlt die
+    // Zahl mit dem wachsenden Balken hoch, statt von Anfang an fertig
+    // ueber einem halb hohen Balken zu stehen.
     const topLabelPlugin = {
         id: 'topLabel',
         afterDatasetsDraw(chart) {
             const { ctx } = chart;
+            const skala = chart.scales.y;
             const isDark = document.body.classList.contains('dark-mode');
             chart.data.datasets[0].data.forEach((val, i) => {
                 const bar = chart.getDatasetMeta(0).data[i];
+                const erreicht = Math.round(skala.getValueForPixel(bar.y));
                 ctx.save();
                 // Der Wert ueber dem Balken ist eine reine Zahl - hier bleibt
                 // Orbitron, etwas groesser, damit er als Wert lesbar ist.
@@ -83,7 +88,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 ctx.font = `700 14px 'Orbitron', sans-serif`;
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'bottom';
-                ctx.fillText(val, bar.x, bar.y - 5);
+                ctx.fillText(Math.max(0, Math.min(val, erreicht)), bar.x, bar.y - 5);
                 ctx.restore();
             });
         }
@@ -102,7 +107,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const chartInstances = {};
 
-    function buildChart({ id, data }) {
+    // animiert = false: nur neu einfaerben (Dark-Mode), ohne dass die
+    // Balken noch einmal von 0 hochfahren.
+    function buildChart({ id, data }, animiert = true) {
         const canvas = document.getElementById(id);
         if (!canvas) return;
 
@@ -144,11 +151,17 @@ document.addEventListener("DOMContentLoaded", () => {
                 responsive: true,
                 maintainAspectRatio: false,
                 layout: { padding: { top: 24 } },
-                animation: {
-                    delay(ctx) { return [1, 0, 2][ctx.dataIndex] * 300; },
+                // Gestaffelt wird nur der erste Aufbau (Podest-Reihenfolge).
+                // Ohne die Abfrage galt die Verzoegerung auch fuer jeden
+                // Hover-Effekt, der dadurch bis zu 0,6 s hinterherhing.
+                animation: animiert ? {
+                    delay(ctx) {
+                        return ctx.type === 'data' && ctx.mode === 'default'
+                            ? [1, 0, 2][ctx.dataIndex] * 300 : 0;
+                    },
                     duration: 800,
                     easing: 'easeOutQuart',
-                },
+                } : false,
                 scales: {
                     x: {
                         border: { color: axisColor },
@@ -194,30 +207,6 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // Alle Diagramm-Werte aus /data/statistik.json laden:
-    //   podium -> "Dieses Jahr (Bisher)", erzeugt aus der BKC-Wertungs-PDF
-    //             (tools/update_statistik.py)
-    //   charts -> die uebrigen Diagramme, gepflegt per tools/statistiken_pflege.py
-    // Der Beobachter wird SOFORT eingerichtet, nicht erst wenn die JSON da
-    // ist. Frueher haing die Diagramm-Erzeugung am Ende der fetch-Kette:
-    // war die Datei langsam, nicht erreichbar oder wurde die Seite lokal
-    // per Doppelklick geoeffnet, blieben die Diagramme dauerhaft leer und
-    // die Balken fuhren nie hoch. Gezeichnet wird jetzt sofort mit den
-    // Ausweichzahlen; kommen aus der JSON abweichende Werte, werden nur die
-    // betroffenen Diagramme neu aufgebaut.
-    const chartObserver = new IntersectionObserver((entries, obs) => {
-        entries.forEach(entry => {
-            if (!entry.isIntersecting) return;
-            const def = CHART_DEFS.find(c => c.id === entry.target.id);
-            if (def) { buildChart(def); obs.unobserve(entry.target); }
-        });
-    }, { threshold: 0.15 });
-
-    CHART_DEFS.forEach(({ id }) => {
-        const el = document.getElementById(id);
-        if (el) chartObserver.observe(el);
-    });
-
     // Werte aus /data/statistik.json nachladen:
     //   podium -> "Dieses Jahr (Bisher)", erzeugt aus der BKC-Wertungs-PDF
     //             (tools/update_statistik.py)
@@ -226,12 +215,13 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!Array.isArray(daten) || daten.length !== 3) return;
         if (daten.every((wert, i) => wert === def.data[i])) return;  // unveraendert
         def.data = daten;
-        // Nur neu zeichnen, wenn das Diagramm schon sichtbar war - sonst
-        // uebernimmt es die neuen Zahlen ohnehin beim ersten Aufbau.
+        // Nur neu zeichnen, wenn das Diagramm schon steht (die Datei kam
+        // erst nach der Wartezeit unten) - sonst uebernimmt es die neuen
+        // Zahlen ohnehin beim ersten Aufbau.
         if (chartInstances[def.id]) buildChart(def);
     }
 
-    fetch('../data/statistik.json')
+    const datenGeladen = fetch('../data/statistik.json')
         .then(res => res.ok ? res.json() : null)
         .then(stat => {
             if (!stat) return;
@@ -246,10 +236,46 @@ document.addEventListener("DOMContentLoaded", () => {
         })
         .catch(() => {}); // nicht erreichbar -> die Ausweichzahlen oben bleiben stehen
 
-    // Charts bei Dark-Mode-Umschalten neu rendern
+    // Gezeichnet wird erst, wenn die JSON da ist. Vorher fuhren die Balken
+    // sofort mit den Ausweichzahlen hoch; kam die JSON mit den echten
+    // Werten, begann die Animation von vorn - die Zahlen stimmten
+    // zwischendurch nicht und die Balken liefen zweimal hoch.
+    // Damit die Diagramme nicht wie frueher dauerhaft leer bleiben, wenn
+    // die Datei haengt, wird nach spaetestens 1,5 s trotzdem gezeichnet
+    // (Ausweichzahlen). Lokal per Doppelklick geoeffnet schlaegt fetch
+    // sofort fehl - dann geht es ohne Wartezeit los.
+    const datenBereit = Promise.race([
+        datenGeladen,
+        new Promise(fertig => setTimeout(fertig, 1500)),
+    ]);
+
+    const chartObserver = new IntersectionObserver((entries, obs) => {
+        entries.forEach(entry => {
+            if (!entry.isIntersecting) return;
+            obs.unobserve(entry.target);
+            const def = CHART_DEFS.find(c => c.id === entry.target.id);
+            if (def) datenBereit.then(() => buildChart(def));
+        });
+    }, { threshold: 0.15 });
+
+    CHART_DEFS.forEach(({ id }) => {
+        const el = document.getElementById(id);
+        if (el) chartObserver.observe(el);
+    });
+
+    // Charts bei Dark-Mode-Umschalten neu einfaerben.
+    // Der Beobachter meldet JEDE Klassenaenderung am <body> - auch
+    // 'transitions-ready', das js/main.js kurz nach dem Laden setzt.
+    // Frueher wurden die Diagramme dadurch mitten in der Animation neu
+    // aufgebaut und die Balken fuhren ein zweites Mal von 0 hoch. Darum
+    // nur reagieren, wenn der Dark-Mode wirklich gewechselt hat.
+    let warDunkel = document.body.classList.contains('dark-mode');
     new MutationObserver(() => {
+        const istDunkel = document.body.classList.contains('dark-mode');
+        if (istDunkel === warDunkel) return;
+        warDunkel = istDunkel;
         CHART_DEFS.forEach(def => {
-            if (chartInstances[def.id]) buildChart(def);
+            if (chartInstances[def.id]) buildChart(def, false);
         });
     }).observe(document.body, { attributes: true, attributeFilter: ['class'] });
 

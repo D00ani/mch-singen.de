@@ -51,7 +51,7 @@ SEITEN_NAMEN = {
 ZAEHLBAR = {
     "pages/aktuelles.html": (r'class="news-card', "News-Karte", "News-Karten"),
     "pages/archiv.html": (r"<summary>Saison \d{4}</summary>", "Saison", "Saisons"),
-    "pages/faq.html": (r"<details", "Frage", "Fragen"),
+    "pages/faq.html": (r'class="faq-item"', "Frage", "Fragen"),
     "pages/sponsoren-links.html": (r'src="\.\./media/sponsoren/', "Logo", "Logos"),
     "pages/statistiken.html": (r"<tr>", "Tabellenzeile", "Tabellenzeilen"),
 }

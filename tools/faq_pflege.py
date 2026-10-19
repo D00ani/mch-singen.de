@@ -22,13 +22,21 @@ ROOT = h.ROOT
 FAQ_HTML = os.path.join(ROOT, "pages", "faq.html")
 
 CONTAINER_ANKER = '<div class="faq-container">'
+# Die Frage ist seit dem Barrierefreiheits-Umbau ein <button> mit
+# aria-Attributen, die Antwort traegt eine id. Das alte Muster kannte nur
+# <div class="faq-question"> ohne Attribute und fand dadurch KEINE einzige
+# Frage mehr. Erkannt werden jetzt beide Schreibweisen.
 FRAGE_MUSTER = re.compile(
     r'<div class="faq-item">\s*'
-    r'<div class="faq-question">\s*<span>(.*?)</span>\s*'
-    r'<i class="[^"]*"></i>\s*</div>\s*'
-    r'<div class="faq-answer">\s*(.*?)\s*</div>\s*</div>',
+    r'<(?P<tag>div|button)\b[^>]*\bclass="faq-question"[^>]*>\s*<span>(?P<frage>.*?)</span>\s*'
+    r'<i class="[^"]*"[^>]*></i>\s*</(?P=tag)>\s*'
+    r'<div class="faq-answer"[^>]*>\s*(?P<antwort>.*?)\s*</div>\s*</div>',
     re.DOTALL,
 )
+
+# Was die einfache Schreibweise abbilden kann. Steckt mehr in einer Antwort
+# (z. B. das Kart-Foto), ginge es beim Zurueckverwandeln verloren.
+EINFACHE_TAGS = {"a", "strong", "b", "br"}
 
 # Seiten, auf die sich in Antworten haeufig verlinken laesst
 BEKANNTE_SEITEN = [
@@ -50,28 +58,74 @@ def html_zu_einfach(text):
 
 def einfach_zu_html(text):
     """Einfache Schreibweise zurueck in HTML."""
-    text = re.sub(r"\[([^\]]+)\]\(([^)]+)\)", r'<a href="\2">\1</a>', text)
+    def link(m):
+        name, ziel = m.group(1), m.group(2)
+        # Externe Seiten oeffnen wie ueberall auf der Website in einem
+        # neuen Tab - html_zu_einfach() hatte diese Angaben abgestreift.
+        if ziel.startswith(("http://", "https://")):
+            return f'<a href="{ziel}" target="_blank" rel="noopener noreferrer">{name}</a>'
+        return f'<a href="{ziel}">{name}</a>'
+
+    text = re.sub(r"\[([^\]]+)\]\(([^)]+)\)", link, text)
     text = re.sub(r"\*\*(.+?)\*\*", r"<strong>\1</strong>", text)
     return text.strip()
+
+
+def hat_sonderinhalt(antwort_html):
+    """True, wenn die Antwort mehr enthaelt als die einfache Schreibweise
+    kennt (Bild, Absatz ...) - das ginge beim Bearbeiten verloren."""
+    tags = {t.lower() for t in re.findall(r"</?([a-zA-Z][a-zA-Z0-9]*)", antwort_html)}
+    return bool(tags - EINFACHE_TAGS)
 
 
 def lade_html():
     return h.lies_datei(FAQ_HTML)
 
 
+def zeilenende(html):
+    """Zeilenende des FAQ-Bereichs ('\\n' oder '\\r\\n'), damit neue
+    Eintraege keine gemischten Zeilenenden in die Datei bringen."""
+    anker = html.find(CONTAINER_ANKER)
+    if anker != -1:
+        ende = html.find("\n", anker)
+        if ende > 0 and html[ende - 1] == "\r":
+            return "\r\n"
+    return "\n"
+
+
+def nummern_ordnen(html):
+    """Vergibt die Verknuepfung Frage <-> Antwort (aria-controls / id)
+    fortlaufend neu. Nach Einfuegen, Verschieben oder Loeschen passen die
+    Nummern sonst nicht mehr - oder zwei Antworten haetten dieselbe id."""
+    for attribut in ("aria-controls", "id"):
+        zaehler = iter(range(1, 10_000))
+        html = re.sub(rf'\b{attribut}="faq-antwort-\d+"',
+                      lambda _: f'{attribut}="faq-antwort-{next(zaehler)}"', html)
+    return html
+
+
+def speichere_html(html):
+    h.schreibe_datei(FAQ_HTML, nummern_ordnen(html))
+
+
 def finde_fragen(html):
-    return [{"match": m, "frage": m.group(1).strip(), "antwort_html": m.group(2).strip()}
+    return [{"match": m, "frage": m.group("frage").strip(),
+             "antwort_html": m.group("antwort").strip()}
             for m in FRAGE_MUSTER.finditer(html)]
 
 
-def baue_eintrag(frage, antwort_html, einrueckung=" " * 12):
-    return "\r\n".join([
+def baue_eintrag(frage, antwort_html, einrueckung=" " * 12, nl="\n"):
+    # Gleicher Aufbau wie die vorhandenen Fragen auf der Seite: <button>
+    # fuer die Tastaturbedienung, aria-controls/id verknuepfen Frage und
+    # Antwort. Die Nummer 0 ist ein Platzhalter - die richtige vergibt
+    # nummern_ordnen() beim Speichern.
+    return nl.join([
         f'{einrueckung}<div class="faq-item">',
-        f'{einrueckung}    <div class="faq-question">',
+        f'{einrueckung}    <button type="button" class="faq-question" aria-expanded="false" aria-controls="faq-antwort-0">',
         f"{einrueckung}        <span>{frage}</span>",
         f'{einrueckung}        <i class="fa-solid fa-chevron-down faq-icon"></i>',
-        f"{einrueckung}    </div>",
-        f'{einrueckung}    <div class="faq-answer">',
+        f"{einrueckung}    </button>",
+        f'{einrueckung}    <div class="faq-answer" id="faq-antwort-0" role="region">',
         f"{einrueckung}        {antwort_html}",
         f"{einrueckung}    </div>",
         f"{einrueckung}</div>",
@@ -127,24 +181,25 @@ def frage_hinzufuegen():
         moeglichkeiten += [f"Nach '{kurz(f['frage'], 45)}'" for f in fragen]
         stelle = h.waehle_option("An welcher Stelle?", moeglichkeiten)
 
-    neuer_eintrag = baue_eintrag(eingaben["frage"], antwort_html)
+    nl = zeilenende(html)
+    neuer_eintrag = baue_eintrag(eingaben["frage"], antwort_html, nl=nl)
 
     if not fragen:
         anker = html.find(CONTAINER_ANKER)
         if anker == -1:
             raise ValueError("Der FAQ-Bereich wurde in faq.html nicht gefunden.")
-        einfuegepunkt = html.find("\r\n", anker) + 2
-        neues_html = html[:einfuegepunkt] + neuer_eintrag + "\r\n" + html[einfuegepunkt:]
+        einfuegepunkt = html.find("\n", anker) + 1
+        neues_html = html[:einfuegepunkt] + neuer_eintrag + nl + html[einfuegepunkt:]
     elif stelle == 0:
         anfang = fragen[0]["match"].start()
         while anfang > 0 and html[anfang - 1] in " \t":
             anfang -= 1
-        neues_html = html[:anfang] + neuer_eintrag + "\r\n\r\n" + html[anfang:]
+        neues_html = html[:anfang] + neuer_eintrag + nl + nl + html[anfang:]
     else:
         ende = fragen[stelle - 1]["match"].end()
-        neues_html = html[:ende] + "\r\n\r\n" + neuer_eintrag + html[ende:]
+        neues_html = html[:ende] + nl + nl + neuer_eintrag + html[ende:]
 
-    h.schreibe_datei(FAQ_HTML, neues_html)
+    speichere_html(neues_html)
     print(f"\nGespeichert in {os.path.relpath(FAQ_HTML, ROOT)}")
 
 
@@ -160,6 +215,10 @@ def frage_bearbeiten():
     alte_antwort = html_zu_einfach(eintrag["antwort_html"])
     print(f"\nFrage:   {eintrag['frage']}")
     print(f"Antwort: {alte_antwort}")
+    if hat_sonderinhalt(eintrag["antwort_html"]):
+        print("\nHINWEIS: Diese Antwort enthaelt ein Bild oder eine Formatierung, die die")
+        print("einfache Schreibweise nicht kennt. Bleibt die Antwort unveraendert, bleibt")
+        print("auch das erhalten. Wird sie geaendert, geht es verloren.")
     erklaere_schreibweise()
     print("\nEnter = unveraendert lassen, x = ein Feld zurueck.\n")
 
@@ -171,8 +230,12 @@ def frage_bearbeiten():
         print("Abgebrochen.")
         return
 
-    antwort_html = einfach_zu_html(eingaben["antwort"])
-    pruefe_links(antwort_html)
+    if eingaben["antwort"] == alte_antwort:
+        # Antwort nicht angefasst -> Original-HTML behalten (Bilder, Absaetze)
+        antwort_html = eintrag["antwort_html"]
+    else:
+        antwort_html = einfach_zu_html(eingaben["antwort"])
+        pruefe_links(antwort_html)
 
     if eingaben["frage"] == eintrag["frage"] and eingaben["antwort"] == alte_antwort:
         print("\nNichts geaendert.")
@@ -185,8 +248,8 @@ def frage_bearbeiten():
     anfang = m.start()
     while anfang > 0 and html[anfang - 1] in " \t":
         anfang -= 1
-    neuer_eintrag = baue_eintrag(eingaben["frage"], antwort_html)
-    h.schreibe_datei(FAQ_HTML, html[:anfang] + neuer_eintrag + html[m.end():])
+    neuer_eintrag = baue_eintrag(eingaben["frage"], antwort_html, nl=zeilenende(html))
+    speichere_html(html[:anfang] + neuer_eintrag + html[m.end():])
     print(f"\nGespeichert in {os.path.relpath(FAQ_HTML, ROOT)}")
 
 
@@ -208,10 +271,10 @@ def frage_loeschen():
     while anfang > 0 and html[anfang - 1] in " \t":
         anfang -= 1
     ende = m.end()
-    while html[ende:ende + 2] == "\r\n":
-        ende += 2
+    while ende < len(html) and html[ende] in "\r\n":
+        ende += 1
 
-    h.schreibe_datei(FAQ_HTML, html[:anfang] + html[ende:])
+    speichere_html(html[:anfang] + html[ende:])
     print(f"\nGeloescht. {os.path.relpath(FAQ_HTML, ROOT)} aktualisiert.")
 
 
