@@ -109,6 +109,25 @@
     /* Auf dem Trial-Foto steht der Fahrer links - der Ausschnitt folgt ihm. */
     .seiten-buehne--trial .seiten-buehne-bild img { object-position: 12% 50%; }
 
+    /* Kart-Foto (Hochformat 3:4): das Kart steht bei 47% der Bildhoehe und
+       landete mittig angeschnitten genau hinter Rubrikzeile und Verlauf.
+       Statt "cover" wird das Bild in voller Breite so verschoben, dass das
+       Kart immer 115px unter der Oberkante steht - im hellen Bereich ueber
+       der Schrift, auf jeder Handybreite. translateY(-47%) bezieht sich auf
+       die Bildhoehe selbst, darum passt es fuer jede Breite.
+       Reicht das Bild auf schmalen Geraeten unten nicht ganz bis zum Rand,
+       liegt dort der fast deckende blaue Verlauf ueber dem gleichfarbigen
+       Grund der Buehne - man sieht keine Kante. */
+    .seiten-buehne--kart .seiten-buehne-bild img {
+        position: absolute;
+        top: 115px;
+        left: 0;
+        width: 100%;
+        height: auto;
+        object-fit: initial;
+        transform: translateY(-47%);
+    }
+
     /* Verlauf in Vereinsblau: oben leicht dunkel, unten deckend fuer die
        Schrift - derselbe wie auf der Startseite. */
     .seiten-buehne::before {
