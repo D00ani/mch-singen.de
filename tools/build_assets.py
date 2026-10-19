@@ -40,7 +40,7 @@ parts.append(style)
 write("css/bundle.min.css", csscompressor.compress("\n".join(parts)))
 
 # --- 2. Seiten-CSS minifizieren ---
-for name in ["index", "kartsport", "live", "sponsoren"]:
+for name in ["index", "kartsport", "live"]:
     write(f"css/{name}.min.css", csscompressor.compress(read(f"css/{name}.css")))
 
 # --- 3. JS minifizieren (Vendor-Dateien sind bereits minifiziert) ---

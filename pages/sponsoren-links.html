@@ -19,7 +19,6 @@
     <link rel="preload" href="../webfonts/outfit-latin.woff2" as="font" type="font/woff2" crossorigin>
     <!-- Ein gebuendeltes Stylesheet statt style.css mit 9 @imports (10 Requests -> 1) -->
     <link rel="stylesheet" href="../css/bundle.min.css">
-    <link rel="stylesheet" href="../css/sponsoren.min.css">
     <!-- Font Awesome asynchron: blockiert das Rendering nicht mehr -->
     <link rel="preload" href="../css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
     <noscript><link rel="stylesheet" href="../css/all.min.css"></noscript>
@@ -123,39 +122,12 @@
             <span class="breadcrumb-sep" aria-hidden="true">/</span>
             <span aria-current="page">Sponsoren</span>
         </nav>
-        <!-- Gestaltung der ganzen Seite: css/sponsoren.css.
-             ACHTUNG Pflegewerkzeug: tools/sponsoren_pflege.py (und das
-             Pflegefenster) finden Banden, Linklisten, Zahlen und den
-             Aufruf-Kasten ueber ihr genaues HTML-Muster. Klassen, Reihenfolge
-             und Attribute dieser Bausteine deshalb nicht umbauen - Aussehen
-             nur im Stylesheet aendern. Die Namen der beiden Linklisten
-             duerfen ausserdem nirgends weiter oben in dieser Datei stehen,
-             auch nicht in Kommentaren: das Werkzeug sucht die Liste hinter
-             dem ERSTEN Vorkommen. -->
-        <div class="page-head sponsor-buehne">
-            <div class="sponsor-buehne-text">
-                <p class="page-kicker">Verein</p>
-                <h1>Unsere Sponsoren</h1>
-                <p class="page-lead">Herzlichen Dank an alle Unterstützer, die unseren Verein und unsere Jugendarbeit ermöglichen!</p>
-                <a class="sponsor-buehne-knopf" href="#sponsor-werden"><i class="fa-solid fa-handshake" aria-hidden="true"></i> Sponsor werden</a>
-            </div>
-            <!-- Wofuer die Unterstuetzung sorgt. Pflegbar ueber
-                 "Sponsoren pflegen" -> Zahlen. Dieselben Werte stehen auf der
-                 Startseite unter "Wer wir sind" - dort mitziehen. -->
-            <ul class="sponsor-buehne-zahlen">
-                <li><span class="milestone-number">20+</span><span class="milestone-text">Kinder und Jugendliche im Kart</span></li>
-                <li><span class="milestone-number">8</span><span class="milestone-text">BKC-Läufe pro Saison</span></li>
-                <li><span class="milestone-number">1954</span><span class="milestone-text">gegründet in Singen</span></li>
-            </ul>
+        <div class="page-head">
+            <p class="page-kicker">Verein</p>
+            <h1>Unsere Sponsoren</h1>
+            <p class="page-lead">Herzlichen Dank an alle Unterstützer, die unseren Verein und unsere Jugendarbeit ermöglichen!</p>
         </div>
 
-        <!-- Die Sponsoren als Streckenbanden: weisse Tafeln am dunklen
-             Streckenrand, oben eine Reihe Randsteine in Vereinsfarben. -->
-        <section class="sponsor-wand" aria-labelledby="sponsor-wand-titel">
-            <div class="sponsor-wand-kopf">
-                <h2 id="sponsor-wand-titel">Unsere Partner</h2>
-                <p>Ein Tipp auf eine Bande öffnet die Webseite des Sponsors.</p>
-            </div>
         <div class="sponsor-grid">
             <a href="https://www.daeschle-singen.de/" target="_blank" rel="noopener noreferrer" class="sponsor-card">
                 <picture>
@@ -218,10 +190,9 @@
                 <span class="sponsor-card-name">Alicke Karosserie</span>
             </a>
         </div>
-        </section>
 
-        <div class="link-spalten">
-        <section class="link-spalte">
+        <div class="section-divider"></div>
+
         <h2>Befreundete Vereine</h2>
         <ul class="link-card-grid">
             <li><a href="https://ac-engen.jimdosite.com/" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-flag-checkered"></i> AC Engen</a></li>
@@ -230,9 +201,7 @@
             <li><a href="https://ac-singen.jimdofree.com/" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-flag"></i> AC Singen</a></li>
             <li><a href="https://msg-salemertal.de/" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-motorcycle"></i> MSG Salemertal</a></li>
         </ul>
-        </section>
 
-        <section class="link-spalte">
         <h2>Nützliche Links</h2>
         <ul class="link-card-grid">
             <li><a href="http://www.dmv-motorsport.de" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-trophy"></i> Deutscher Motorsport Verband</a></li>
@@ -240,26 +209,14 @@
             <li><a href="http://www.singen.de/" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-city"></i> Stadt Singen</a></li>
             <li><a href="https://www.kartbahn-alemannenring.com/" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-flag-checkered"></i> Alemannenring</a></li>
         </ul>
-        </section>
-        </div>
 
-        <!-- Sprungziel des Knopfs "Sponsor werden" oben. Die id steht hier
-             und nicht am Kasten selbst: das Pflegewerkzeug erkennt den Kasten
-             nur an genau <div class="sponsor-cta-box">. Aus demselben Grund
-             ist die Rubrikzeile ein span - der ERSTE Absatz im Kasten ist
-             der Einleitungstext, den das Werkzeug bearbeitet. -->
-        <section class="sponsor-werden" id="sponsor-werden">
+        <div class="section-divider"></div>
+
         <div class="sponsor-cta-box">
-            <div class="sponsor-cta-text">
-            <span class="sponsor-cta-kicker">Sponsor werden</span>
             <h2>Werde Sponsor des MCH!</h2>
-            <p class="sponsor-cta-einleitung">
+            <p style="font-size: 1.05rem; opacity: 0.9; max-width: 600px; margin: 0 auto;">
                 Unterstütze unsere Jugendarbeit und profitiere gleichzeitig von Sichtbarkeit bei unseren Veranstaltungen in der Region Hegau/Bodensee.
             </p>
-            <a href="kontakt.html" class="sponsor-cta-btn">
-                <i class="fa-solid fa-envelope"></i> Jetzt Kontakt aufnehmen
-            </a>
-            </div>
             <div class="sponsor-cta-benefits">
                 <div class="sponsor-cta-benefit">
                     <i class="fa-solid fa-children"></i>
@@ -277,8 +234,10 @@
                     <p>Teil eines engagierten Netzwerks aus Vereinen und lokalen Unternehmen.</p>
                 </div>
             </div>
+            <a href="kontakt.html" class="sponsor-cta-btn">
+                <i class="fa-solid fa-envelope"></i> Jetzt Kontakt aufnehmen
+            </a>
         </div>
-        </section>
     </main>
 
     <footer>
