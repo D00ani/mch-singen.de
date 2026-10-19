@@ -31,7 +31,7 @@ def write(p, content):
 # --- 1. CSS-Bundle: exakt in @import-Reihenfolge von style.css ---
 IMPORT_ORDER = ["fonts.css", "header.css", "sidebar.css", "main.css",
                 "footer.css", "modules.css", "dark.css", "mobile.css",
-                "cookie.css"]
+                "unterseiten-handy.css", "cookie.css"]
 
 parts = [read(f"css/{name}") for name in IMPORT_ORDER]
 # style.css selbst, ohne die @import-Zeilen (die sind jetzt inline enthalten)

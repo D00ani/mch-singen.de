@@ -108,6 +108,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     // ==========================================
+    // 0b. WER WIR SIND - WEITERLESEN (nur Handy)
+    // Am Handy steht eine Kurzfassung mit drei Zahlen, der volle Text
+    // klappt auf (css/index.css Abschnitt 9). Die Klasse ist-klappbar
+    // setzt erst dieses Skript - ohne JavaScript bleibt alles offen.
+    // ==========================================
+    const willkommen = document.querySelector('.welcome-section');
+    const mehrKnopf = willkommen?.querySelector('.welcome-mehr');
+
+    if (willkommen && mehrKnopf) {
+        willkommen.classList.add('ist-klappbar');
+        mehrKnopf.addEventListener('click', () => {
+            const offen = willkommen.classList.toggle('offen');
+            mehrKnopf.setAttribute('aria-expanded', String(offen));
+            mehrKnopf.querySelector('span').textContent = offen ? 'Weniger anzeigen' : 'Weiterlesen';
+        });
+    }
+
+
+    // ==========================================
     // 1. SPORT-SWITCHER (Kart / Trial)
     // ==========================================
     const sportTrack = document.getElementById('sport-track');
@@ -382,12 +401,84 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     // ==========================================
+    // 3b. NAECHSTER TERMIN (Streifen unter dem Foto, nur Handy)
+    // Zeigt den naechsten Kart- ODER Trial-Termin, je nachdem welcher
+    // frueher ist. Die Daten kommen aus denselben Dateien wie die beiden
+    // Countdowns. Ein Tipp springt zum Sport-Switcher und schaltet dort auf
+    // den passenden Reiter. Minuten zeigt der Streifen nicht - deshalb
+    // reicht ein Takt von 30 Sekunden.
+    // ==========================================
+    const streifen = document.getElementById('termin-streifen');
+    const streifenTermine = { kart: [], trial: [] };
+    let streifenSport = 0;
+    let streifenTakt = null;
+
+    const WOCHENTAGE = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
+    const MONATE = ['Jan', 'Feb', 'März', 'Apr', 'Mai', 'Juni', 'Juli', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'];
+
+    function streifenAktualisieren() {
+        if (!streifen) return;
+        const kandidaten = [];
+        const kart  = getNextEvent(streifenTermine.kart);
+        const trial = getNextEvent(streifenTermine.trial);
+        if (kart)  kandidaten.push({ ev: kart,  sport: 0 });
+        if (trial) kandidaten.push({ ev: trial, sport: 1 });
+        if (!kandidaten.length) { streifen.hidden = true; return; }
+
+        kandidaten.sort((a, b) => a.ev.timestamp - b.ev.timestamp);
+        const { ev, sport } = kandidaten[0];
+        streifenSport = sport;
+
+        // Wortlaut wie in den Countdown-Ueberschriften: Spalte 9 (eigener
+        // Titel) gewinnt, sonst "Rennen beim AC Engen" bzw. "eKids-Cup BW
+        // in Frickenhausen".
+        const titel = ev.titel
+            || (sport === 0 ? `Rennen beim ${ev.verein} ${ev.ort}` : `${ev.verein} in ${ev.ort}`);
+        const d = new Date(ev.timestamp);
+        let info = `${WOCHENTAGE[d.getDay()]}, ${d.getDate()}. ${MONATE[d.getMonth()]}`
+                 + ` · ${d.getHours()}:${String(d.getMinutes()).padStart(2, '0')} Uhr`;
+        if (ev.titel && ev.ort) info += ` · ${ev.ort}`;
+
+        document.getElementById('termin-streifen-titel').textContent = titel.trim();
+        document.getElementById('termin-streifen-info').textContent = info;
+
+        const rest = ev.timestamp - Date.now();
+        const ziffern = document.getElementById('termin-streifen-ziffern');
+        const kicker  = document.getElementById('termin-streifen-kicker');
+        if (rest <= 0) {
+            kicker.textContent = 'Heute';
+            ziffern.hidden = true;
+        } else {
+            kicker.textContent = 'Nächster Termin';
+            ziffern.hidden = false;
+            document.getElementById('termin-streifen-tage').textContent =
+                String(Math.floor(rest / 86400000)).padStart(2, '0');
+            document.getElementById('termin-streifen-std').textContent =
+                String(Math.floor((rest % 86400000) / 3600000)).padStart(2, '0');
+        }
+        streifen.hidden = false;
+    }
+
+    function streifenSetzen(sport, dates) {
+        streifenTermine[sport] = dates;
+        streifenAktualisieren();
+        if (!streifenTakt) streifenTakt = setInterval(streifenAktualisieren, 30000);
+    }
+
+    streifen?.addEventListener('click', () => {
+        if (sportTrack) switchSport(streifenSport);
+    });
+
+
+    // ==========================================
     // 4. KART-COUNTDOWN (timer.txt)
     // ==========================================
     fetch('data/timer.txt')
         .then(r => { if (!r.ok) throw new Error(); return r.text(); })
         .then(text => {
-            startCountdown(parseTimerFile(text), {
+            const dates = parseTimerFile(text);
+            streifenSetzen('kart', dates);
+            startCountdown(dates, {
                 heading:  'countdown-heading-kart',
                 cdBox:    'countdown-kart',
                 cdMsg:    'countdown-message-kart',
@@ -407,7 +498,9 @@ document.addEventListener('DOMContentLoaded', () => {
     fetch('data/timer_trial.txt')
         .then(r => { if (!r.ok) throw new Error(); return r.text(); })
         .then(text => {
-            startCountdown(parseTimerFile(text), {
+            const dates = parseTimerFile(text);
+            streifenSetzen('trial', dates);
+            startCountdown(dates, {
                 heading:  'countdown-heading-trial',
                 cdBox:    'countdown-trial',
                 cdMsg:    'countdown-message-trial',
@@ -523,6 +616,10 @@ document.addEventListener('DOMContentLoaded', () => {
                         + `<span class="weather-text"><strong>${loc.label} (${dateTxt}${zeitTxt}):</strong> `
                         + `${text}, ${tempTxt} · Regenrisiko ${rain} %</span>`;
                     box.title = 'Wetterdaten: open-meteo.com';
+                    // Stand vorher der Hinweis in der Leiste, muss dessen
+                    // Klasse weg - am Handy blendet sie die Leiste aus.
+                    box.classList.remove('weather-strip--hinweis');
+                    delete box.dataset.hinweis;
                     box.hidden = false;
                 })
                 .catch(() => {});
@@ -564,6 +661,48 @@ document.addEventListener('DOMContentLoaded', () => {
         ladeWetter();
     } else {
         zeigeWetterHinweis();
+    }
+
+    // Wetter-Knoepfe der Ortskarten (nur Handy sichtbar). Dort ist der
+    // Hinweis mit seinem Knopf ausgeblendet - ohne Zustimmung oeffnet
+    // deshalb dieser Knopf die Cookie-Einstellungen. Mit Zustimmung steht
+    // die Vorhersage schon in der Karte, der Knopf holt sie ins Bild.
+    document.querySelectorAll('.ort-aktion[data-wetter]').forEach(knopf => {
+        knopf.addEventListener('click', () => {
+            const leiste = document.getElementById(knopf.dataset.wetter);
+            const geladen = leiste && !leiste.hidden && !leiste.classList.contains('weather-strip--hinweis');
+            if (wetterErlaubt() && geladen) {
+                const ruhig = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+                leiste.scrollIntoView({ behavior: ruhig ? 'auto' : 'smooth', block: 'center' });
+            } else if (typeof klaro !== 'undefined') {
+                klaro.show();
+            }
+        });
+    });
+
+
+    // ==========================================
+    // 6b. SPONSORENBAND (nur Handy)
+    // Am Handy laufen die Logos als Band durch (css/index.css Abschnitt 9).
+    // Dafuer braucht es einen ruhenden Rahmen um die Logozeile und jedes
+    // Logo ein zweites Mal hintendran - versteckt vor Vorleseprogrammen
+    // und Tastatur, am Desktop per CSS ganz ausgeblendet.
+    // ==========================================
+    const sponsorZeile = document.querySelector('.sponsor-strip-logos');
+
+    if (sponsorZeile) {
+        const band = document.createElement('div');
+        band.className = 'sponsor-band';
+        sponsorZeile.parentNode.insertBefore(band, sponsorZeile);
+        band.appendChild(sponsorZeile);
+        sponsorZeile.querySelectorAll('.sponsor-logo').forEach(logo => {
+            const klon = logo.cloneNode(true);
+            klon.classList.add('ist-klon');
+            klon.setAttribute('aria-hidden', 'true');
+            klon.removeAttribute('title');
+            klon.tabIndex = -1;
+            sponsorZeile.appendChild(klon);
+        });
     }
 
 

@@ -157,7 +157,12 @@
         <h2>Platzierungen & Historie</h2>
         
         <div class="charts-wrapper" style="max-width: 1000px; margin: 0 auto 40px auto;">
-            <div class="chart-container chart-box" style="margin-bottom: 25px;">
+            <!-- Am Handy steht immer nur eines der drei Diagramme da, ein
+                 Umschalter darueber waehlt es aus (js/main.js, Abschnitt 27).
+                 Die Beschriftung der Knoepfe kommt aus der Ueberschrift des
+                 jeweiligen Diagramms ("Saison 2025" -> "2025"), die Reihenfolge
+                 aus data-umschalter-reihe. -->
+            <div class="chart-container chart-box" style="margin-bottom: 25px;" data-umschalter="diagramme" data-umschalter-reihe="1">
                 <h3 class="chart-title chart-title--primary">Dieses Jahr (Bisher)</h3>
                 <div style="position: relative; height: 350px; width: 100%;">
                     <canvas id="chartCurrent"></canvas>
@@ -166,7 +171,7 @@
             </div>
             
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 25px;">
-                <div class="chart-container chart-box">
+                <div class="chart-container chart-box" data-umschalter="diagramme" data-umschalter-reihe="3">
                     <h3 class="chart-title chart-title--dark">Gesamte Platzierungen (Seit 2016)</h3>
                     <div style="position: relative; height: 250px; width: 100%;">
                         <canvas id="chartGesamt"></canvas>
@@ -174,7 +179,7 @@
                     <div id="chartGesamt-total" class="chart-podium-total"></div>
                 </div>
 
-                <div class="chart-container chart-box">
+                <div class="chart-container chart-box" data-umschalter="diagramme" data-umschalter-reihe="2">
                     <h3 class="chart-title chart-title--light">Saison 2025</h3>
                     <div style="position: relative; height: 250px; width: 100%;">
                         <canvas id="chart2025"></canvas>
@@ -201,7 +206,8 @@
         <p>Im Bodensee-Kart-Cup (BKC):</p>
         
         <div class="table-responsive">
-            <table class="stats-table">
+            <!-- ergebnis-tabelle: am Handy eine Zeile je Platzierung (css/unterseiten-handy.css) -->
+            <table class="stats-table ergebnis-tabelle">
                 <thead>
                     <tr>
                         <th>Datum</th><th>Fahrer/in</th><th>Klasse</th><th>Veranstaltung</th><th>Platzierung</th>
@@ -216,9 +222,13 @@
             </table>
         </div> 
 
+        <!-- Am Handy eine Liste mit Umschalter Jugend / Erwachsene (js/main.js,
+             Abschnitt 27). Die Huellen stoeren tools/statistiken_pflege.py
+             nicht: es sucht die Ueberschrift und das naechste <tbody>. -->
+        <div class="pokal-gruppe" data-umschalter="pokale" data-umschalter-titel="Jugend" data-umschalter-ueberschrift="Die Wanderpokal-Sieger">
         <h2>Die Wanderpokal-Sieger (Jugend)</h2>
         <div class="table-responsive">
-            <table class="stats-table">
+            <table class="stats-table pokal-tabelle">
                 <thead><tr><th>Jahr</th><th>Gewinner/in</th><th>Klasse</th></tr></thead>
                 <tbody>
                     <tr><td>2025</td><td>Elena T.</td><td>1c</td></tr>
@@ -229,9 +239,12 @@
             </table>
         </div>
 
+        </div>
+
+        <div class="pokal-gruppe" data-umschalter="pokale" data-umschalter-titel="Erwachsene">
         <h2>Die Wanderpokal-Sieger (Erwachsen)</h2>
         <div class="table-responsive">
-            <table class="stats-table">
+            <table class="stats-table pokal-tabelle">
                 <thead><tr><th>Jahr</th><th>Gewinner/in</th><th>Klasse</th></tr></thead>
                 <tbody>
                     <tr><td>2025</td><td>Leon H.</td><td>3</td></tr>
@@ -240,6 +253,7 @@
                     <tr><td>2022</td><td>Maximilian E.</td><td>3</td></tr>
                 </tbody>
             </table>
+        </div>
         </div>
 
         <div class="section-divider"></div>

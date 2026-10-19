@@ -158,3 +158,434 @@ body.dark-mode .kursplaner-hinweis {
         gap: 15px;
     }
 }
+
+
+/* =========================================
+   HANDY (bis 768px)
+   =========================================
+   Die Kartsport-Seite im Look der Handy-Startseite. Allgemeine Bausteine
+   (Buehne, Termin-Streifen, Weiterlesen, Zahlenkacheln, Aktionsknoepfe)
+   stehen in css/unterseiten-handy.css; hier nur, was es nur auf dieser
+   Seite gibt:
+     - Onboard-Video als Karte mit Abspielknopf
+     - Galerie zum Wischen mit Zaehler und Vorschaubildern
+     - Klassen als Liste mit Umschalter Jugend / Erwachsene
+     - Pokalfoto mit Unterschrift im Bild, kompakter Kurs-Planer
+   Skript dazu: js/main.js, Abschnitte 18, 24 und 25.
+   ========================================= */
+
+.onboard-start,
+.galerie-zaehler,
+.galerie-daumen,
+.galerie-hinweis,
+.klassen-umschalter {
+    display: none;
+}
+
+@media (max-width: 768px) {
+
+    /* ── Onboard-Video ──
+       Ueberschrift und Satz darueber bleiben fuer Vorleseprogramme im
+       Markup, sichtbar steht der Titel im Bild (.onboard-start). */
+    .onboard-block { margin-top: 18px !important; }
+
+    .onboard-block > h2,
+    .onboard-block > p {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        margin: -1px;
+        padding: 0;
+        overflow: hidden;
+        clip: rect(0 0 0 0);
+        white-space: nowrap;
+        border: 0;
+    }
+
+    .onboard-block .track-preview-container {
+        margin-bottom: 0;
+        border-radius: 14px;
+    }
+
+    .onboard-start:not([hidden]) {
+        display: block;
+        position: absolute;
+        inset: 0;
+        z-index: 3;
+        padding: 0;
+        border: 0;
+        background: linear-gradient(180deg, rgba(0, 13, 58, 0.15) 30%, rgba(0, 13, 58, 0.85) 100%);
+        color: #fff;
+        font: inherit;
+        text-align: left;
+        cursor: pointer;
+    }
+
+    .onboard-start:focus-visible {
+        outline: 3px solid var(--accent);
+        outline-offset: -3px;
+    }
+
+    .onboard-start-chip {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        padding: 3px 9px;
+        border-radius: 999px;
+        background: rgba(0, 13, 58, 0.94);
+        color: var(--accent);
+        font-size: 0.62rem;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+    }
+
+    .onboard-start-play {
+        position: absolute;
+        left: 50%;
+        top: 42%;
+        transform: translate(-50%, -50%);
+        display: grid;
+        place-items: center;
+        width: 58px;
+        height: 58px;
+        border-radius: 50%;
+        background: var(--accent);
+        color: #0b1430;
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+    }
+
+    .onboard-start-play svg {
+        width: 22px;
+        height: 22px;
+        margin-left: 3px;
+        fill: currentColor;
+    }
+
+    .onboard-start-text {
+        position: absolute;
+        left: 14px;
+        right: 14px;
+        bottom: 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    .onboard-start-text strong {
+        font-family: var(--font-heading);
+        font-size: 1.05rem;
+    }
+
+    .onboard-start-text span {
+        font-size: 0.75rem;
+        color: rgba(255, 255, 255, 0.86);
+    }
+
+    /* ── Galerie zum Wischen ──
+       .galerie-box, Zaehler, Vorschaubilder und Hinweis legt js/main.js
+       an (Abschnitt 24). Ein Foto antippen oeffnet es weiterhin gross. */
+    .galerie-box {
+        position: relative;
+        margin: 0 -16px;
+    }
+
+    .kart-gallery {
+        display: flex;
+        gap: 10px;
+        margin: 0;
+        padding: 0 16px;
+        overflow-x: auto;
+        scroll-snap-type: x mandatory;
+        scrollbar-width: none;
+        overscroll-behavior-x: contain;
+    }
+
+    .kart-gallery::-webkit-scrollbar { display: none; }
+
+    .kart-gallery-item {
+        flex: 0 0 86%;
+        scroll-snap-align: center;
+        border-radius: 14px;
+        box-shadow: none;
+    }
+
+    .kart-gallery-item:hover img { transform: none; opacity: 1; }
+    .kart-gallery .gallery-hover-icon { display: none; }
+
+    .galerie-zaehler {
+        display: block;
+        position: absolute;
+        top: 10px;
+        right: 26px;
+        z-index: 2;
+        padding: 4px 10px;
+        border-radius: 999px;
+        background: rgba(0, 13, 58, 0.94);
+        color: #fff;
+        font-family: var(--font-display);
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        font-variant-numeric: tabular-nums;
+        pointer-events: none;
+    }
+
+    .galerie-daumen {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-top: 12px;
+    }
+
+    .galerie-daumen button {
+        width: 50px;
+        height: 40px;
+        padding: 0;
+        overflow: hidden;
+        border: 2px solid transparent;
+        border-radius: 8px;
+        background: var(--surface-muted);
+        opacity: 0.55;
+        cursor: pointer;
+    }
+
+    .galerie-daumen button.ist-aktiv { border-color: var(--accent); opacity: 1; }
+
+    .galerie-daumen img {
+        display: block;
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        object-fit: cover;
+        border-radius: 0;
+        box-shadow: none;
+    }
+
+    .galerie-hinweis {
+        display: block;
+        margin: 8px 0 0;
+        font-size: 0.8rem;
+        color: var(--text-light);
+    }
+
+    /* ── Klassen als Liste ──
+       Die Tabelle stapelt css/mobile.css fuer alle Tabellen zu Kaestchen
+       mit Spaltennamen. Hier wird daraus eine schlichte Liste: Klasse als
+       Kuerzel ("Klasse" steht nur noch fuer Vorleseprogramme da), daneben
+       die Voraussetzung. Den Umschalter baut js/main.js (Abschnitt 25). */
+    body .info-card.klassen-karte {
+        padding: 0;
+        background: none;
+        border: 0;
+        box-shadow: none;
+    }
+
+    .klassen-karte h3 { font-size: 1.3rem; color: var(--text-main); }
+    body.dark-mode .klassen-karte h3 { color: #f2f4fb; }
+
+    .klassen-umschalter {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 4px;
+        margin: 4px 0 12px;
+        padding: 4px;
+        border-radius: 12px;
+        background: var(--surface-muted);
+    }
+
+    .klassen-umschalter button {
+        min-height: 40px;
+        border: 0;
+        border-radius: 9px;
+        background: transparent;
+        color: var(--text-light);
+        font-family: inherit;
+        font-size: 0.85rem;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    .klassen-umschalter button[aria-pressed="true"] {
+        background: var(--surface);
+        color: var(--text-main);
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.12);
+    }
+
+    .klassen-umschalter small {
+        margin-left: 4px;
+        font-family: var(--font-display);
+        font-size: 0.7rem;
+        font-weight: 700;
+        color: var(--primary-blue);
+    }
+
+    .klassen-karte .table-responsive {
+        margin: 0;
+        overflow: visible;
+        border-radius: 0;
+        background: none;
+        box-shadow: none;
+    }
+
+    table.klassen-tabelle tbody {
+        display: block;
+        overflow: hidden;
+        border: 1px solid var(--border-soft);
+        border-bottom: 0;
+        border-radius: 14px;
+        background: var(--surface);
+    }
+
+    table.klassen-tabelle tbody tr,
+    table.klassen-tabelle tr.kart-class-adult {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 11px 14px;
+        border-bottom: 1px solid var(--border-soft);
+        border-radius: 0;
+        background: transparent;
+    }
+
+    table.klassen-tabelle tbody td {
+        display: block;
+        padding: 0;
+        border: 0;
+        text-align: left;
+        font-size: 0.9rem;
+        line-height: 1.4;
+    }
+
+    table.klassen-tabelle tbody td::before { content: none; display: none; }
+    table.klassen-tabelle tbody td:first-child { flex: none; }
+
+    table.klassen-tabelle td strong {
+        display: grid;
+        place-items: center;
+        min-width: 46px;
+        height: 30px;
+        padding: 0 6px;
+        border-radius: 8px;
+        background: rgba(0, 71, 204, 0.08);
+        color: var(--primary-blue);
+        font-family: var(--font-display);
+        font-size: 0.8rem;
+        font-weight: 800;
+    }
+
+    .klasse-wort {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip: rect(0 0 0 0);
+        white-space: nowrap;
+    }
+
+    table.klassen-tabelle[data-zeige="jugend"] tr.kart-class-adult,
+    table.klassen-tabelle[data-zeige="erwachsene"] tbody tr:not(.kart-class-adult) {
+        display: none;
+    }
+
+    body.dark-mode .klassen-umschalter { background: #252943; }
+    body.dark-mode .klassen-umschalter button { color: #9aa3c0; }
+    body.dark-mode .klassen-umschalter button[aria-pressed="true"] { background: #20233a; color: #f2f4fb; box-shadow: none; }
+    body.dark-mode .klassen-umschalter small { color: #78a6ff; }
+    body.dark-mode table.klassen-tabelle tbody { background: #1a1c2b; border-color: rgba(255, 255, 255, 0.1); }
+    body.dark-mode table.klassen-tabelle tbody tr { border-bottom-color: rgba(255, 255, 255, 0.1); }
+    body.dark-mode table.klassen-tabelle td strong { background: rgba(66, 133, 244, 0.16); color: #78a6ff; }
+
+    /* ── Pokalfoto mit Unterschrift im Bild ── */
+    body .history-img-frame.pokal-bild {
+        position: relative;
+        max-width: none;
+        margin: 0 0 18px;
+        padding: 0;
+        overflow: hidden;
+        border: 0;
+        border-radius: 14px;
+        background: none;
+        box-shadow: none;
+    }
+
+    .pokal-bild:hover { transform: none; }
+
+    .pokal-bild img {
+        aspect-ratio: 16 / 9;
+        object-fit: cover;
+        border-radius: 0;
+    }
+
+    body .pokal-bild figcaption {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        padding: 26px 12px 10px;
+        background: linear-gradient(180deg, rgba(0, 13, 58, 0), rgba(0, 13, 58, 0.94));
+        color: #fff;
+        font-size: 0.8rem;
+        font-style: normal;
+        text-align: left;
+    }
+
+    /* ── Regelwerk und Kurs-Planer ──
+       Das Regelwerk steht am Handy als Knopf in der Reihe ueber dieser
+       Karte, die eigene Karte entfaellt. Der Kurs-Planer wird kompakt:
+       Vorschaubild links, Titel, zwei Zeilen Text und ein Verweis. */
+    body main .regelwerk-karte { display: none; }
+
+    body .info-card.kursplaner-card {
+        grid-template-columns: 112px minmax(0, 1fr);
+        gap: 12px;
+        align-items: center;
+        margin-top: 12px;
+        padding: 10px;
+    }
+
+    .kursplaner-bild { border-radius: 9px; }
+
+    .kursplaner-bild img {
+        height: 76px;
+        object-fit: cover;
+    }
+
+    .kursplaner-text h3 {
+        margin: 0 0 3px;
+        font-size: 0.95rem;
+        line-height: 1.25;
+    }
+
+    .kursplaner-text p:not(.kursplaner-hinweis) {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        margin: 0 0 4px;
+        font-size: 0.78rem;
+        line-height: 1.4;
+        color: var(--text-light);
+    }
+
+    .kursplaner-hinweis { display: none; }
+
+    body .kursplaner-text .action-btn {
+        display: inline-flex;
+        width: auto;
+        min-height: 32px;
+        padding: 0;
+        gap: 6px;
+        border: 0;
+        background: none;
+        box-shadow: none;
+        color: var(--primary-blue) !important;
+        font-size: 0.82rem;
+    }
+
+    body.dark-mode .kursplaner-text .action-btn { color: var(--blue-light) !important; }
+
+    @media (prefers-reduced-motion: reduce) {
+        .kart-gallery { scroll-behavior: auto; }
+    }
+}

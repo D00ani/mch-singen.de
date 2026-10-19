@@ -172,6 +172,11 @@ body.dark-mode .news-badge-special { background: #332b00; color: #ffd54f; }
 /* Trainer card dark mode */
 body.dark-mode .trainer-card { background: #1a1c2b; }
 body.dark-mode .trainer-img { background-color: #2a2a2a; }
+
+/* Beschriftung der Balken auf trialsport.html ("Balance & Gleichgewicht"
+   usw.). Stand bisher in --text-main, das im Dark Mode nicht umgestellt
+   wird - dunkle Schrift auf dunklem Grund, kaum lesbar. */
+body.dark-mode .skill-title { color: #e0e4f0; }
 body.dark-mode .maps-placeholder-content p { color: #bbb; }
 
 body.dark-mode .info-card { background: #1a1c2b; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }

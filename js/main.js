@@ -563,6 +563,24 @@ document.addEventListener('DOMContentLoaded', () => {
         // Handy: erst laden, wenn jemand wirklich abspielen will.
         video.addEventListener('play', quelleSetzen);
         video.addEventListener('click', quelleSetzen);
+
+        // Abspielknopf mit Titel ueber dem Standbild (css/kartsport.css,
+        // Abschnitt HANDY). Steht im Markup mit hidden und erscheint nur
+        // hier, also nur am Handy. Ein Tipp laedt das Video und startet es.
+        const start = video.parentElement.querySelector('.onboard-start');
+        if (start) {
+            // Die Steuerleiste des Players schimmerte sonst unter dem Titel
+            // durch - sie kommt erst nach dem Tipp zurueck.
+            video.controls = false;
+            start.hidden = false;
+            start.addEventListener('click', () => {
+                quelleSetzen();
+                video.controls = true;
+                start.hidden = true;
+                const versuch = video.play();
+                if (versuch && typeof versuch.catch === 'function') versuch.catch(() => {});
+            });
+        }
     })();
 
     // --- 19. SCHNELLZUGRIFF UNTEN: AKTUELLE SEITE MARKIEREN ---
@@ -677,6 +695,456 @@ document.addEventListener('DOMContentLoaded', () => {
                 knopf.focus();
             }
         });
+    })();
+
+    // --- 21. FUSSBEREICH: LINKLISTEN ZUM AUFKLAPPEN (nur Handy) ---
+    // Untereinander war der Fussbereich am Handy fast einen ganzen
+    // Bildschirm lang. Kontakt und Trainingszeit bleiben offen stehen, die
+    // Listen "Sport" und "Verein" klappen auf (css/footer.css, Mobile).
+    // Der Knopf entsteht nur unterhalb von 769px und verschwindet beim
+    // Breiterziehen wieder - am Desktop bleibt die Ueberschrift eine
+    // schlichte Ueberschrift, ohne Knopf, der nichts tut.
+    // Ohne JavaScript bleiben die Listen einfach offen.
+    (function () {
+        const handy = window.matchMedia('(max-width: 768px)');
+        const spalten = [];
+
+        document.querySelectorAll('footer .footer-col').forEach((spalte, i) => {
+            const kopf = spalte.querySelector('.footer-heading');
+            const liste = spalte.querySelector('.footer-links');
+            if (!kopf || !liste) return;
+            if (!liste.id) liste.id = `fuss-liste-${i}`;
+            spalten.push({ spalte, kopf, liste, text: kopf.textContent.trim(), knopf: null });
+        });
+
+        if (!spalten.length) return;
+
+        function aufbauen(s) {
+            const knopf = document.createElement('button');
+            knopf.type = 'button';
+            knopf.className = 'footer-klapp';
+            knopf.setAttribute('aria-expanded', 'false');
+            knopf.setAttribute('aria-controls', s.liste.id);
+            const beschriftung = document.createElement('span');
+            beschriftung.textContent = s.text;
+            const pfeil = document.createElement('i');
+            pfeil.className = 'fa-solid fa-chevron-down';
+            pfeil.setAttribute('aria-hidden', 'true');
+            knopf.append(beschriftung, pfeil);
+            knopf.addEventListener('click', () => {
+                const offen = s.spalte.classList.toggle('offen');
+                knopf.setAttribute('aria-expanded', String(offen));
+            });
+            s.kopf.textContent = '';
+            s.kopf.appendChild(knopf);
+            s.spalte.classList.add('ist-klappbar');
+            s.knopf = knopf;
+        }
+
+        function abbauen(s) {
+            s.kopf.textContent = s.text;
+            s.spalte.classList.remove('ist-klappbar', 'offen');
+            s.knopf = null;
+        }
+
+        function abgleichen() {
+            spalten.forEach(s => {
+                if (handy.matches && !s.knopf) aufbauen(s);
+                else if (!handy.matches && s.knopf) abbauen(s);
+            });
+        }
+
+        abgleichen();
+        handy.addEventListener('change', abgleichen);
+    })();
+
+    // --- 22. NAECHSTER TERMIN AUF UNTERSEITEN (nur Handy sichtbar) ---
+    // Derselbe Streifen wie auf der Startseite (die fuellt ihn selbst in
+    // js/index.js). Hier fuer Unterseiten: welche Datei gelesen wird und ob
+    // es Kart oder Trial ist, steht am Streifen selbst
+    //   data-termin-datei="../data/timer.txt"   data-termin-art="kart"
+    // Ein Tipp oeffnet das PDF des Termins (Spalte 8), falls es auf dem
+    // Server liegt - sonst bleibt der Verweis aus dem Markup stehen.
+    (function initTerminStreifen() {
+        const streifen = document.querySelector('.termin-streifen[data-termin-datei]');
+        if (!streifen) return;
+
+        const datei = streifen.dataset.terminDatei;
+        const art = streifen.dataset.terminArt;
+        // Pfade in den Dateien gelten ab der Hauptebene ("media/..."),
+        // die Seite liegt in pages/ - also derselbe Vorsatz wie bei data/.
+        const vorsatz = datei.slice(0, datei.indexOf('data/'));
+        const WOCHENTAGE = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
+        const MONATE = ['Jan', 'Feb', 'März', 'Apr', 'Mai', 'Juni', 'Juli', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'];
+        const teil = name => streifen.querySelector('.termin-streifen-' + name);
+        const zahlen = streifen.querySelectorAll('.termin-streifen-zahl');
+
+        // Format wie in js/index.js: Tag;Monat;Jahr;Uhrzeit;Verein;Ort;Karte;PDF;Titel
+        function lies(text) {
+            const termine = [];
+            for (const roh of text.split('\n')) {
+                const zeile = roh.trim();
+                if (!zeile || zeile.startsWith('#')) continue;
+                const t = zeile.split(';').map(x => x.trim());
+                if (t.length < 4) continue;
+                const zeit = new Date(`${t[1]} ${t[0]}, ${t[2]} ${t[3]}`).getTime();
+                if (isNaN(zeit)) continue;
+                termine.push({ zeit, verein: t[4] || '', ort: t[5] || '', pdf: t[7] || '', titel: t[8] || '' });
+            }
+            return termine.sort((a, b) => a.zeit - b.zeit);
+        }
+
+        // Ein Termin von heute bleibt den ganzen Tag stehen (dann "Heute").
+        function naechster(termine) {
+            const jetzt = new Date();
+            return termine.find(ev => {
+                const d = new Date(ev.zeit);
+                const heute = d.toDateString() === jetzt.toDateString();
+                return ev.zeit > jetzt.getTime() || heute;
+            }) || null;
+        }
+
+        let geprueftesPdf = null;
+
+        function zeigen(termine) {
+            const ev = naechster(termine);
+            if (!ev) { streifen.hidden = true; return; }
+
+            const titel = ev.titel
+                || (art === 'trial' ? `${ev.verein} in ${ev.ort}` : `Rennen beim ${ev.verein} ${ev.ort}`);
+            const d = new Date(ev.zeit);
+            let info = `${WOCHENTAGE[d.getDay()]}, ${d.getDate()}. ${MONATE[d.getMonth()]}`
+                     + ` · ${d.getHours()}:${String(d.getMinutes()).padStart(2, '0')} Uhr`;
+            if (ev.titel && ev.ort) info += ` · ${ev.ort}`;
+            teil('titel').textContent = titel.trim();
+            teil('info').textContent = info;
+
+            const rest = ev.zeit - Date.now();
+            if (rest <= 0) {
+                teil('kicker').textContent = 'Heute';
+                teil('ziffern').hidden = true;
+            } else {
+                teil('kicker').textContent = 'Nächster Termin';
+                teil('ziffern').hidden = false;
+                zahlen[0].textContent = String(Math.floor(rest / 86400000)).padStart(2, '0');
+                zahlen[1].textContent = String(Math.floor((rest % 86400000) / 3600000)).padStart(2, '0');
+            }
+
+            if (ev.pdf && ev.pdf !== geprueftesPdf) {
+                geprueftesPdf = ev.pdf;
+                fetch(vorsatz + ev.pdf, { method: 'HEAD' })
+                    .then(r => {
+                        if (!r.ok) return;
+                        streifen.href = vorsatz + ev.pdf;
+                        streifen.target = '_blank';
+                        streifen.rel = 'noopener noreferrer';
+                    })
+                    .catch(() => {});
+            }
+            streifen.hidden = false;
+        }
+
+        fetch(datei)
+            .then(r => { if (!r.ok) throw new Error(); return r.text(); })
+            .then(text => {
+                const termine = lies(text);
+                zeigen(termine);
+                // Minuten zeigt der Streifen nicht - 30 Sekunden reichen.
+                setInterval(() => zeigen(termine), 30000);
+            })
+            .catch(() => {});
+    })();
+
+    // --- 23. WEITERLESEN (nur Handy) ---
+    // Ein Knopf .weiterlesen klappt den Block auf, den aria-controls nennt.
+    // Die Klassen setzt erst dieses Skript; am Desktop greift keine der
+    // Regeln (css/unterseiten-handy.css, Abschnitt 4), dort steht der Text
+    // offen und der Knopf ist ausgeblendet.
+    document.querySelectorAll('.weiterlesen[aria-controls]').forEach(knopf => {
+        const ziel = document.getElementById(knopf.getAttribute('aria-controls'));
+        if (!ziel) return;
+        ziel.classList.add('ist-klappbar');
+        knopf.classList.add('ist-bereit');
+        knopf.addEventListener('click', () => {
+            const offen = ziel.classList.toggle('offen');
+            knopf.setAttribute('aria-expanded', String(offen));
+            const text = knopf.querySelector('span');
+            if (text) text.textContent = offen ? 'Weniger anzeigen' : 'Weiterlesen';
+        });
+    });
+
+    // --- 24. KART-GALERIE ZUM WISCHEN (nur Handy) ---
+    // Am Handy wird die Fotoreihe seitlich gewischt (css/kartsport.css).
+    // Dazu kommen ein Zaehler im Bild und eine Reihe Vorschaubilder, die
+    // zum jeweiligen Foto springen. Antippen eines Fotos oeffnet es wie
+    // bisher gross (openLightbox im Markup der Seite).
+    (function initWischGalerie() {
+        const galerie = document.querySelector('.kart-gallery');
+        if (!galerie) return;
+        const fotos = Array.from(galerie.querySelectorAll('.kart-gallery-item'));
+        if (fotos.length < 2) return;
+
+        const box = document.createElement('div');
+        box.className = 'galerie-box';
+        galerie.parentNode.insertBefore(box, galerie);
+        box.appendChild(galerie);
+
+        const zaehler = document.createElement('span');
+        zaehler.className = 'galerie-zaehler';
+        zaehler.setAttribute('aria-hidden', 'true');
+        box.appendChild(zaehler);
+
+        const daumen = document.createElement('div');
+        daumen.className = 'galerie-daumen';
+        const ruhig = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+        const knoepfe = fotos.map((foto, i) => {
+            const knopf = document.createElement('button');
+            knopf.type = 'button';
+            knopf.setAttribute('aria-label', `Foto ${i + 1} von ${fotos.length} zeigen`);
+            const bild = foto.querySelector('img');
+            const mini = document.createElement('img');
+            mini.src = bild.currentSrc || bild.src;
+            mini.alt = '';
+            mini.loading = 'lazy';
+            mini.decoding = 'async';
+            knopf.appendChild(mini);
+            knopf.addEventListener('click', () => {
+                foto.scrollIntoView({ behavior: ruhig ? 'auto' : 'smooth', block: 'nearest', inline: 'center' });
+            });
+            daumen.appendChild(knopf);
+            return knopf;
+        });
+
+        const hinweis = document.createElement('p');
+        hinweis.className = 'galerie-hinweis';
+        hinweis.textContent = 'Antippen öffnet das Foto groß.';
+        box.after(daumen, hinweis);
+
+        // Welches Foto steht am naechsten an der Mitte?
+        function aktualisieren() {
+            const rahmen = galerie.getBoundingClientRect();
+            const mitte = rahmen.left + rahmen.width / 2;
+            let beste = 0;
+            let abstand = Infinity;
+            fotos.forEach((foto, i) => {
+                const r = foto.getBoundingClientRect();
+                const a = Math.abs(r.left + r.width / 2 - mitte);
+                if (a < abstand) { abstand = a; beste = i; }
+            });
+            zaehler.textContent = `${beste + 1} / ${fotos.length}`;
+            knoepfe.forEach((k, i) => k.classList.toggle('ist-aktiv', i === beste));
+        }
+
+        galerie.addEventListener('scroll', aktualisieren, { passive: true });
+        aktualisieren();
+    })();
+
+    // --- 25. KART-KLASSEN: UMSCHALTER JUGEND / ERWACHSENE (nur Handy) ---
+    // Am Handy zeigt die Klassentabelle eine Gruppe auf einmal. Erwachsenen-
+    // klassen erkennt das Skript an tr.kart-class-adult. "Klasse " vor dem
+    // Kuerzel bleibt fuer Vorleseprogramme erhalten, ist am Handy aber nicht
+    // sichtbar (css/kartsport.css). Am Desktop aendert sich nichts.
+    (function initKlassenUmschalter() {
+        const tabelle = document.querySelector('table.klassen-tabelle');
+        if (!tabelle) return;
+
+        tabelle.querySelectorAll('tbody td:first-child strong').forEach(feld => {
+            const treffer = feld.textContent.match(/^(Klasse\s+)(.+)$/);
+            if (!treffer) return;
+            const wort = document.createElement('span');
+            wort.className = 'klasse-wort';
+            wort.textContent = treffer[1];
+            feld.textContent = '';
+            feld.append(wort, treffer[2]);
+        });
+
+        const alle = tabelle.querySelectorAll('tbody tr').length;
+        const erwachsene = tabelle.querySelectorAll('tbody tr.kart-class-adult').length;
+        const jugend = alle - erwachsene;
+        if (!jugend || !erwachsene) return;
+
+        const gruppe = document.createElement('div');
+        gruppe.className = 'klassen-umschalter';
+        gruppe.setAttribute('role', 'group');
+        gruppe.setAttribute('aria-label', 'Klassen anzeigen');
+
+        [['jugend', 'Jugend', jugend], ['erwachsene', 'Erwachsene', erwachsene]].forEach(([wert, name, anzahl], i) => {
+            const knopf = document.createElement('button');
+            knopf.type = 'button';
+            knopf.setAttribute('aria-pressed', String(i === 0));
+            const zahl = document.createElement('small');
+            zahl.textContent = anzahl;
+            knopf.append(name, zahl);
+            knopf.addEventListener('click', () => {
+                tabelle.dataset.zeige = wert;
+                gruppe.querySelectorAll('button').forEach(k => k.setAttribute('aria-pressed', String(k === knopf)));
+            });
+            gruppe.appendChild(knopf);
+        });
+
+        tabelle.dataset.zeige = 'jugend';
+        const huelle = tabelle.closest('.table-responsive') || tabelle;
+        huelle.parentNode.insertBefore(gruppe, huelle);
+    })();
+
+    // --- 26. SPRUNGLEISTE (nur Handy, Aktuelles) ---
+    // Ein Chip je Abschnittsueberschrift (main > h2). Die Leiste ergibt
+    // sich also aus der Seite selbst und passt, auch wenn zur naechsten
+    // Saison Abschnitte dazukommen oder wegfallen. Steht direkt vor einer
+    // Ueberschrift ein .sprung-anker mit id, wird der als Ziel genommen
+    // (so bleibt z. B. aktuelles.html#termine von der Startseite gueltig).
+    // Die Ueberschriften selbst bekommen ihre id nur hier im Browser - im
+    // Markup muessen sie schlichte <h2> bleiben (tools/news_pflege.py).
+    (function initSprungleiste() {
+        const leiste = document.querySelector('[data-sprungleiste]');
+        if (!leiste) return;
+        const ueberschriften = Array.from(document.querySelectorAll('main > h2'));
+        if (ueberschriften.length < 2) return;
+
+        // "Termine 2025/2026" -> "Termine", "Aktuelle Wertungen" -> "Wertungen"
+        const kurz = text => text.replace(/\s+/g, ' ').trim()
+            .replace(/\s*\d{4}(\s*\/\s*\d{2,4})?$/, '')
+            .replace(/^Aktuelle\s+/, '');
+
+        const eintraege = ueberschriften.map((h2, i) => {
+            const davor = h2.previousElementSibling;
+            const ziel = davor && davor.classList.contains('sprung-anker') && davor.id ? davor : h2;
+            if (!ziel.id) ziel.id = `abschnitt-${i + 1}`;
+            const link = document.createElement('a');
+            link.href = `#${ziel.id}`;
+            link.textContent = kurz(h2.textContent);
+            leiste.appendChild(link);
+            return { h2, link };
+        });
+        leiste.hidden = false;
+
+        let aktiv = null;
+        let geplant = false;
+        function markieren() {
+            geplant = false;
+            const grenze = leiste.getBoundingClientRect().bottom + 24;
+            let neu = eintraege[0];
+            eintraege.forEach(e => { if (e.h2.getBoundingClientRect().top <= grenze) neu = e; });
+            if (neu === aktiv) return;
+            aktiv = neu;
+            eintraege.forEach(e => e.link.classList.toggle('ist-aktiv', e === aktiv));
+            // Den aktiven Chip in der Leiste sichtbar halten
+            const l = aktiv.link;
+            if (l.offsetLeft < leiste.scrollLeft || l.offsetLeft + l.offsetWidth > leiste.scrollLeft + leiste.clientWidth) {
+                leiste.scrollLeft = l.offsetLeft - 16;
+            }
+        }
+        window.addEventListener('scroll', () => {
+            if (!geplant) { geplant = true; requestAnimationFrame(markieren); }
+        }, { passive: true });
+        markieren();
+    })();
+
+    // --- 27. UMSCHALTER (nur Handy) ---
+    // Mehrere Elemente mit demselben data-umschalter="gruppe" zeigt das Handy
+    // einzeln, mit einer Knopfreihe davor (css/unterseiten-handy.css,
+    // Abschnitt 8). Benutzt fuer die Diagramme und Wanderpokale auf
+    // statistiken.html und die Kosten auf mitglied-werden.html.
+    //   data-umschalter-titel         Beschriftung des Knopfs; fehlt sie,
+    //                                 kommt sie aus der Ueberschrift im Teil
+    //                                 ("Saison 2025" -> "2025")
+    //   data-umschalter-reihe         Reihenfolge der Knoepfe (Zahl)
+    //   data-umschalter-ueberschrift  (am ersten Teil) sichtbare Zeile ueber
+    //                                 den Knoepfen; die Ueberschriften der
+    //                                 Teile bleiben dann nur fuer Vorlese-
+    //                                 programme stehen
+    // Am Desktop greift keine der Regeln, dort steht alles wie gehabt.
+    (function initUmschalter() {
+        const gruppen = {};
+        document.querySelectorAll('[data-umschalter]').forEach(teil => {
+            (gruppen[teil.dataset.umschalter] = gruppen[teil.dataset.umschalter] || []).push(teil);
+        });
+
+        function knopftext(teil) {
+            if (teil.dataset.umschalterTitel) return teil.dataset.umschalterTitel;
+            const kopf = teil.querySelector('h2, h3');
+            const text = kopf ? kopf.textContent.replace(/\s+/g, ' ').trim() : '';
+            let treffer = text.match(/seit\s+(\d{4})/i);
+            if (treffer) return `Seit ${treffer[1]}`;
+            treffer = text.match(/\b(\d{4})\b/);
+            if (treffer) return treffer[1];
+            return text.replace(/\s*\(.*?\)\s*/g, ' ').trim() || 'Ansicht';
+        }
+
+        Object.values(gruppen).forEach(teile => {
+            if (teile.length < 2) return;
+            const erstes = teile[0];
+            const reihe = teile.slice().sort((a, b) =>
+                (Number(a.dataset.umschalterReihe) || 0) - (Number(b.dataset.umschalterReihe) || 0));
+            const ueberschrift = erstes.dataset.umschalterUeberschrift;
+
+            const leiste = document.createElement('div');
+            leiste.className = 'umschalter';
+            leiste.setAttribute('role', 'group');
+            leiste.setAttribute('aria-label', ueberschrift ? `${ueberschrift}: Ansicht wählen` : 'Ansicht wählen');
+
+            const knoepfe = reihe.map(teil => {
+                const knopf = document.createElement('button');
+                knopf.type = 'button';
+                knopf.textContent = knopftext(teil);
+                knopf.addEventListener('click', () => zeigen(teil));
+                leiste.appendChild(knopf);
+                teil.classList.add('umschalter-panel');
+                if (ueberschrift) teil.classList.add('mit-titel');
+                return knopf;
+            });
+
+            function zeigen(aktiv) {
+                reihe.forEach((teil, i) => {
+                    teil.classList.toggle('umschalter-aus', teil !== aktiv);
+                    knoepfe[i].setAttribute('aria-pressed', String(teil === aktiv));
+                });
+            }
+
+            erstes.parentNode.insertBefore(leiste, erstes);
+            if (ueberschrift) {
+                const titel = document.createElement('p');
+                titel.className = 'umschalter-titel';
+                titel.setAttribute('aria-hidden', 'true');
+                titel.textContent = ueberschrift;
+                leiste.before(titel);
+            }
+            zeigen(reihe[0]);
+        });
+    })();
+
+    // --- 28. SOMMERFERIENPROGRAMM (nur Handy) ---
+    // a) Zeile ueber dem Status-Streifen aus data/ferienprogramm.json -
+    //    derselbe Datensatz, aus dem tools/ferienprogramm_pflege.py den
+    //    Terminkasten schreibt. Ohne Datei bleibt die Zeile einfach weg.
+    // b) "Auf einen Blick" rueckt am Handy direkt unter den Streifen und
+    //    beim Breiterziehen wieder an seinen Platz zurueck.
+    (function initFerienprogramm() {
+        const kasten = document.querySelector('.ferien-status .note-box');
+        const blick = document.querySelector('.auf-einen-blick');
+        if (!kasten) return;
+
+        fetch('../data/ferienprogramm.json')
+            .then(r => (r.ok ? r.json() : null))
+            .then(daten => {
+                if (!daten || !daten.jahr) return;
+                const jahr = Number(daten.jahr);
+                kasten.dataset.kicker = daten.aktiv ? `Termine ${jahr}` : `Termine ${jahr + 1} folgen`;
+            })
+            .catch(() => {});
+
+        if (!blick) return;
+        const huelle = kasten.closest('.ferien-status');
+        const platz = document.createComment(' Platz von "Auf einen Blick" am Desktop ');
+        blick.before(platz);
+        const handy = window.matchMedia('(max-width: 768px)');
+        function stellen() {
+            if (handy.matches) huelle.after(blick);
+            else platz.after(blick);
+        }
+        stellen();
+        handy.addEventListener('change', stellen);
     })();
 
 });

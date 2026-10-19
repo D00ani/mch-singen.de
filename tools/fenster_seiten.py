@@ -26,7 +26,6 @@ import ausschreibung_pdf
 import fenster_bausteine as B
 import medien_aufraeumen
 import pflege_hilfen as h
-import pruefe_seite
 import termine_verwalten as tv
 import uebersicht
 import vorschau
@@ -206,88 +205,7 @@ class UebersichtSeite(Seite):
 # ------------------------------------------------------------------
 # Webseite pruefen
 # ------------------------------------------------------------------
-
-class PruefenSeite(Seite):
-    titel = "Webseite prüfen"
-    untertitel = ("Findet das, was auf GitHub Pages kaputt wäre, hier aber "
-                  "funktioniert - und alles, was Besucher oder Google stört.")
-
-    def baue(self):
-        self.extern = tk.BooleanVar(value=False)
-        self.knopf("Prüfung starten", self.starten, "haupt")
-        tk.Checkbutton(self.aktionen, text="Internet-Links",
-                       variable=self.extern, bg=B.FARBEN["grund"],
-                       fg=B.FARBEN["text"], font=self.s.klein,
-                       activebackground=B.FARBEN["grund"], selectcolor=B.FARBEN["karte"],
-                       cursor="hand2").pack(side="right", padx=(0, 10))
-        self.laeuft = False
-
-    def aktualisieren(self):
-        if not self.inhalt.winfo_children():
-            self.leeren()
-            B.karte(self.inhalt, self.s, uebersicht.INFO,
-                    "Noch nicht geprüft.",
-                    "Oben rechts auf „Prüfung starten“ - dauert ohne Internet-Links "
-                    "unter einer Sekunde.")
-
-    def starten(self):
-        if self.laeuft:
-            return
-        self.laeuft = True
-        self.leeren()
-        B.karte(self.inhalt, self.s, uebersicht.INFO, "Prüfe …",
-                "Bei eingeschalteter Internet-Prüfung dauert das ein paar Sekunden.")
-
-        extern = self.extern.get()
-
-        def arbeit():
-            gruppen = [
-                (0, "Tote Verweise (Link führt ins Leere)", pruefe_seite.pruefe_verweise()[0]),
-                (0, "Falsche Groß-/Kleinschreibung (bricht erst auf dem Server)",
-                 pruefe_seite.pruefe_verweise()[1]),
-                (0, "Build-Schritt fehlt (Änderung ist online unsichtbar)",
-                 pruefe_seite.pruefe_build_aktuell()),
-                (0, "Externe Dienste ohne Klaro-Eintrag (DSGVO)",
-                 pruefe_seite.pruefe_drittanbieter()),
-                (1, "Externe Links ohne Antwort",
-                 pruefe_seite.pruefe_externe_links(fortschritt=False) if extern else []),
-                (1, "Dieselbe id mehrfach auf einer Seite", pruefe_seite.pruefe_doppelte_ids()),
-                (1, "Über die Suche nicht auffindbar", pruefe_seite.pruefe_suchindex()),
-                (1, f"Seiten über {pruefe_seite.LADEBUDGET_KB // 1024} MB Ladegewicht",
-                 pruefe_seite.pruefe_ladebudget()),
-                (1, "Uneinheitliche Schreibweisen", pruefe_seite.pruefe_schreibweisen()),
-                (1, "Bilder ohne alt-Text", pruefe_seite.pruefe_alt_texte()),
-                (1, "Titel, Beschreibung, Vorschaubild", pruefe_seite.pruefe_meta()),
-                (1, "Angekündigte PDFs noch nicht hochgeladen",
-                 pruefe_seite.pruefe_angekuendigte_pdfs()),
-            ]
-            return gruppen
-
-        B.im_hintergrund(self.rahmen, arbeit, self._fertig)
-
-    def _fertig(self, gruppen):
-        self.laeuft = False
-        self.leeren()
-
-        gefunden = [(stufe, name, eintraege) for stufe, name, eintraege in gruppen if eintraege]
-        if not gefunden:
-            B.karte(self.inhalt, self.s, uebersicht.INFO,
-                    "Alles in Ordnung - keine Probleme gefunden.",
-                    "Weder tote Verweise noch Schreibweise, Build, alt-Texte oder Meta-Angaben.")
-            return
-
-        fehler = sum(1 for stufe, _, _ in gefunden if stufe == 0)
-        B.abschnitt(self.inhalt, self.s, "Ergebnis",
-                    f"{fehler} Fehlergruppe(n), {len(gefunden) - fehler} Hinweisgruppe(n)")
-
-        for stufe, name, eintraege in gefunden:
-            B.karte(self.inhalt, self.s, stufe, f"{name} - {len(eintraege)}")
-            kasten = tk.Text(self.inhalt, height=min(len(eintraege), 7), font=self.s.daten,
-                             wrap="none", bg=B.FARBEN["karte"], fg=B.FARBEN["gedimmt"],
-                             relief="solid", bd=1, padx=10, pady=6)
-            kasten.pack(fill="x", pady=(0, 14))
-            kasten.insert("1.0", "\n".join(str(e) for e in eintraege))
-            kasten.configure(state="disabled")
+# Steht jetzt in tools/fenster_seiten_pruefen.py (mit Reparatur-Knoepfen).
 
 
 # ------------------------------------------------------------------
