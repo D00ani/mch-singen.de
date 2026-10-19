@@ -1255,7 +1255,6 @@ body.dark-mode .sponsor-strip-mehr { color: var(--blue-light); }
 
 .hero-lead-zusatz { display: inline; }
 
-.termin-streifen,
 .quick-nav-titel,
 .welcome-kurz,
 .welcome-zahlen,
@@ -1427,89 +1426,13 @@ body.dark-mode .sponsor-strip-mehr { color: var(--blue-light); }
 
     body .hero .btn-secondary:hover { background: rgba(255, 255, 255, 0.2); }
 
-    /* ── Naechster Termin ─────────────────────────────────────────── */
-    .termin-streifen {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        margin: 0 -4px 28px;
-        padding: 12px 14px;
-        border-radius: 16px;
-        background: linear-gradient(135deg, var(--primary-blue), var(--dark-blue));
-        box-shadow: 0 8px 20px rgba(0, 27, 94, 0.28);
-        color: #fff !important;
-        text-decoration: none !important;
-    }
-
-    .termin-streifen[hidden] { display: none; }
+    /* ── Naechster Termin ─────────────────────────────────────────────
+       Aussehen des Streifens: css/unterseiten-handy.css (gemeinsam mit den
+       Unterseiten). Hier nur der Abstand auf der Startseite. */
+    .termin-streifen { margin: 0 -4px 28px; }
 
     /* Ohne Termin rueckt der Text naeher an das Foto. */
     .termin-streifen[hidden] + .welcome-section { margin-top: 16px; }
-
-    .termin-streifen-text {
-        flex: 1;
-        min-width: 0;
-        display: flex;
-        flex-direction: column;
-        gap: 2px;
-    }
-
-    .termin-streifen-kicker {
-        font-size: 0.64rem;
-        font-weight: 700;
-        letter-spacing: 0.14em;
-        text-transform: uppercase;
-        color: var(--accent);
-    }
-
-    .termin-streifen-titel {
-        font-family: var(--font-heading);
-        font-size: 1rem;
-        font-weight: 700;
-        line-height: 1.2;
-        overflow-wrap: anywhere;
-    }
-
-    .termin-streifen-info {
-        font-size: 0.76rem;
-        color: rgba(255, 255, 255, 0.78);
-    }
-
-    .termin-streifen-ziffern {
-        display: flex;
-        gap: 6px;
-        flex-shrink: 0;
-    }
-
-    .termin-streifen-ziffern[hidden] { display: none; }
-
-    .termin-streifen-box {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        min-width: 46px;
-        padding: 6px 6px 5px;
-        border-radius: 9px;
-        background: rgba(255, 255, 255, 0.12);
-    }
-
-    .termin-streifen-zahl {
-        font-family: var(--font-display);
-        font-size: 1.3rem;
-        font-weight: 700;
-        line-height: 1.1;
-        font-variant-numeric: tabular-nums;
-    }
-
-    .termin-streifen-einheit {
-        font-size: 0.55rem;
-        font-weight: 600;
-        letter-spacing: 0.1em;
-        text-transform: uppercase;
-        color: rgba(255, 255, 255, 0.75);
-    }
-
-    body.dark-mode .termin-streifen { box-shadow: 0 8px 20px rgba(0, 0, 0, 0.45); }
 
     /* ── Wer wir sind ─────────────────────────────────────────────── */
     .welcome-kurz { display: block; }

@@ -563,6 +563,24 @@ document.addEventListener('DOMContentLoaded', () => {
         // Handy: erst laden, wenn jemand wirklich abspielen will.
         video.addEventListener('play', quelleSetzen);
         video.addEventListener('click', quelleSetzen);
+
+        // Abspielknopf mit Titel ueber dem Standbild (css/kartsport.css,
+        // Abschnitt HANDY). Steht im Markup mit hidden und erscheint nur
+        // hier, also nur am Handy. Ein Tipp laedt das Video und startet es.
+        const start = video.parentElement.querySelector('.onboard-start');
+        if (start) {
+            // Die Steuerleiste des Players schimmerte sonst unter dem Titel
+            // durch - sie kommt erst nach dem Tipp zurueck.
+            video.controls = false;
+            start.hidden = false;
+            start.addEventListener('click', () => {
+                quelleSetzen();
+                video.controls = true;
+                start.hidden = true;
+                const versuch = video.play();
+                if (versuch && typeof versuch.catch === 'function') versuch.catch(() => {});
+            });
+        }
     })();
 
     // --- 19. SCHNELLZUGRIFF UNTEN: AKTUELLE SEITE MARKIEREN ---
@@ -738,6 +756,236 @@ document.addEventListener('DOMContentLoaded', () => {
 
         abgleichen();
         handy.addEventListener('change', abgleichen);
+    })();
+
+    // --- 22. NAECHSTER TERMIN AUF UNTERSEITEN (nur Handy sichtbar) ---
+    // Derselbe Streifen wie auf der Startseite (die fuellt ihn selbst in
+    // js/index.js). Hier fuer Unterseiten: welche Datei gelesen wird und ob
+    // es Kart oder Trial ist, steht am Streifen selbst
+    //   data-termin-datei="../data/timer.txt"   data-termin-art="kart"
+    // Ein Tipp oeffnet das PDF des Termins (Spalte 8), falls es auf dem
+    // Server liegt - sonst bleibt der Verweis aus dem Markup stehen.
+    (function initTerminStreifen() {
+        const streifen = document.querySelector('.termin-streifen[data-termin-datei]');
+        if (!streifen) return;
+
+        const datei = streifen.dataset.terminDatei;
+        const art = streifen.dataset.terminArt;
+        // Pfade in den Dateien gelten ab der Hauptebene ("media/..."),
+        // die Seite liegt in pages/ - also derselbe Vorsatz wie bei data/.
+        const vorsatz = datei.slice(0, datei.indexOf('data/'));
+        const WOCHENTAGE = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
+        const MONATE = ['Jan', 'Feb', 'März', 'Apr', 'Mai', 'Juni', 'Juli', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'];
+        const teil = name => streifen.querySelector('.termin-streifen-' + name);
+        const zahlen = streifen.querySelectorAll('.termin-streifen-zahl');
+
+        // Format wie in js/index.js: Tag;Monat;Jahr;Uhrzeit;Verein;Ort;Karte;PDF;Titel
+        function lies(text) {
+            const termine = [];
+            for (const roh of text.split('\n')) {
+                const zeile = roh.trim();
+                if (!zeile || zeile.startsWith('#')) continue;
+                const t = zeile.split(';').map(x => x.trim());
+                if (t.length < 4) continue;
+                const zeit = new Date(`${t[1]} ${t[0]}, ${t[2]} ${t[3]}`).getTime();
+                if (isNaN(zeit)) continue;
+                termine.push({ zeit, verein: t[4] || '', ort: t[5] || '', pdf: t[7] || '', titel: t[8] || '' });
+            }
+            return termine.sort((a, b) => a.zeit - b.zeit);
+        }
+
+        // Ein Termin von heute bleibt den ganzen Tag stehen (dann "Heute").
+        function naechster(termine) {
+            const jetzt = new Date();
+            return termine.find(ev => {
+                const d = new Date(ev.zeit);
+                const heute = d.toDateString() === jetzt.toDateString();
+                return ev.zeit > jetzt.getTime() || heute;
+            }) || null;
+        }
+
+        let geprueftesPdf = null;
+
+        function zeigen(termine) {
+            const ev = naechster(termine);
+            if (!ev) { streifen.hidden = true; return; }
+
+            const titel = ev.titel
+                || (art === 'trial' ? `${ev.verein} in ${ev.ort}` : `Rennen beim ${ev.verein} ${ev.ort}`);
+            const d = new Date(ev.zeit);
+            let info = `${WOCHENTAGE[d.getDay()]}, ${d.getDate()}. ${MONATE[d.getMonth()]}`
+                     + ` · ${d.getHours()}:${String(d.getMinutes()).padStart(2, '0')} Uhr`;
+            if (ev.titel && ev.ort) info += ` · ${ev.ort}`;
+            teil('titel').textContent = titel.trim();
+            teil('info').textContent = info;
+
+            const rest = ev.zeit - Date.now();
+            if (rest <= 0) {
+                teil('kicker').textContent = 'Heute';
+                teil('ziffern').hidden = true;
+            } else {
+                teil('kicker').textContent = 'Nächster Termin';
+                teil('ziffern').hidden = false;
+                zahlen[0].textContent = String(Math.floor(rest / 86400000)).padStart(2, '0');
+                zahlen[1].textContent = String(Math.floor((rest % 86400000) / 3600000)).padStart(2, '0');
+            }
+
+            if (ev.pdf && ev.pdf !== geprueftesPdf) {
+                geprueftesPdf = ev.pdf;
+                fetch(vorsatz + ev.pdf, { method: 'HEAD' })
+                    .then(r => {
+                        if (!r.ok) return;
+                        streifen.href = vorsatz + ev.pdf;
+                        streifen.target = '_blank';
+                        streifen.rel = 'noopener noreferrer';
+                    })
+                    .catch(() => {});
+            }
+            streifen.hidden = false;
+        }
+
+        fetch(datei)
+            .then(r => { if (!r.ok) throw new Error(); return r.text(); })
+            .then(text => {
+                const termine = lies(text);
+                zeigen(termine);
+                // Minuten zeigt der Streifen nicht - 30 Sekunden reichen.
+                setInterval(() => zeigen(termine), 30000);
+            })
+            .catch(() => {});
+    })();
+
+    // --- 23. WEITERLESEN (nur Handy) ---
+    // Ein Knopf .weiterlesen klappt den Block auf, den aria-controls nennt.
+    // Die Klassen setzt erst dieses Skript; am Desktop greift keine der
+    // Regeln (css/unterseiten-handy.css, Abschnitt 4), dort steht der Text
+    // offen und der Knopf ist ausgeblendet.
+    document.querySelectorAll('.weiterlesen[aria-controls]').forEach(knopf => {
+        const ziel = document.getElementById(knopf.getAttribute('aria-controls'));
+        if (!ziel) return;
+        ziel.classList.add('ist-klappbar');
+        knopf.classList.add('ist-bereit');
+        knopf.addEventListener('click', () => {
+            const offen = ziel.classList.toggle('offen');
+            knopf.setAttribute('aria-expanded', String(offen));
+            const text = knopf.querySelector('span');
+            if (text) text.textContent = offen ? 'Weniger anzeigen' : 'Weiterlesen';
+        });
+    });
+
+    // --- 24. KART-GALERIE ZUM WISCHEN (nur Handy) ---
+    // Am Handy wird die Fotoreihe seitlich gewischt (css/kartsport.css).
+    // Dazu kommen ein Zaehler im Bild und eine Reihe Vorschaubilder, die
+    // zum jeweiligen Foto springen. Antippen eines Fotos oeffnet es wie
+    // bisher gross (openLightbox im Markup der Seite).
+    (function initWischGalerie() {
+        const galerie = document.querySelector('.kart-gallery');
+        if (!galerie) return;
+        const fotos = Array.from(galerie.querySelectorAll('.kart-gallery-item'));
+        if (fotos.length < 2) return;
+
+        const box = document.createElement('div');
+        box.className = 'galerie-box';
+        galerie.parentNode.insertBefore(box, galerie);
+        box.appendChild(galerie);
+
+        const zaehler = document.createElement('span');
+        zaehler.className = 'galerie-zaehler';
+        zaehler.setAttribute('aria-hidden', 'true');
+        box.appendChild(zaehler);
+
+        const daumen = document.createElement('div');
+        daumen.className = 'galerie-daumen';
+        const ruhig = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+        const knoepfe = fotos.map((foto, i) => {
+            const knopf = document.createElement('button');
+            knopf.type = 'button';
+            knopf.setAttribute('aria-label', `Foto ${i + 1} von ${fotos.length} zeigen`);
+            const bild = foto.querySelector('img');
+            const mini = document.createElement('img');
+            mini.src = bild.currentSrc || bild.src;
+            mini.alt = '';
+            mini.loading = 'lazy';
+            mini.decoding = 'async';
+            knopf.appendChild(mini);
+            knopf.addEventListener('click', () => {
+                foto.scrollIntoView({ behavior: ruhig ? 'auto' : 'smooth', block: 'nearest', inline: 'center' });
+            });
+            daumen.appendChild(knopf);
+            return knopf;
+        });
+
+        const hinweis = document.createElement('p');
+        hinweis.className = 'galerie-hinweis';
+        hinweis.textContent = 'Antippen öffnet das Foto groß.';
+        box.after(daumen, hinweis);
+
+        // Welches Foto steht am naechsten an der Mitte?
+        function aktualisieren() {
+            const rahmen = galerie.getBoundingClientRect();
+            const mitte = rahmen.left + rahmen.width / 2;
+            let beste = 0;
+            let abstand = Infinity;
+            fotos.forEach((foto, i) => {
+                const r = foto.getBoundingClientRect();
+                const a = Math.abs(r.left + r.width / 2 - mitte);
+                if (a < abstand) { abstand = a; beste = i; }
+            });
+            zaehler.textContent = `${beste + 1} / ${fotos.length}`;
+            knoepfe.forEach((k, i) => k.classList.toggle('ist-aktiv', i === beste));
+        }
+
+        galerie.addEventListener('scroll', aktualisieren, { passive: true });
+        aktualisieren();
+    })();
+
+    // --- 25. KART-KLASSEN: UMSCHALTER JUGEND / ERWACHSENE (nur Handy) ---
+    // Am Handy zeigt die Klassentabelle eine Gruppe auf einmal. Erwachsenen-
+    // klassen erkennt das Skript an tr.kart-class-adult. "Klasse " vor dem
+    // Kuerzel bleibt fuer Vorleseprogramme erhalten, ist am Handy aber nicht
+    // sichtbar (css/kartsport.css). Am Desktop aendert sich nichts.
+    (function initKlassenUmschalter() {
+        const tabelle = document.querySelector('table.klassen-tabelle');
+        if (!tabelle) return;
+
+        tabelle.querySelectorAll('tbody td:first-child strong').forEach(feld => {
+            const treffer = feld.textContent.match(/^(Klasse\s+)(.+)$/);
+            if (!treffer) return;
+            const wort = document.createElement('span');
+            wort.className = 'klasse-wort';
+            wort.textContent = treffer[1];
+            feld.textContent = '';
+            feld.append(wort, treffer[2]);
+        });
+
+        const alle = tabelle.querySelectorAll('tbody tr').length;
+        const erwachsene = tabelle.querySelectorAll('tbody tr.kart-class-adult').length;
+        const jugend = alle - erwachsene;
+        if (!jugend || !erwachsene) return;
+
+        const gruppe = document.createElement('div');
+        gruppe.className = 'klassen-umschalter';
+        gruppe.setAttribute('role', 'group');
+        gruppe.setAttribute('aria-label', 'Klassen anzeigen');
+
+        [['jugend', 'Jugend', jugend], ['erwachsene', 'Erwachsene', erwachsene]].forEach(([wert, name, anzahl], i) => {
+            const knopf = document.createElement('button');
+            knopf.type = 'button';
+            knopf.setAttribute('aria-pressed', String(i === 0));
+            const zahl = document.createElement('small');
+            zahl.textContent = anzahl;
+            knopf.append(name, zahl);
+            knopf.addEventListener('click', () => {
+                tabelle.dataset.zeige = wert;
+                gruppe.querySelectorAll('button').forEach(k => k.setAttribute('aria-pressed', String(k === knopf)));
+            });
+            gruppe.appendChild(knopf);
+        });
+
+        tabelle.dataset.zeige = 'jugend';
+        const huelle = tabelle.closest('.table-responsive') || tabelle;
+        huelle.parentNode.insertBefore(gruppe, huelle);
     })();
 
 });

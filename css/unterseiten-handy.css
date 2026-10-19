@@ -1,0 +1,643 @@
+/* =========================================
+   UNTERSEITEN AM HANDY (bis 768px)
+   =========================================
+   Bausteine, mit denen die Unterseiten am Handy denselben Look bekommen
+   wie die Handy-Startseite (css/index.css, Abschnitt 9). Am Desktop
+   aendert diese Datei nichts: alles, was es nur am Handy gibt, ist hier
+   oben ausgeblendet und wird erst im Media-Query eingeschaltet.
+
+   Inhalt:
+     1. Buehne          - Seitenkopf als Foto mit Titel und zwei Knoepfen
+     2. Termin-Streifen - naechster Termin (auch von der Startseite benutzt)
+     3. Kurzfassung     - ein Satz plus Zahlenkacheln
+     4. Weiterlesen     - langer Text zum Aufklappen
+     5. Aktionsknoepfe  - drei Knoepfe nebeneinander
+     6. Trialsport      - Bildkacheln, Fahrerprofil, Termine und Kontakt
+
+   Kart-eigene Teile (Video, Galerie, Klassen, Pokalfoto, Kurs-Planer)
+   stehen in css/kartsport.css - die Datei wird auf der Kartsport-Seite
+   NACH dem Bundle geladen und wuerde Regeln von hier sonst ueberstimmen.
+   Skript dazu: js/main.js, Abschnitte 18 und 22 bis 25.
+
+   Hinweis zur Reihenfolge: tools/build_assets.py haengt style.css ans
+   Ende des Bundles. Regeln dort (z. B. "body:not(.dark-mode) .info-card")
+   kommen also NACH dieser Datei - wo sie dazwischenfunken, steht hier
+   "body main" vorne, damit die Regel hier spezifischer ist.
+   ========================================= */
+
+.seiten-buehne-bild,
+.seiten-buehne-satz,
+.seiten-buehne-knoepfe,
+.seiten-buehne-zusatz,
+.termin-streifen,
+.kurz-block,
+.klapp-text-nur-handy,
+.weiterlesen,
+.aktions-knoepfe,
+.skill-hinweis,
+.link-zeilen,
+.link-zeilen-hinweis {
+    display: none;
+}
+
+/* Am Desktop ist der Wrapper unsichtbar - die Absaetze stehen wie vorher
+   direkt im Inhalt. */
+.klapp-text { display: contents; }
+
+@media (max-width: 768px) {
+
+    /* =========================================
+       1. BUEHNE
+       =========================================
+       main hat am Handy 25px/16px Innenabstand (css/mobile.css). Die
+       negativen Raender ziehen das Foto bis an die Kanten der Flaeche,
+       genau wie auf der Startseite. Die Breadcrumb bleibt darueber. */
+    .page-head.seiten-buehne {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+        min-height: 402px;
+        margin: 0 -16px;
+        padding: 0 18px 20px;
+        border-bottom: 0;
+        overflow: hidden;
+        background: #001b5e center / cover no-repeat;
+        color: #fff;
+    }
+
+    /* Ersatzfoto, falls das Buehnenfoto fehlt (auf der Kartsport-Seite
+       liegt es im Gemeinschaftslauf-Block und kann mit dem Werkzeug
+       gemeinschaftslauf_entfernen.py verschwinden). Nur dann wird es
+       ueberhaupt geladen. */
+    .seiten-buehne--kart:not(:has(.seiten-buehne-bild)) {
+        background-image: url("../media/bilder/kartsport/mach1-kart-800.webp");
+    }
+
+    .seiten-buehne-bild {
+        display: block;
+        position: absolute;
+        inset: 0;
+    }
+
+    .seiten-buehne-bild img {
+        display: block;
+        width: 100%;
+        height: 100%;
+        max-width: none;
+        margin: 0;
+        object-fit: cover;
+        border-radius: 0;
+        box-shadow: none;
+    }
+
+    /* Auf dem Trial-Foto steht der Fahrer links - der Ausschnitt folgt ihm. */
+    .seiten-buehne--trial .seiten-buehne-bild img { object-position: 12% 50%; }
+
+    /* Verlauf in Vereinsblau: oben leicht dunkel, unten deckend fuer die
+       Schrift - derselbe wie auf der Startseite. */
+    .seiten-buehne::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        z-index: 1;
+        pointer-events: none;
+        background: linear-gradient(180deg,
+            rgba(0, 13, 58, 0.40) 0%,
+            rgba(0, 13, 58, 0) 18%,
+            rgba(0, 13, 58, 0) 26%,
+            rgba(0, 13, 58, 0.94) 66%);
+    }
+
+    .seiten-buehne > :not(.seiten-buehne-bild) {
+        position: relative;
+        z-index: 2;
+    }
+
+    body .seiten-buehne .page-kicker {
+        display: block;
+        margin: 0 0 8px;
+        color: var(--accent);
+        font-size: 0.7rem;
+        letter-spacing: 0.13em;
+    }
+
+    .seiten-buehne .page-kicker::before { display: none; }
+    .seiten-buehne-zusatz { display: inline; }
+
+    body .seiten-buehne h1 {
+        margin: 0 0 9px;
+        color: #fff;
+        font-size: 2rem;
+        line-height: 1.04;
+        letter-spacing: -0.01em;
+    }
+
+    /* Der lange Einleitungstext steht am Handy unter "Weiterlesen". */
+    .seiten-buehne .page-lead { display: none; }
+
+    body .seiten-buehne .seiten-buehne-satz {
+        display: block;
+        margin: 0 0 14px;
+        max-width: none;
+        color: rgba(255, 255, 255, 0.86);
+        font-size: 0.95rem;
+        line-height: 1.5;
+    }
+
+    .seiten-buehne-knoepfe {
+        display: flex;
+        gap: 10px;
+    }
+
+    .seiten-buehne-knopf {
+        flex: 1 1 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        min-height: 46px;
+        padding: 10px;
+        border-radius: 12px;
+        font-size: 0.9rem;
+        font-weight: 700;
+        text-decoration: none !important;
+    }
+
+    .seiten-buehne-knopf--hell {
+        background: #fff;
+        color: var(--dark-blue) !important;
+    }
+
+    .seiten-buehne-knopf--hell:hover { background: #e8eeff; }
+
+    .seiten-buehne-knopf--glas {
+        background: rgba(255, 255, 255, 0.12);
+        border: 1.5px solid rgba(255, 255, 255, 0.45);
+        color: #fff !important;
+    }
+
+    .seiten-buehne-knopf--glas:hover { background: rgba(255, 255, 255, 0.2); }
+
+    .seiten-buehne-knopf:focus-visible {
+        outline: 3px solid var(--accent);
+        outline-offset: 2px;
+    }
+
+    /* =========================================
+       2. TERMIN-STREIFEN
+       =========================================
+       Von der Startseite hierher verschoben, damit Start- und Unterseiten
+       denselben Streifen benutzen. Die Startseite setzt in css/index.css
+       nur ihren eigenen Abstand. Gefuellt wird er auf der Startseite von
+       js/index.js, auf Unterseiten von js/main.js (Abschnitt 22). */
+    .termin-streifen {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin: 12px -4px 0;
+        padding: 12px 14px;
+        border-radius: 16px;
+        background: linear-gradient(135deg, var(--primary-blue), var(--dark-blue));
+        box-shadow: 0 8px 20px rgba(0, 27, 94, 0.28);
+        color: #fff !important;
+        text-decoration: none !important;
+    }
+
+    .termin-streifen[hidden] { display: none; }
+
+    .termin-streifen-text {
+        flex: 1;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    .termin-streifen-kicker {
+        font-size: 0.64rem;
+        font-weight: 700;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--accent);
+    }
+
+    .termin-streifen-titel {
+        font-family: var(--font-heading);
+        font-size: 1rem;
+        font-weight: 700;
+        line-height: 1.2;
+        overflow-wrap: anywhere;
+    }
+
+    .termin-streifen-info {
+        font-size: 0.76rem;
+        color: rgba(255, 255, 255, 0.78);
+    }
+
+    .termin-streifen-ziffern {
+        display: flex;
+        gap: 6px;
+        flex-shrink: 0;
+    }
+
+    .termin-streifen-ziffern[hidden] { display: none; }
+
+    .termin-streifen-box {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-width: 46px;
+        padding: 6px 6px 5px;
+        border-radius: 9px;
+        background: rgba(255, 255, 255, 0.12);
+    }
+
+    .termin-streifen-zahl {
+        font-family: var(--font-display);
+        font-size: 1.3rem;
+        font-weight: 700;
+        line-height: 1.1;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .termin-streifen-einheit {
+        font-size: 0.55rem;
+        font-weight: 600;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: rgba(255, 255, 255, 0.75);
+    }
+
+    body.dark-mode .termin-streifen { box-shadow: 0 8px 20px rgba(0, 0, 0, 0.45); }
+
+    /* =========================================
+       3. KURZFASSUNG MIT ZAHLENKACHELN
+       ========================================= */
+    .kurz-block { display: block; margin-top: 22px; }
+    .kurz-block p { margin: 0 0 12px; }
+
+    .zahlen-kacheln {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 8px;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    .zahlen-kacheln li {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        max-width: none;
+        margin: 0;
+        padding: 12px 10px;
+        border-radius: 12px;
+        background: var(--surface);
+        border: 1px solid var(--border-soft);
+    }
+
+    .zahlen-kacheln strong {
+        font-family: var(--font-display);
+        font-size: 1.35rem;
+        line-height: 1.1;
+        color: var(--primary-blue);
+    }
+
+    .zahlen-kacheln span {
+        font-size: 0.72rem;
+        line-height: 1.35;
+        color: var(--text-light);
+    }
+
+    body.dark-mode .zahlen-kacheln li {
+        background: #191c2e;
+        border-color: rgba(255, 255, 255, 0.09);
+    }
+
+    body.dark-mode .zahlen-kacheln strong { color: var(--blue-light); }
+    body.dark-mode .zahlen-kacheln span { color: #9aa3c0; }
+
+    /* =========================================
+       4. WEITERLESEN
+       =========================================
+       ist-klappbar und ist-bereit setzt erst js/main.js (Abschnitt 23) -
+       ohne Skript bleibt der Text einfach offen stehen. */
+    .klapp-text { display: block; margin-top: 14px; }
+    .klapp-text-nur-handy { display: block; }
+    .klapp-text.ist-klappbar:not(.offen) { display: none; }
+
+    .weiterlesen.ist-bereit {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        min-height: 44px;
+        margin-bottom: 8px;
+        padding: 0;
+        border: 0;
+        background: none;
+        color: var(--primary-blue);
+        font-family: inherit;
+        font-size: var(--text-sm);
+        font-weight: 700;
+        cursor: pointer;
+    }
+
+    .weiterlesen i { font-size: 0.75rem; transition: transform 0.2s ease; }
+    .weiterlesen[aria-expanded="true"] i { transform: rotate(180deg); }
+
+    body.dark-mode .weiterlesen { color: var(--blue-light); }
+
+    /* =========================================
+       5. AKTIONSKNOEPFE (drei nebeneinander)
+       ========================================= */
+    .aktions-knoepfe {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 8px;
+        margin: 4px 0;
+    }
+
+    .aktions-knopf {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        min-height: 64px;
+        padding: 10px 4px;
+        border-radius: 12px;
+        background: var(--surface-muted);
+        color: var(--text-main) !important;
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-align: center;
+        text-decoration: none !important;
+    }
+
+    .aktions-knopf i { font-size: 1.15rem; color: var(--primary-blue); }
+
+    .aktions-knopf--gold { background: var(--accent); color: #0b1430 !important; }
+    .aktions-knopf--gold i { color: #0b1430; }
+
+    body.dark-mode .aktions-knopf { background: #252943; color: #e8eaf2 !important; }
+    body.dark-mode .aktions-knopf i { color: #78a6ff; }
+    body.dark-mode .aktions-knopf--gold { background: var(--accent); color: #0b1430 !important; }
+    body.dark-mode .aktions-knopf--gold i { color: #0b1430; }
+
+    /* =========================================
+       6. TRIALSPORT
+       ========================================= */
+
+    /* Zwei Bildkacheln nebeneinander, Beschriftung unten im Bild. Die
+       Karten haben Inline-Styles (feste Bildhoehe, Abstaende) - die
+       muessen hier mit !important weichen. */
+    .trial-bilder {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        max-width: none !important;
+        margin: 22px 0 24px !important;
+    }
+
+    .trial-bilder .trainer-card {
+        position: relative;
+        aspect-ratio: 3 / 4;
+        overflow: hidden;
+        border: 0;
+        border-radius: 14px;
+        box-shadow: none;
+    }
+
+    .trial-bilder .trainer-card:hover { transform: none; }
+
+    .trial-bilder .trainer-img-wrapper { position: absolute; inset: 0; }
+
+    .trial-bilder picture { display: block; width: 100%; height: 100%; }
+
+    .trial-bilder .trainer-img {
+        display: block;
+        width: 100%;
+        height: 100% !important;
+        margin: 0;
+        object-fit: cover;
+        border-radius: 0;
+    }
+
+    .trial-bilder .trainer-info {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 1;
+        padding: 40px 10px 10px !important;
+        background: linear-gradient(180deg, rgba(0, 13, 58, 0), rgba(0, 13, 58, 0.94));
+        text-align: left !important;
+    }
+
+    body .trial-bilder .trainer-name {
+        margin: 0 !important;
+        color: #fff;
+        font-family: var(--font-heading);
+        font-size: 0.9rem;
+        line-height: 1.2;
+    }
+
+    body .trial-bilder .member-role {
+        margin: 2px 0 0;
+        color: var(--accent);
+        font-size: 0.6rem !important;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+    }
+
+    /* Lupe oben rechts, immer sichtbar - am Handy gibt es kein Darueberfahren */
+    .trial-bilder .gallery-hover-icon {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        left: auto;
+        bottom: auto;
+        z-index: 2;
+        display: grid;
+        place-items: center;
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background: rgba(0, 13, 58, 0.94);
+        color: #fff;
+        font-size: 0.75rem;
+        opacity: 1;
+        transform: none;
+    }
+
+    /* Fahrerprofil: Ueberschrift frei, die vier Balken in einer Karte,
+       Prozentzahlen gross in Orbitron. */
+    body main .info-card.trial-profil {
+        padding: 0;
+        background: none;
+        border: 0;
+        box-shadow: none;
+    }
+
+    /* Ohne Kartenrahmen stehen die Ueberschriften frei - in Textfarbe wie
+       auf der Startseite, nicht im Blau der Karten-Ueberschriften. */
+    .trial-profil h2,
+    .trial-faszination h2 { color: var(--text-main); }
+
+    body.dark-mode .trial-profil h2,
+    body.dark-mode .trial-faszination h2 { color: #f2f4fb; }
+
+    .skill-liste {
+        display: grid;
+        gap: 12px;
+        padding: 14px;
+        border-radius: 14px;
+        background: var(--surface);
+        border: 1px solid var(--border-soft);
+    }
+
+    .trial-profil .skill-wrapper { margin: 0; }
+
+    .trial-profil .skill-title {
+        align-items: baseline;
+        margin-bottom: 6px;
+        font-size: 0.85rem;
+    }
+
+    .trial-profil .skill-title span:last-child {
+        font-family: var(--font-display);
+        font-size: 1rem;
+        font-weight: 800;
+        color: var(--primary-blue);
+    }
+
+    .trial-profil .skill-bar-bg {
+        height: 8px;
+        border-radius: 4px;
+        background: #e6ebf5;
+        box-shadow: none;
+    }
+
+    .trial-profil .skill-fill { border-radius: 4px; }
+
+    .trial-profil .skill-wrapper:not(.skill-wrapper--gold) .skill-fill {
+        background: linear-gradient(90deg, var(--primary-blue), #2f6bff) !important;
+    }
+
+    .trial-profil .skill-wrapper--gold .skill-title span:last-child { color: #b38f00; }
+
+    .skill-hinweis {
+        display: block;
+        margin-top: 4px;
+        font-size: 0.72rem;
+        color: var(--text-light);
+    }
+
+    body.dark-mode .skill-liste { background: #1a1c2b; border-color: rgba(255, 255, 255, 0.1); }
+    body.dark-mode .trial-profil .skill-bar-bg { background: #2a2e48; }
+    body.dark-mode .trial-profil .skill-title span:last-child { color: #78a6ff; }
+    body.dark-mode .trial-profil .skill-wrapper--gold .skill-title span:last-child { color: var(--accent); }
+    body.dark-mode .skill-hinweis { color: #9aa3c0; }
+
+    /* Termine und Kontakt: der Termin-Kasten entfaellt, sein Verweis
+       steht als Zeile im Kasten "Faszination Trialsport". */
+    body main .trial-termine-karte,
+    .trial-termine-karte + .section-divider { display: none; }
+
+    body main .info-card.trial-faszination {
+        padding: 0;
+        background: none;
+        border: 0;
+        box-shadow: none;
+    }
+
+    .trial-faszination .fasz-lang,
+    .trial-faszination .fasz-knopf { display: none; }
+
+    .link-zeilen {
+        display: block;
+        margin: 4px 0 10px;
+        padding: 0;
+        list-style: none;
+        overflow: hidden;
+        border-radius: 14px;
+        background: var(--surface);
+        border: 1px solid var(--border-soft);
+    }
+
+    .link-zeilen li {
+        max-width: none;
+        margin: 0;
+        border-top: 1px solid var(--border-soft);
+    }
+
+    .link-zeilen li:first-child { border-top: 0; }
+
+    .link-zeilen a {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 13px 14px;
+        color: var(--text-main) !important;
+        text-decoration: none !important;
+    }
+
+    .link-zeilen-icon {
+        display: grid;
+        place-items: center;
+        flex-shrink: 0;
+        width: 38px;
+        height: 38px;
+        border-radius: 11px;
+        background: rgba(0, 71, 204, 0.08);
+        color: var(--primary-blue);
+        font-size: 1rem;
+    }
+
+    .link-zeilen-icon--gold { background: var(--accent); color: #0b1430; }
+
+    .link-zeilen-text {
+        flex: 1;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 1px;
+    }
+
+    .link-zeilen-text strong {
+        font-family: var(--font-heading);
+        font-size: 0.95rem;
+        line-height: 1.25;
+    }
+
+    .link-zeilen-text span {
+        font-size: 0.78rem;
+        line-height: 1.4;
+        color: var(--text-light);
+    }
+
+    .link-zeilen-pfeil { font-size: 0.85rem; color: var(--text-light); }
+
+    .link-zeilen-hinweis {
+        display: block;
+        margin: 0;
+        font-size: 0.8rem;
+        color: var(--text-light);
+    }
+
+    body.dark-mode .link-zeilen { background: #1a1c2b; border-color: rgba(255, 255, 255, 0.1); }
+    body.dark-mode .link-zeilen li { border-top-color: rgba(255, 255, 255, 0.08); }
+    body.dark-mode .link-zeilen li:first-child { border-top: 0; }
+    body.dark-mode .link-zeilen a { color: #e8eaf2 !important; }
+    body.dark-mode .link-zeilen-icon { background: rgba(66, 133, 244, 0.16); color: #78a6ff; }
+    body.dark-mode .link-zeilen-icon--gold { background: var(--accent); color: #0b1430; }
+    body.dark-mode .link-zeilen-text span,
+    body.dark-mode .link-zeilen-pfeil { color: #9aa3c0; }
+
+    @media (prefers-reduced-motion: reduce) {
+        .weiterlesen i { transition: none; }
+    }
+}

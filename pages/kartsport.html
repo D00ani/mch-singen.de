@@ -123,17 +123,73 @@
             <span class="breadcrumb-sep" aria-hidden="true">/</span>
             <span aria-current="page">Kartsport</span>
         </nav>
-        <div class="page-head">
-            <p class="page-kicker">Sport</p>
+        <!-- Seitenkopf. Am Handy wird er zur Foto-Buehne wie auf der
+             Startseite (css/unterseiten-handy.css, Abschnitt BUEHNE): Foto
+             ueber die volle Breite, Titel, ein kurzer Satz und zwei Knoepfe
+             im Bild. Foto, Satz und Knoepfe sind am Desktop ausgeblendet. -->
+        <div class="page-head seiten-buehne seiten-buehne--kart">
+            <!-- FOTOS GEMEINSCHAFTSLAUF 2026 - ANFANG ============================
+                 Buehnenfoto am Handy. Faellt es weg, zeigt die Buehne das Foto
+                 des Vereinskarts (Hintergrund in css/unterseiten-handy.css).
+                 Entfernen in einem Rutsch: python tools/gemeinschaftslauf_entfernen.py
+                 ============================================================ -->
+            <picture class="seiten-buehne-bild">
+                <source type="image/webp" srcset="../media/bilder/gemeinschaftslauf-2026/slalom-480.webp 480w, ../media/bilder/gemeinschaftslauf-2026/slalom-800.webp 800w" sizes="100vw">
+                <img src="../media/bilder/gemeinschaftslauf-2026/slalom.jpg" alt="" loading="lazy" width="1200" height="1600" decoding="async">
+            </picture>
+            <!-- FOTOS GEMEINSCHAFTSLAUF 2026 - ENDE ============================== -->
+            <p class="page-kicker">Sport<span class="seiten-buehne-zusatz"> · Bodensee-Kart-Cup</span></p>
             <h1>Kartsport im MCH Singen</h1>
             <p class="page-lead">Die Kartabteilung des MCH Singen nimmt jedes Jahr mit seinen aktiven Mitgliedern an den verschiedenen Läufen des Bodensee-Kart-Cups (BKC) teil. Diese finden in der näheren Umgebung des Bodensees statt. Aktuell besteht der BKC aus 8 Läufen. Nähere Infos zum BKC findest du in der Ausschreibung.</p>
+            <p class="seiten-buehne-satz">Unsere Kartabteilung fährt jedes Jahr die Läufe des Bodensee-Kart-Cups (BKC).</p>
+            <div class="seiten-buehne-knoepfe">
+                <a class="seiten-buehne-knopf seiten-buehne-knopf--hell" href="kontakt.html">Schnuppertraining</a>
+                <a class="seiten-buehne-knopf seiten-buehne-knopf--glas" href="../media/dokumente/regelwerk.pdf" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-file-pdf" aria-hidden="true"></i> Regelwerk</a>
+            </div>
         </div>
 
-        <p>Wir fahren hauptsächlich an Kartslalom Veranstaltungen. Bei dieser Art des Kartsports wird ein Kurs mit Pylonen abgesteckt, welcher schnellstmöglich und ohne sich zu verfahren, bewältigt werden muss. Somit wird hauptsächlich die Konzentrations- und Reaktionsfähigkeit gestärkt, sowie die Geschicklichkeit trainiert.</p>
+        <!-- Naechster Kart-Termin (nur Handy). Derselbe Streifen wie auf der
+             Startseite, gefuellt aus data/timer.txt (js/main.js, Abschnitt
+             22). Ein Tipp oeffnet die Ausschreibung des Termins; ohne PDF
+             bleibt es beim Verweis auf die Termine. Ohne Termin unsichtbar. -->
+        <a class="termin-streifen" href="aktuelles.html#termine" data-termin-datei="../data/timer.txt" data-termin-art="kart" hidden>
+            <span class="termin-streifen-text">
+                <span class="termin-streifen-kicker">Nächster Termin</span>
+                <strong class="termin-streifen-titel"></strong>
+                <span class="termin-streifen-info"></span>
+            </span>
+            <span class="termin-streifen-ziffern">
+                <span class="termin-streifen-box"><span class="termin-streifen-zahl">00</span><span class="termin-streifen-einheit">Tage</span></span>
+                <span class="termin-streifen-box"><span class="termin-streifen-zahl">00</span><span class="termin-streifen-einheit">Std.</span></span>
+            </span>
+        </a>
 
-        <p>Derzeit besteht unsere Kartabteilung aus über 20 Kindern und Jugendlichen sowie 5 Erwachsenen und Trainern.</p>
+        <!-- Kurzfassung mit drei Zahlen (nur Handy). Die Zahlen stehen auch
+             im Text darunter und auf der Startseite ("Wer wir sind") -
+             aendern sie sich, an allen drei Stellen mitziehen. -->
+        <div class="kurz-block">
+            <p>Kartslalom: ein Kurs aus Pylonen, schnell und ohne Verfahren. Das trainiert Konzentration, Reaktion und Geschick.</p>
+            <ul class="zahlen-kacheln">
+                <li><strong>20+</strong><span>Kinder und Jugendliche</span></li>
+                <li><strong>5</strong><span>Erwachsene und Trainer</span></li>
+                <li><strong>8</strong><span>BKC-Läufe pro Saison</span></li>
+            </ul>
+        </div>
 
-        <div style="max-width: 800px; margin-left: auto; margin-right: auto; margin-bottom: 25px; text-align: center;">
+        <!-- Am Handy hinter "Weiterlesen" (js/main.js, Abschnitt 23), am
+             Desktop ganz normal sichtbar. Der erste Absatz wiederholt den
+             Einleitungstext aus dem Seitenkopf, weil der am Handy in der
+             Buehne nicht steht - bei Aenderungen BEIDE Stellen anpassen. -->
+        <div class="klapp-text" id="kart-text">
+            <p class="klapp-text-nur-handy">Die Kartabteilung des MCH Singen nimmt jedes Jahr mit seinen aktiven Mitgliedern an den verschiedenen Läufen des Bodensee-Kart-Cups (BKC) teil. Diese finden in der näheren Umgebung des Bodensees statt. Aktuell besteht der BKC aus 8 Läufen. Nähere Infos zum BKC findest du in der Ausschreibung.</p>
+
+            <p>Wir fahren hauptsächlich an Kartslalom Veranstaltungen. Bei dieser Art des Kartsports wird ein Kurs mit Pylonen abgesteckt, welcher schnellstmöglich und ohne sich zu verfahren, bewältigt werden muss. Somit wird hauptsächlich die Konzentrations- und Reaktionsfähigkeit gestärkt, sowie die Geschicklichkeit trainiert.</p>
+
+            <p>Derzeit besteht unsere Kartabteilung aus über 20 Kindern und Jugendlichen sowie 5 Erwachsenen und Trainern.</p>
+        </div>
+        <button type="button" class="weiterlesen" aria-expanded="false" aria-controls="kart-text"><span>Weiterlesen</span> <i class="fa-solid fa-chevron-down" aria-hidden="true"></i></button>
+
+        <div class="onboard-block" style="max-width: 800px; margin-left: auto; margin-right: auto; margin-bottom: 25px; text-align: center;">
             <h2>Komm mit auf die Strecke!</h2>
             <p>Schnall dich an und fahr eine virtuelle Runde mit uns über das Trainingsgelände des MCH Singen:</p>
 
@@ -157,6 +213,14 @@
                         <a href="../media/videos/onboard.mp4">Onboard-Video ansehen (MP4, 8 MB)</a>
                     </p>
                 </noscript>
+                <!-- Handy: Abspielknopf mit Titel ueber dem Standbild. Bleibt
+                     verborgen, bis js/main.js (Abschnitt 18) ihn am Handy
+                     einblendet; der Tipp laedt dann das Video und startet es. -->
+                <button type="button" class="onboard-start" hidden aria-label="Onboard-Video abspielen (8 MB)">
+                    <span class="onboard-start-chip" aria-hidden="true">Onboard</span>
+                    <span class="onboard-start-play" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M7 4.5v15l13-7.5z"/></svg></span>
+                    <span class="onboard-start-text" aria-hidden="true"><strong>Komm mit auf die Strecke!</strong><span>Eine Runde über unser Trainingsgelände · lädt erst beim Antippen (8 MB)</span></span>
+                </button>
             </div>
         </div>
         
@@ -220,11 +284,14 @@
             <img src="" alt="" id="lightbox-img" onclick="event.stopPropagation()">
         </div>
 
-        <section class="info-card" style="margin-top: 25px; margin-bottom: 25px;">
+        <!-- Am Handy eine Liste mit Umschalter Jugend / Erwachsene; den
+             Umschalter baut js/main.js (Abschnitt 25). Erwachsenenklassen
+             erkennt er an der Klasse kart-class-adult. -->
+        <section class="info-card klassen-karte" style="margin-top: 25px; margin-bottom: 25px;">
             <h3>Klassen &amp; Altersgruppen</h3>
             <p>Im Bodensee-Kart-Cup wird in folgenden Klassen gestartet:</p>
             <div class="table-responsive">
-                <table class="stats-table">
+                <table class="stats-table klassen-tabelle">
                     <thead>
                         <tr>
                             <th>Klasse</th>
@@ -280,7 +347,7 @@
              pages/statistiken.html.
              Entfernen in einem Rutsch: python tools/gemeinschaftslauf_entfernen.py
              ============================================================ -->
-        <figure class="history-img-frame">
+        <figure class="history-img-frame pokal-bild">
             <picture>
                 <source type="image/webp" srcset="../media/bilder/gemeinschaftslauf-2026/pokale-480.webp 480w, ../media/bilder/gemeinschaftslauf-2026/pokale-800.webp 800w, ../media/bilder/gemeinschaftslauf-2026/pokale-1600.webp 1600w" sizes="(min-width: 900px) 1100px, 100vw">
                 <img src="../media/bilder/gemeinschaftslauf-2026/pokale.jpg" alt="Pokale für die Siegerehrung auf dem Tisch bereitgestellt" loading="lazy" width="1600" height="900" decoding="async">
@@ -291,7 +358,15 @@
         <h2>Lust auf ein Schnuppertraining?</h2>
         <p>Ist nun euer Interesse geweckt? Gerne könnt Ihr einmal ein Schnuppertraining absolvieren. Nehmt dazu bitte Kontakt über unser <a href="kontakt.html">Kontaktformular</a> auf.</p>
 
-        <section class="info-card" style="text-align: center; margin-top: 25px;">
+        <!-- Nur Handy: drei Knoepfe statt der Regelwerk-Karte darunter (die
+             ist am Handy ausgeblendet) und als Abkuerzung zum Kurs-Planer. -->
+        <div class="aktions-knoepfe">
+            <a class="aktions-knopf aktions-knopf--gold" href="kontakt.html"><i class="fa-solid fa-envelope" aria-hidden="true"></i><span>Kontakt</span></a>
+            <a class="aktions-knopf" href="../media/dokumente/regelwerk.pdf" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-file-pdf" aria-hidden="true"></i><span>Regelwerk</span></a>
+            <a class="aktions-knopf" href="../kurs-planer/"><i class="fa-solid fa-map-signs" aria-hidden="true"></i><span>Kurs-Planer</span></a>
+        </div>
+
+        <section class="info-card regelwerk-karte" style="text-align: center; margin-top: 25px;">
             <h3>Offizielles Regelwerk</h3>
             <p>Hier kannst du dir das aktuelle BKC-Regelwerk für die Saison herunterladen:</p>
             
