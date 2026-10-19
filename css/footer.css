@@ -282,10 +282,13 @@ footer {
     .footer-brand .footer-logo { margin: 0; height: 44px; }
     .footer-tagline { margin: 0 !important; line-height: 1.4; }
 
+    /* gap: 0 - der unsichtbare Text bekam sonst noch die 8px Abstand
+       vom Desktop und schob das Symbol 4px aus der Mitte. */
     .footer-social-btn {
         width: 44px;
         height: 44px;
         padding: 0;
+        gap: 0;
         justify-content: center;
         border-radius: 50%;
         font-size: 0;

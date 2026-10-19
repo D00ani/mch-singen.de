@@ -1015,11 +1015,16 @@
         font-size: 0 !important;
     }
 
+    /* flex statt grid: im Raster bildete die unsichtbare Adresse eine
+       zweite Zeile und drueckte das Symbol 4px nach oben. */
     .seite-team .member-contact a {
-        display: grid;
-        place-items: center;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0;
         width: 30px;
         height: 30px;
+        line-height: 0;
         border-radius: 50%;
         background: rgba(0, 13, 58, 0.85);
     }
