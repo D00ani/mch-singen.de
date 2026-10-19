@@ -267,6 +267,94 @@ footer {
         text-align: center;
     }
 
+    /* ── Marke in einer Zeile ──
+       Logo, Leitspruch und Instagram nebeneinander statt untereinander.
+       Der Instagram-Knopf wird rund und zeigt nur das Symbol;
+       font-size: 0 blendet den Text aus, Vorleseprogramme lesen ihn
+       weiterhin ("Instagram folgen"). */
+    .footer-brand {
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .footer-brand .footer-logo { margin: 0; height: 44px; }
+    .footer-tagline { margin: 0 !important; line-height: 1.4; }
+
+    .footer-social-btn {
+        width: 44px;
+        height: 44px;
+        padding: 0;
+        justify-content: center;
+        border-radius: 50%;
+        font-size: 0;
+    }
+
+    .footer-social-btn i { font-size: 1.15rem; }
+
+    /* ── Sport und Verein zum Aufklappen ──
+       Den Knopf baut js/main.js (Abschnitt 21) und setzt dabei
+       .ist-klappbar. Ohne Skript greift nichts davon, die Listen stehen
+       offen nebeneinander wie bisher. */
+    .footer-col.ist-klappbar {
+        grid-column: 1 / -1;
+        border-top: 1px solid rgba(255, 255, 255, 0.12);
+    }
+
+    /* Die beiden Zeilen liegen direkt aufeinander, die Rasterluecke
+       dazwischen faellt weg. Unter der letzten schliesst eine Linie ab. */
+    .footer-col.ist-klappbar + .footer-col.ist-klappbar { margin-top: -24px; }
+    .footer-col.ist-klappbar:last-child { border-bottom: 1px solid rgba(255, 255, 255, 0.12); }
+
+    .footer-col.ist-klappbar .footer-heading { margin: 0 !important; }
+
+    .footer-klapp {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
+        min-height: 48px;
+        padding: 0;
+        border: 0;
+        background: none;
+        color: #fff;
+        font: inherit;
+        font-size: 0.75rem;
+        letter-spacing: inherit;
+        text-transform: inherit;
+        cursor: pointer;
+    }
+
+    .footer-klapp i {
+        display: inline-block;
+        font-size: 0.75rem;
+        color: rgba(255, 255, 255, 0.6);
+        transition: transform 0.2s ease;
+    }
+
+    .footer-col.offen .footer-klapp i { transform: rotate(180deg); }
+
+    .footer-klapp:focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 2px;
+    }
+
+    .footer-col.ist-klappbar:not(.offen) .footer-links { display: none; }
+
+    .footer-col.ist-klappbar .footer-links {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px 12px;
+        padding-bottom: 16px;
+    }
+
+    .footer-col.ist-klappbar .footer-links li { margin: 0; }
+
+    @media (prefers-reduced-motion: reduce) {
+        .footer-klapp i { transition: none; }
+    }
+
 }
 
 @media (min-width: 769px) and (max-width: 900px) {

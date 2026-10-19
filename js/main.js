@@ -679,4 +679,65 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     })();
 
+    // --- 21. FUSSBEREICH: LINKLISTEN ZUM AUFKLAPPEN (nur Handy) ---
+    // Untereinander war der Fussbereich am Handy fast einen ganzen
+    // Bildschirm lang. Kontakt und Trainingszeit bleiben offen stehen, die
+    // Listen "Sport" und "Verein" klappen auf (css/footer.css, Mobile).
+    // Der Knopf entsteht nur unterhalb von 769px und verschwindet beim
+    // Breiterziehen wieder - am Desktop bleibt die Ueberschrift eine
+    // schlichte Ueberschrift, ohne Knopf, der nichts tut.
+    // Ohne JavaScript bleiben die Listen einfach offen.
+    (function () {
+        const handy = window.matchMedia('(max-width: 768px)');
+        const spalten = [];
+
+        document.querySelectorAll('footer .footer-col').forEach((spalte, i) => {
+            const kopf = spalte.querySelector('.footer-heading');
+            const liste = spalte.querySelector('.footer-links');
+            if (!kopf || !liste) return;
+            if (!liste.id) liste.id = `fuss-liste-${i}`;
+            spalten.push({ spalte, kopf, liste, text: kopf.textContent.trim(), knopf: null });
+        });
+
+        if (!spalten.length) return;
+
+        function aufbauen(s) {
+            const knopf = document.createElement('button');
+            knopf.type = 'button';
+            knopf.className = 'footer-klapp';
+            knopf.setAttribute('aria-expanded', 'false');
+            knopf.setAttribute('aria-controls', s.liste.id);
+            const beschriftung = document.createElement('span');
+            beschriftung.textContent = s.text;
+            const pfeil = document.createElement('i');
+            pfeil.className = 'fa-solid fa-chevron-down';
+            pfeil.setAttribute('aria-hidden', 'true');
+            knopf.append(beschriftung, pfeil);
+            knopf.addEventListener('click', () => {
+                const offen = s.spalte.classList.toggle('offen');
+                knopf.setAttribute('aria-expanded', String(offen));
+            });
+            s.kopf.textContent = '';
+            s.kopf.appendChild(knopf);
+            s.spalte.classList.add('ist-klappbar');
+            s.knopf = knopf;
+        }
+
+        function abbauen(s) {
+            s.kopf.textContent = s.text;
+            s.spalte.classList.remove('ist-klappbar', 'offen');
+            s.knopf = null;
+        }
+
+        function abgleichen() {
+            spalten.forEach(s => {
+                if (handy.matches && !s.knopf) aufbauen(s);
+                else if (!handy.matches && s.knopf) abbauen(s);
+            });
+        }
+
+        abgleichen();
+        handy.addEventListener('change', abgleichen);
+    })();
+
 });

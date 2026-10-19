@@ -247,7 +247,10 @@
         <div class="hero-intro">
             <p class="hero-kicker">Gegründet 1954 &middot; Mitglied im DMV</p>
             <h1 id="hero-heading">Motorsport aus Leidenschaft</h1>
-            <p class="hero-lead">Kartslalom für den Nachwuchs und Motorrad-Trialsport in Singen am Hohentwiel. Schnuppertraining jederzeit möglich.</p>
+            <!-- Der Zusatz entfaellt am Handy: dort liegt der Text auf dem Foto
+                 und jede Zeile verdeckt mehr vom Bild. Das Schnuppertraining
+                 steht dort im aufklappbaren Text unter "Wer wir sind". -->
+            <p class="hero-lead">Kartslalom für den Nachwuchs und Motorrad-Trialsport in Singen am Hohentwiel.<span class="hero-lead-zusatz"> Schnuppertraining jederzeit möglich.</span></p>
             <div class="hero-actions">
                 <a href="pages/mitglied-werden.html" class="btn btn-primary">Mitglied werden</a>
                 <a href="pages/ueber-uns.html" class="btn btn-secondary">Verein kennenlernen</a>
@@ -255,16 +258,55 @@
         </div>
         </section><!-- /.hero -->
 
+        <!-- Naechster Termin (nur Handy, siehe css/index.css Abschnitt
+             HANDY-STARTSEITE). Der grosse Countdown im Sport-Switcher steht
+             am Handy erst auf dem dritten Bildschirm - dieser Streifen zeigt
+             den naechsten Kart- oder Trial-Termin gleich unter dem Foto.
+             Gefuellt aus data/timer.txt und data/timer_trial.txt
+             (js/index.js, Abschnitt NAECHSTER TERMIN); ohne Termin bleibt
+             er unsichtbar. -->
+        <a class="termin-streifen" id="termin-streifen" href="#sport-switcher" hidden>
+            <span class="termin-streifen-text">
+                <span class="termin-streifen-kicker" id="termin-streifen-kicker">Nächster Termin</span>
+                <strong class="termin-streifen-titel" id="termin-streifen-titel"></strong>
+                <span class="termin-streifen-info" id="termin-streifen-info"></span>
+            </span>
+            <span class="termin-streifen-ziffern" id="termin-streifen-ziffern">
+                <span class="termin-streifen-box"><span class="termin-streifen-zahl" id="termin-streifen-tage">00</span><span class="termin-streifen-einheit">Tage</span></span>
+                <span class="termin-streifen-box"><span class="termin-streifen-zahl" id="termin-streifen-std">00</span><span class="termin-streifen-einheit">Std.</span></span>
+            </span>
+        </a>
+
         <!-- Kurze Vereinsvorstellung -->
         <section class="welcome-section reveal" aria-labelledby="welcome-heading">
             <h2 id="welcome-heading">Wer wir sind</h2>
-            <p>Der <strong>MCH Singen Motorsportclub "Hohentwiel" e.V. im DMV</strong> ist ein gemeinnütziger Verein mit Sitz in Singen am Hohentwiel. Wir bieten jung und alt die Möglichkeit, Motorsport aktiv zu erleben - ob beim Kartslalom, im Trialsport oder als Teil unserer Vereinsgemeinschaft.</p>
-            <p>Ob Kartslalom-Training für den Nachwuchs, Motorrad-Trialsport oder einfach Lust auf Motorsport in der Region Bodensee/Hegau - bei uns in Singen-Hohentwiel findest du den passenden Einstieg. Schau bei einem Schnuppertraining vorbei oder werde gleich <a href="pages/mitglied-werden.html">Mitglied</a> in unserem Motorsportclub!</p>
+            <!-- Kurzfassung mit drei Zahlen - nur am Handy sichtbar, der
+                 volle Text klappt dort mit "Weiterlesen" auf. Am Desktop
+                 bleibt alles wie gehabt (zwei Spalten Text).
+                 Die Zahlen stehen auch auf pages/kartsport.html ("ueber 20
+                 Kinder und Jugendliche", "BKC aus 8 Laeufen") - aendern sie
+                 sich dort, hier mitziehen. -->
+            <p class="welcome-kurz">Gemeinnütziger Motorsportverein in Singen am Hohentwiel - für Jung und Alt, im Kartslalom und im Trialsport.</p>
+            <ul class="welcome-zahlen">
+                <li><strong>1954</strong><span>gegründet</span></li>
+                <li><strong>20+</strong><span>Kinder und Jugendliche im Kart</span></li>
+                <li><strong>8</strong><span>BKC-Läufe pro Saison</span></li>
+            </ul>
+            <div class="welcome-lang" id="welcome-lang">
+                <p>Der <strong>MCH Singen Motorsportclub "Hohentwiel" e.V. im DMV</strong> ist ein gemeinnütziger Verein mit Sitz in Singen am Hohentwiel. Wir bieten jung und alt die Möglichkeit, Motorsport aktiv zu erleben - ob beim Kartslalom, im Trialsport oder als Teil unserer Vereinsgemeinschaft.</p>
+                <p>Ob Kartslalom-Training für den Nachwuchs, Motorrad-Trialsport oder einfach Lust auf Motorsport in der Region Bodensee/Hegau - bei uns in Singen-Hohentwiel findest du den passenden Einstieg. Schau bei einem Schnuppertraining vorbei oder werde gleich <a href="pages/mitglied-werden.html">Mitglied</a> in unserem Motorsportclub!</p>
+            </div>
+            <!-- Erscheint nur, wenn js/index.js laeuft - ohne Skript bleibt
+                 der volle Text einfach offen stehen. -->
+            <button type="button" class="welcome-mehr" aria-expanded="false" aria-controls="welcome-lang"><span>Weiterlesen</span> <i class="fa-solid fa-chevron-down" aria-hidden="true"></i></button>
         </section>
 
         <div class="section-divider"></div>
 
-        <!-- Schnellnavigation -->
+        <!-- Schnellnavigation. Am Handy eine Reihe zum Seitwaertswischen;
+             "Mitglied werden" steht dort als gelbe Kachel ganz vorne
+             (Reihenfolge per CSS, css/index.css Abschnitt 9). -->
+        <p class="quick-nav-titel">Direkt zu</p>
         <nav class="quick-nav" aria-label="Schnellzugriff">
             <a href="pages/kartsport.html" class="quick-nav-item reveal reveal-delay-1">
                 <span class="qni-icon"><i class="fa-solid fa-flag-checkered"></i></span>
@@ -366,6 +408,26 @@
                             <a href="https://maps.google.com/?q=M%C3%BCnchriedstra%C3%9Fe+10,+78224+Singen" target="_blank" rel="noopener noreferrer" class="maps-btn">
                                 <i class="fa-solid fa-location-dot"></i> Größere Karte öffnen
                             </a>
+                            <!-- Handy: Mini-Karte und drei Knoepfe statt Kartenfeld
+                                 (css/index.css, Abschnitt HANDY-STARTSEITE). Die
+                                 Mini-Karte ist nur gezeichnet - ein normaler Link in
+                                 die Karten-App, vorher wird nichts von Google geladen. -->
+                            <a class="ort-karte" href="https://maps.google.com/?q=M%C3%BCnchriedstra%C3%9Fe+10,+78224+Singen" target="_blank" rel="noopener noreferrer" aria-label="Trainingsgelände in der Karten-App öffnen">
+                                <svg class="ort-karte-bild" viewBox="0 0 390 120" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
+                                    <rect class="ok-gruen" x="22" y="12" width="76" height="40" rx="10"/>
+                                    <rect class="ok-gruen" x="300" y="76" width="70" height="34" rx="10"/>
+                                    <path class="ok-weg" d="M128 -10 L156 130"/>
+                                    <path class="ok-weg" d="M282 -10 C270 40 302 80 292 130"/>
+                                    <path class="ok-strasse" d="M-10 90 C80 72 150 100 232 72 S360 42 400 54"/>
+                                    <g transform="translate(206 46)"><path class="ok-pin" d="M0 20C-9 10-12 4-12-2a12 12 0 0 1 24 0c0 6-3 12-12 22z"/><circle class="ok-pin-punkt" cy="-2" r="4.5"/></g>
+                                </svg>
+                                <span class="ort-karte-hinweis"><i class="fa-solid fa-location-dot" aria-hidden="true"></i> In Karten-App öffnen</span>
+                            </a>
+                            <div class="ort-aktionen">
+                                <a class="ort-aktion" href="https://www.google.com/maps/dir/?api=1&amp;destination=M%C3%BCnchriedstra%C3%9Fe+10,+78224+Singen" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-map-signs" aria-hidden="true"></i><span>Route</span></a>
+                                <button type="button" class="ort-aktion" data-wetter="weather-kart"><i class="fa-solid fa-cloud-sun" aria-hidden="true"></i><span>Wetter</span></button>
+                                <a class="ort-aktion" href="pages/aktuelles.html#termine"><i class="fa-regular fa-calendar-plus" aria-hidden="true"></i><span>Kalender</span></a>
+                            </div>
                         </div>
 
                     </div>
@@ -420,6 +482,23 @@
                             <a href="https://maps.google.com/?q=Kleinandelfingen,+Schweiz" target="_blank" rel="noopener noreferrer" class="maps-btn">
                                 <i class="fa-solid fa-location-dot"></i> Größere Karte öffnen
                             </a>
+                            <!-- Handy: wie beim Kart-Panel oben. -->
+                            <a class="ort-karte" href="https://maps.google.com/?q=Kleinandelfingen,+Schweiz" target="_blank" rel="noopener noreferrer" aria-label="Trial-Gelände in der Karten-App öffnen">
+                                <svg class="ort-karte-bild" viewBox="0 0 390 120" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
+                                    <rect class="ok-gruen" x="40" y="66" width="90" height="44" rx="10"/>
+                                    <rect class="ok-gruen" x="270" y="10" width="84" height="38" rx="10"/>
+                                    <path class="ok-weg" d="M240 -10 L214 130"/>
+                                    <path class="ok-weg" d="M-10 30 C60 40 120 22 180 34"/>
+                                    <path class="ok-strasse" d="M-10 70 C90 58 160 86 240 64 S350 80 400 70"/>
+                                    <g transform="translate(184 40)"><path class="ok-pin" d="M0 20C-9 10-12 4-12-2a12 12 0 0 1 24 0c0 6-3 12-12 22z"/><circle class="ok-pin-punkt" cy="-2" r="4.5"/></g>
+                                </svg>
+                                <span class="ort-karte-hinweis"><i class="fa-solid fa-location-dot" aria-hidden="true"></i> In Karten-App öffnen</span>
+                            </a>
+                            <div class="ort-aktionen">
+                                <a class="ort-aktion" href="https://www.google.com/maps/dir/?api=1&amp;destination=Kleinandelfingen,+Schweiz" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-map-signs" aria-hidden="true"></i><span>Route</span></a>
+                                <button type="button" class="ort-aktion" data-wetter="weather-trial"><i class="fa-solid fa-cloud-sun" aria-hidden="true"></i><span>Wetter</span></button>
+                                <a class="ort-aktion" href="pages/aktuelles.html#termine"><i class="fa-regular fa-calendar-plus" aria-hidden="true"></i><span>Kalender</span></a>
+                            </div>
                         </div>
 
                     </div>

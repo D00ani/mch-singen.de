@@ -1230,3 +1230,573 @@ body.dark-mode .sponsor-strip-mehr { color: var(--blue-light); }
     .sponsor-logo { height: 40px; }
     .sponsor-logo img { max-width: 92px; }
 }
+
+
+/* =========================================
+   9. HANDY-STARTSEITE (bis 768px)
+   =========================================
+   Am Desktop bleibt alles wie oben beschrieben. Am Handy wurde das
+   Desktop-Layout bisher nur untereinander gestapelt - die Startseite war
+   dadurch rund fuenf Bildschirme lang, und der Countdown stand erst auf
+   dem dritten. Dieser Abschnitt bringt den Desktop-Look in Handyform:
+
+     - Foto als Buehne: Bild ueber die volle Breite, Ueberschrift und
+       Knoepfe liegen unten im Bild auf einem Verlauf in Vereinsblau
+     - Naechster Termin als Streifen gleich unter dem Foto
+     - "Wer wir sind" als Kurzfassung mit drei Zahlen, Rest zum Aufklappen
+     - Schnellzugriff als Wischleiste, "Mitglied werden" gelb ganz vorne
+     - Trainingsort als kompakte Karte mit Route, Wetter und Kalender
+     - Sponsoren als langsam laufendes Band auf hellen Plaettchen
+
+   Elemente, die es nur am Handy gibt, sind hier oben ausgeblendet und
+   werden im Media-Query eingeschaltet. Gegenstueck im Skript:
+   js/index.js (Termin-Streifen, Weiterlesen, Wetter-Knopf, Sponsorenband).
+   ========================================= */
+
+.hero-lead-zusatz { display: inline; }
+
+.termin-streifen,
+.quick-nav-titel,
+.welcome-kurz,
+.welcome-zahlen,
+.welcome-mehr,
+.ort-karte,
+.ort-aktionen,
+.sponsor-logo.ist-klon {
+    display: none;
+}
+
+/* Am Desktop ist der Wrapper unsichtbar - die Absaetze bleiben direkte
+   Kinder des Zwei-Spalten-Rasters der Vereinsvorstellung. */
+.welcome-lang { display: contents; }
+
+@media (max-width: 768px) {
+
+    /* ── Foto als Buehne ──────────────────────────────────────────────
+       main hat am Handy 25px/16px Innenabstand (css/mobile.css). Die
+       negativen Raender ziehen das Bild bis an die Kanten der Flaeche
+       und direkt unter die goldene Kante der Kopfzeile. */
+    .hero {
+        position: relative;
+        display: block;
+        margin: -25px -16px 12px;
+    }
+
+    /* Steht der Live-Hinweis darueber, darf das Bild nicht hochrutschen. */
+    .live-banner:not([hidden]) + .hero { margin-top: 0; }
+
+    .hero-media .image-slider {
+        aspect-ratio: auto;
+        height: clamp(440px, 120vw, 540px);
+        border: 0;
+        border-radius: 0;
+        box-shadow: none;
+    }
+
+    /* Verlauf in Vereinsblau: oben leicht abgedunkelt fuer die Balken,
+       unten deckend fuer die Schrift. Liegt ueber den Bildern, faengt
+       aber keine Tipps ab - das Bild bleibt ein Link. */
+    .hero-media .image-slider::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        z-index: 5;
+        pointer-events: none;
+        background: linear-gradient(180deg,
+            rgba(0, 13, 58, 0.45) 0%,
+            rgba(0, 13, 58, 0) 18%,
+            rgba(0, 13, 58, 0) 28%,
+            rgba(0, 13, 58, 0.94) 68%);
+    }
+
+    /* Gewischt wird mit dem Daumen - die Pfeile entfallen. */
+    .slider-btn { display: none; }
+    .slide:hover img { transform: none; }
+
+    /* Das Ziel des Bildes sitzt oben links unter den Balken. */
+    .slide-caption-box {
+        top: 28px;
+        bottom: auto;
+        left: 16px;
+        padding: 0;
+        background: none;
+        border: 0;
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
+        font-size: 0.8rem;
+        text-shadow: 0 1px 4px rgba(0, 0, 0, 0.55);
+    }
+
+    .slide:hover .slide-caption-box { background: none; }
+
+    /* Punkte werden zu Balken wie bei einer Bildergeschichte. Der aktive
+       Balken fuellt sich in den 5 Sekunden bis zum naechsten Bild
+       (Takt aus js/index.js, startAutoPlay). */
+    .slider-dots {
+        top: 6px;
+        bottom: auto;
+        left: 12px;
+        right: 12px;
+        gap: 0;
+    }
+
+    .slider-dot {
+        flex: 1;
+        width: auto;
+        height: 22px;
+        padding: 0 4px;
+    }
+
+    .slider-dot::before {
+        width: 100%;
+        height: 3px;
+        border-radius: 2px;
+        background: rgba(255, 255, 255, 0.35);
+    }
+
+    .slider-dot.active::before {
+        transform: none;
+        background: linear-gradient(#fff, #fff) 0 0 / 0% 100% no-repeat, rgba(255, 255, 255, 0.35);
+        animation: hero-balken 5s linear forwards;
+    }
+
+    @keyframes hero-balken {
+        to { background-size: 100% 100%; }
+    }
+
+    /* Text und Knoepfe liegen unten im Bild. pointer-events: none, damit
+       Wischen und Tippen auf der Schrift beim Bild ankommen; nur die
+       Knoepfe fangen selbst. */
+    .hero-intro {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 6;
+        padding: 0 18px 22px;
+        pointer-events: none;
+    }
+
+    .hero-intro .hero-actions { pointer-events: auto; }
+
+    /* "body .hero" statt ".hero": die Dark-Mode-Regeln weiter oben sind
+       genauso spezifisch, diese hier stehen spaeter und gewinnen. */
+    body .hero .hero-kicker {
+        margin-bottom: 8px;
+        color: var(--accent);
+        font-weight: 700;
+        letter-spacing: 0.12em;
+    }
+
+    body .hero .hero-intro h1 {
+        margin-bottom: 10px;
+        color: #fff;
+        font-size: 2.15rem;
+        line-height: 1.04;
+    }
+
+    body .hero .hero-lead {
+        margin-bottom: 16px;
+        font-size: 1rem;
+        line-height: 1.5;
+        color: rgba(255, 255, 255, 0.86);
+    }
+
+    .hero-lead-zusatz { display: none; }
+
+    .hero-actions { flex-wrap: nowrap; gap: 10px; }
+
+    .hero-actions .btn {
+        flex: 1 1 0;
+        padding: 12px 10px;
+        font-size: 0.95rem;
+    }
+
+    body .hero .btn-primary {
+        background: #fff;
+        color: var(--dark-blue) !important;
+    }
+
+    body .hero .btn-primary:hover { background: #e8eeff; }
+
+    body .hero .btn-secondary {
+        background: rgba(255, 255, 255, 0.12);
+        border-color: rgba(255, 255, 255, 0.45);
+        color: #fff !important;
+    }
+
+    body .hero .btn-secondary:hover { background: rgba(255, 255, 255, 0.2); }
+
+    /* ── Naechster Termin ─────────────────────────────────────────── */
+    .termin-streifen {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin: 0 -4px 28px;
+        padding: 12px 14px;
+        border-radius: 16px;
+        background: linear-gradient(135deg, var(--primary-blue), var(--dark-blue));
+        box-shadow: 0 8px 20px rgba(0, 27, 94, 0.28);
+        color: #fff !important;
+        text-decoration: none !important;
+    }
+
+    .termin-streifen[hidden] { display: none; }
+
+    /* Ohne Termin rueckt der Text naeher an das Foto. */
+    .termin-streifen[hidden] + .welcome-section { margin-top: 16px; }
+
+    .termin-streifen-text {
+        flex: 1;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    .termin-streifen-kicker {
+        font-size: 0.64rem;
+        font-weight: 700;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--accent);
+    }
+
+    .termin-streifen-titel {
+        font-family: var(--font-heading);
+        font-size: 1rem;
+        font-weight: 700;
+        line-height: 1.2;
+        overflow-wrap: anywhere;
+    }
+
+    .termin-streifen-info {
+        font-size: 0.76rem;
+        color: rgba(255, 255, 255, 0.78);
+    }
+
+    .termin-streifen-ziffern {
+        display: flex;
+        gap: 6px;
+        flex-shrink: 0;
+    }
+
+    .termin-streifen-ziffern[hidden] { display: none; }
+
+    .termin-streifen-box {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-width: 46px;
+        padding: 6px 6px 5px;
+        border-radius: 9px;
+        background: rgba(255, 255, 255, 0.12);
+    }
+
+    .termin-streifen-zahl {
+        font-family: var(--font-display);
+        font-size: 1.3rem;
+        font-weight: 700;
+        line-height: 1.1;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .termin-streifen-einheit {
+        font-size: 0.55rem;
+        font-weight: 600;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: rgba(255, 255, 255, 0.75);
+    }
+
+    body.dark-mode .termin-streifen { box-shadow: 0 8px 20px rgba(0, 0, 0, 0.45); }
+
+    /* ── Wer wir sind ─────────────────────────────────────────────── */
+    .welcome-kurz { display: block; }
+
+    .welcome-zahlen {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 8px;
+        margin: 0 0 6px;
+        padding: 0;
+        list-style: none;
+    }
+
+    .welcome-zahlen li {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        max-width: none;
+        padding: 12px 10px;
+        border-radius: 12px;
+        background: var(--surface);
+        border: 1px solid var(--border-soft);
+    }
+
+    .welcome-zahlen strong {
+        font-family: var(--font-display);
+        font-size: 1.35rem;
+        line-height: 1.1;
+        color: var(--primary-blue);
+    }
+
+    .welcome-zahlen span {
+        font-size: 0.72rem;
+        line-height: 1.35;
+        color: var(--text-light);
+    }
+
+    body.dark-mode .welcome-zahlen li {
+        background: #191c2e;
+        border-color: rgba(255, 255, 255, 0.09);
+    }
+
+    body.dark-mode .welcome-zahlen strong { color: var(--blue-light); }
+    body.dark-mode .welcome-zahlen span { color: #9aa3c0; }
+
+    .welcome-lang { display: block; margin-top: 14px; }
+    .welcome-section.ist-klappbar:not(.offen) .welcome-lang { display: none; }
+
+    .welcome-section.ist-klappbar .welcome-mehr {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        min-height: 44px;
+        padding: 0;
+        border: 0;
+        background: none;
+        color: var(--primary-blue);
+        font-family: inherit;
+        font-size: var(--text-sm);
+        font-weight: 700;
+        cursor: pointer;
+    }
+
+    .welcome-mehr i { font-size: 0.75rem; transition: transform 0.2s ease; }
+    .welcome-section.offen .welcome-mehr i { transform: rotate(180deg); }
+
+    body.dark-mode .welcome-mehr { color: var(--blue-light); }
+
+    /* ── Schnellzugriff als Wischleiste ───────────────────────────── */
+    .quick-nav-titel {
+        display: block;
+        margin: 0 0 10px;
+        font-size: var(--text-xs);
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--text-light);
+    }
+
+    body.dark-mode .quick-nav-titel { color: #9aa3c0; }
+
+    /* Die Leiste laeuft bis an die Kanten der Flaeche, damit man sieht,
+       dass rechts noch etwas kommt. */
+    .quick-nav {
+        display: flex;
+        gap: 10px;
+        margin: 0 -16px;
+        padding: 0 16px 4px;
+        overflow-x: auto;
+        scroll-snap-type: x mandatory;
+        scroll-padding-inline: 16px;
+        scrollbar-width: none;
+        overscroll-behavior-x: contain;
+    }
+
+    .quick-nav::-webkit-scrollbar { display: none; }
+
+    .quick-nav-item {
+        flex: 0 0 112px;
+        align-items: flex-start;
+        justify-content: flex-start;
+        text-align: left;
+        gap: 10px;
+        padding: 12px;
+        font-size: 0.85rem;
+        line-height: 1.2;
+        scroll-snap-align: start;
+    }
+
+    .quick-nav-item:hover { transform: none; }
+
+    /* Seitlich verdeckte Kacheln wuerden sonst erst beim Wischen
+       eingeblendet (das Einblenden haengt am sichtbaren Bereich). */
+    .quick-nav .quick-nav-item.reveal { opacity: 1; transform: none; }
+
+    .qni-icon { width: 36px; height: 36px; font-size: 1.05rem; }
+
+    /* "Mitglied werden" (5. Kachel) rueckt ganz nach vorne und wird gelb -
+       dieselbe Rolle wie die gelbe Pille im Desktop-Kopf. "body" vorne,
+       damit die Dark-Mode-Regeln weiter oben nicht gewinnen. */
+    body .quick-nav .quick-nav-item:nth-child(5) {
+        order: -1;
+        background: var(--accent);
+        border-color: transparent;
+        color: #0b1430;
+    }
+
+    body .quick-nav .quick-nav-item:nth-child(5) .qni-icon {
+        background: rgba(11, 20, 48, 0.12);
+        color: #0b1430;
+    }
+
+    /* ── Trainingsort als kompakte Karte ──────────────────────────── */
+    .sport-panel .location-box {
+        overflow: hidden;
+        padding: 18px 16px 12px;
+    }
+
+    .location-box h2 { font-size: var(--text-base); }
+    .location-box p { margin-bottom: 0; }
+
+    /* Kartenfeld und "Groessere Karte" entfallen - Route und Mini-Karte
+       oeffnen die Karten-App direkt. Der Wetter-Hinweis wandert in den
+       Wetter-Knopf; eine geladene Vorhersage bleibt sichtbar. */
+    .location-box .maps-placeholder,
+    .location-box .maps-btn,
+    .location-box .weather-strip--hinweis {
+        display: none;
+    }
+
+    .location-box .weather-strip { margin: 14px 0 0; }
+
+    .ort-karte {
+        display: block;
+        position: relative;
+        height: 120px;
+        margin: 16px -16px 0;
+        background: #e7edf7;
+        border-block: 1px solid var(--border-soft);
+        text-decoration: none !important;
+    }
+
+    .ort-karte-bild { display: block; width: 100%; height: 100%; }
+    .ok-gruen { fill: #d4ead2; }
+    .ok-weg { fill: none; stroke: #f6f8fc; stroke-width: 7; stroke-linecap: round; }
+    .ok-strasse { fill: none; stroke: #ffffff; stroke-width: 12; stroke-linecap: round; }
+    .ok-pin { fill: var(--primary-blue); }
+    .ok-pin-punkt { fill: #fff; }
+
+    .ort-karte-hinweis {
+        position: absolute;
+        right: 10px;
+        bottom: 10px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 5px 10px;
+        border-radius: 999px;
+        background: var(--surface);
+        border: 1px solid var(--border-soft);
+        font-size: 0.72rem;
+        font-weight: 600;
+        color: var(--text-main);
+    }
+
+    .ort-karte-hinweis i { color: var(--primary-blue); }
+
+    .ort-aktionen {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 8px;
+        padding-top: 12px;
+    }
+
+    .ort-aktion {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+        min-height: 64px;
+        justify-content: center;
+        padding: 10px 4px;
+        border: 0;
+        border-radius: 12px;
+        background: var(--surface-muted);
+        color: var(--text-main) !important;
+        font-family: inherit;
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-decoration: none !important;
+        cursor: pointer;
+    }
+
+    .ort-aktion i { font-size: 1.15rem; color: var(--primary-blue); }
+
+    body.dark-mode .ort-karte { background: #1d2034; border-color: rgba(255, 255, 255, 0.09); }
+    body.dark-mode .ok-gruen { fill: #1d3328; }
+    body.dark-mode .ok-weg { stroke: #252943; }
+    body.dark-mode .ok-strasse { stroke: #2c3150; }
+    body.dark-mode .ok-pin { fill: var(--blue-light); }
+    body.dark-mode .ort-karte-hinweis { background: #20233a; border-color: rgba(255, 255, 255, 0.1); color: #e8eaf2; }
+    body.dark-mode .ort-karte-hinweis i { color: var(--blue-light); }
+    body.dark-mode .ort-aktion { background: #252943; color: #e8eaf2 !important; }
+    body.dark-mode .ort-aktion i { color: #78a6ff; }
+
+    /* ── Sponsoren als Laufband ───────────────────────────────────────
+       js/index.js legt das Band an (.sponsor-band) und haengt die Logos
+       ein zweites Mal an (.ist-klon), damit es nahtlos weiterlaeuft. Ohne
+       Skript bleibt die normale Logozeile stehen. */
+    .sponsor-band {
+        margin: 0 -16px;
+        overflow: hidden;
+        -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+        mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+    }
+
+    .sponsor-band .sponsor-strip-logos {
+        flex-wrap: nowrap;
+        justify-content: flex-start;
+        gap: 10px;
+        width: max-content;
+        /* Rechter Innenabstand = Luecke: so ist die halbe Bandbreite genau
+           ein Satz Logos, und der Sprung am Ende faellt nicht auf. */
+        padding: 4px 10px 4px 0;
+        animation: sponsor-band 40s linear infinite;
+    }
+
+    .sponsor-band .sponsor-strip-logos.reveal { opacity: 1; }
+    .sponsor-band .sponsor-strip-logos:hover { animation-play-state: paused; }
+    .sponsor-band .sponsor-logo.ist-klon { display: flex; }
+
+    @keyframes sponsor-band {
+        from { transform: translateX(0); }
+        to { transform: translateX(-50%); }
+    }
+
+    /* Helle Plaettchen in voller Farbe statt kleiner grauer Logos - die
+       meisten Logos haben ohnehin einen weissen Grund. */
+    .sponsor-logo {
+        flex: none;
+        width: 96px;
+        height: 66px;
+        padding: 8px;
+        border-radius: 12px;
+        background: #fff;
+        border: 1px solid var(--border-soft);
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.12);
+    }
+
+    .sponsor-logo img,
+    body.dark-mode .sponsor-logo img {
+        max-width: 100%;
+        max-height: 100%;
+        filter: none;
+        opacity: 1;
+    }
+
+    body.dark-mode .sponsor-logo {
+        background: #f4f6fb;
+        border-color: transparent;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .slider-dot.active::before { animation: none; background-size: 100% 100%; }
+        .sponsor-band { overflow-x: auto; -webkit-mask-image: none; mask-image: none; }
+        .sponsor-band .sponsor-strip-logos { animation: none; padding-left: 16px; }
+        .sponsor-band .sponsor-logo.ist-klon { display: none; }
+    }
+}
