@@ -1284,12 +1284,32 @@ body.dark-mode .sponsor-strip-mehr { color: var(--blue-light); }
     /* Steht der Live-Hinweis darueber, darf das Bild nicht hochrutschen. */
     .live-banner:not([hidden]) + .hero { margin-top: 0; }
 
+    /* Grund im selben Blau, in das der Verlauf unten auslaeuft */
     .hero-media .image-slider {
         aspect-ratio: auto;
-        height: clamp(440px, 120vw, 540px);
+        /* Foto (75% der Breite hoch) plus Platz fuer den Text darunter -
+           so beginnt die Schrift erst unter den Leuten auf dem Foto. */
+        height: clamp(440px, calc(75vw + 215px), 580px);
         border: 0;
         border-radius: 0;
         box-shadow: none;
+        background-color: #000d3a;
+    }
+
+    /* Die Fotos sind Querformat (4:3), die Buehne ist hochkant. Mit "cover"
+       wurden sie seitlich beschnitten und so vergroessert, dass oben nur
+       Wand bzw. Fels zu sehen war und die Leute (Kart-Team, Verein) und
+       der Trial-Fahrer hinter Ueberschrift und Verlauf standen. Jetzt steht
+       jedes Foto vollstaendig in seinem eigenen Format oben und laeuft nach
+       unten weich ins Blau aus - darunter kommt der Text. */
+    .hero-media .slide picture { display: block; }
+
+    .hero-media .slide img {
+        height: auto;
+        aspect-ratio: 4 / 3;
+        object-fit: cover;
+        -webkit-mask-image: linear-gradient(180deg, #000 62%, transparent 100%);
+        mask-image: linear-gradient(180deg, #000 62%, transparent 100%);
     }
 
     /* Verlauf in Vereinsblau: oben leicht abgedunkelt fuer die Balken,
