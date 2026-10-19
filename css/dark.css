@@ -229,54 +229,6 @@ body.dark-mode .breadcrumb a:hover { color: #74a3ff; }
 body.dark-mode .breadcrumb [aria-current="page"] { color: #74a3ff; }
 body.dark-mode .breadcrumb-sep { color: #555; }
 
-/* Sponsor-Karten Dark Mode.
-   Die LOGO-TAFEL bleibt bewusst hell: fast alle Sponsorenlogos sind fuer
-   hellen Untergrund gemacht und wuerden auf Dunkelgrau ausfransen.
-   Die KARTE dagegen wird dunkel wie jede andere Karte der Seite. Vorher
-   war die ganze Karte hell - im Dark Mode standen dadurch zehn weisse
-   Kacheln auf dunklem Grund, und die Beschriftung darunter war hellgrau
-   auf fast Weiss praktisch nicht zu lesen. */
-body.dark-mode .sponsor-card {
-    background: #1a1c2b;
-    border-color: rgba(255, 255, 255, 0.09);
-    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.45);
-}
-
-body.dark-mode .sponsor-card:hover,
-body.dark-mode .sponsor-card:focus-visible {
-    border-color: rgba(255, 255, 255, 0.18);
-    box-shadow: 0 10px 26px rgba(0, 0, 0, 0.55);
-}
-
-/* Helle Tafel nur unter dem Logo, mit denselben oberen Rundungen wie die
-   Karte - sonst blitzen an den Ecken helle Zipfel heraus. */
-body.dark-mode .sponsor-card picture {
-    background: #f2f3f7;
-    border-radius: 9px 9px 0 0;
-}
-
-body.dark-mode .sponsor-card-name {
-    background: transparent;
-    border-top-color: rgba(255, 255, 255, 0.09);
-    color: #b6bdcc;
-}
-
-body.dark-mode .sponsor-card:hover .sponsor-card-name,
-body.dark-mode .sponsor-card:focus-visible .sponsor-card-name { color: #fff; }
-
-/* Link-Karten Dark Mode */
-body.dark-mode .link-card-grid li a {
-    background: #1a1c2b;
-    color: #e0e0e0;
-    border-left-color: var(--blue-light);
-}
-body.dark-mode .link-card-grid li a:hover {
-    background: var(--primary-blue);
-    color: #fff;
-}
-body.dark-mode .link-card-grid li a i { color: #74a3ff; }
-body.dark-mode .link-card-grid li a:hover i { color: #fff; }
-
 /* Suche Suggestions Dark Mode (already in modules.css, but dark.css takes precedence) */
 body.dark-mode .sugg-item:hover,
 body.dark-mode .sugg-item:focus {
