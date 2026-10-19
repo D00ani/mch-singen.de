@@ -517,6 +517,31 @@ Dann im Menü wählen:
     paar Sekunden, braucht Internet). Sponsoren- und Vereinsseiten ziehen
     um oder verschwinden, ohne dass es jemand merkt. Beim automatischen
     Prüfen vor dem Veröffentlichen bleibt das aus, damit es schnell geht.
+    GLEICH BEHEBEN (Pflege-Fenster -> Webseite prüfen): Unter jedem Fund
+    stehen passende Knöpfe:
+      - Toter Link: "Pfad ändern" schlägt ähnlich heißende Dateien aus dem
+        Projekt vor (Doppelklick übernimmt) oder lässt eine Datei wählen -
+        liegt sie außerhalb der Webseite, wird sie hineinkopiert. Jede
+        Seite bekommt automatisch den passenden relativen Pfad (../ usw.).
+        "Datei hinlegen" kopiert eine Datei genau dorthin, wo der Link sie
+        erwartet. "Stelle öffnen" springt im Editor (VS Code, sonst
+        Notepad++/Editor) an die Fundstelle.
+      - Groß-/Kleinschreibung: "Korrigieren" bzw. "Alle korrigieren"
+      - Build fehlt: "Jetzt bauen"
+      - Angekündigte PDF: hinlegen, Pfad in data/timer*.txt ändern oder
+        austragen (der Termin bleibt, nur der PDF-Knopf fällt weg)
+      - Externer Link: "Adresse ändern" ersetzt ihn auf allen Seiten
+      - alt-Text, Seitenbeschreibung, Schreibweise, Suchindex: eintragen
+        bzw. vereinheitlichen per Formular (Suchindex baut danach selbst)
+    Jede Änderung legt vorher eine Sicherung an - "Rückgängig" holt sie
+    zurück. Nur neu hingelegte Dateien bleiben liegen.
+    Bekannte HINWEISE lassen sich "Ausblenden" (gemerkt in
+    tools/pruefe_ausnahmen.json, gilt auch vor dem Veröffentlichen).
+    FEHLER lassen sich bewusst nicht ausblenden.
+    Seiten, die .gitignore ausschließt (z. B. lokale vorschlag-*.html),
+    prüft das Werkzeug nicht mit - sie gehen ja nie online.
+    Im Terminal (python tools/pruefe_seite.py) fragt es am Ende, ob die
+    Fehler gleich behoben werden sollen.
  7b) Medien aufräumen
     Zeigt für /media/, was niemand mehr braucht und was zu groß ist:
       - von keiner Seite mehr verlinkt (kann weg)

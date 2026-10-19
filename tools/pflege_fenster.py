@@ -71,6 +71,7 @@ try:
     import fenster_seiten_statistik as ST
     import fenster_seiten_technik as TE
     import fenster_seiten_texte as T
+    import fenster_seiten_pruefen as PR
     import jaehrliches_update
     import pflege_hilfen as h
     import pruefe_seite
@@ -85,7 +86,7 @@ ROOT = h.ROOT
 # Seiten, die es im Fenster selbst gibt
 SEITEN = {
     "uebersicht": S.UebersichtSeite,
-    "pruefen":    S.PruefenSeite,
+    "pruefen":    PR.PruefenSeite,
     "medien":     S.MedienSeite,
     "pdf":        S.PdfSeite,
     "vorschau":   S.VorschauSeite,

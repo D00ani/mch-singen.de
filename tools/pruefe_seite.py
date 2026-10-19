@@ -35,8 +35,36 @@ BUILD_PAARE = [
 
 
 def html_dateien():
-    return sorted(glob.glob(os.path.join(ROOT, "*.html")) +
+    """Alle Seiten, die veroeffentlicht werden.
+
+    Was Git ignoriert (.gitignore), geht nie online - z. B. die lokalen
+    Entwurfs-Vorschauen vorschlag-*.html. Die werden nicht mitgeprueft,
+    sonst meldet die Pruefung Dinge, die auf der Webseite nie auftauchen.
+    """
+    alle = sorted(glob.glob(os.path.join(ROOT, "*.html")) +
                   glob.glob(os.path.join(ROOT, "pages", "*.html")))
+    ignoriert = _von_git_ignoriert(alle)
+    return [d for d in alle if d not in ignoriert]
+
+
+def _von_git_ignoriert(dateien):
+    """Teilmenge von dateien, die .gitignore ausschliesst. Ohne Git (oder
+    ausserhalb des Repos) wird einfach nichts ausgeschlossen."""
+    import subprocess
+    if not dateien:
+        return set()
+    # Als Bytes mit "/" und "\n": im Textmodus macht Windows aus "\n" ein
+    # "\r\n", und Git sucht dann nach "datei.html\r" - findet also nichts.
+    eingabe = "\n".join(os.path.relpath(d, ROOT).replace(os.sep, "/") for d in dateien) + "\n"
+    try:
+        ergebnis = subprocess.run(
+            ["git", "check-ignore", "--stdin"], cwd=ROOT,
+            input=eingabe.encode("utf-8"), capture_output=True, timeout=10,
+            creationflags=0x08000000 if os.name == "nt" else 0)
+    except (OSError, subprocess.SubprocessError):
+        return set()
+    return {os.path.normpath(os.path.join(ROOT, z.strip()))
+            for z in ergebnis.stdout.decode("utf-8", "replace").splitlines() if z.strip()}
 
 
 def exakt_vorhanden(pfad):
@@ -71,40 +99,72 @@ def exakt_vorhanden(pfad):
     return True, None
 
 
-def pruefe_verweise():
+# Jede Pruefung gibt es zweimal:
+#   befunde_xyz()  - strukturiert (Datei, Pfad, Stelle ...), damit die
+#                    Reparatur in tools/pruef_reparatur.py und im Pflege-
+#                    Fenster weiss, WAS genau sie anfassen muss
+#   pruefe_xyz()   - dieselben Funde als Textzeilen, wie bisher
+# Das Feld "text" eines Befunds ist genau die Textzeile - es dient auch als
+# Schluessel fuer ausgeblendete Hinweise (tools/pruefe_ausnahmen.json).
+
+def verweis_ziel(html, verweis):
+    """Absoluter Pfad, auf den ein Verweis in einer Seite zeigt."""
+    # Verweise mit fuehrendem "/" zeigen ab der Wurzel der Webseite
+    # (nutzt 404.html, weil die unter JEDER Adresse ausgeliefert wird).
+    if verweis.startswith("/"):
+        return os.path.normpath(os.path.join(ROOT, verweis.lstrip("/")))
+    return os.path.normpath(os.path.join(os.path.dirname(html), verweis))
+
+
+def befunde_verweise():
     tote, schreibweise = [], []
     for html in html_dateien():
-        basis = os.path.dirname(html)
         anzeige = os.path.relpath(html, ROOT)
         inhalt = open(html, encoding="utf-8").read()
         for verweis in VERWEIS_MUSTER.findall(inhalt):
             if verweis.startswith(("http://", "https://", "//", "mailto:", "tel:", "data:")):
                 continue
-            # Verweise mit fuehrendem "/" zeigen ab der Wurzel der Webseite
-            # (nutzt 404.html, weil die unter JEDER Adresse ausgeliefert wird).
-            if verweis.startswith("/"):
-                ziel = os.path.normpath(os.path.join(ROOT, verweis.lstrip("/")))
-            else:
-                ziel = os.path.normpath(os.path.join(basis, verweis))
+            ziel = verweis_ziel(html, verweis)
             passt, richtig = exakt_vorhanden(ziel)
+            befund = {"datei": html, "anzeige": anzeige, "verweis": verweis, "ziel": ziel}
             if not passt and richtig is None:
-                tote.append(f"{anzeige}: {verweis}")
+                befund["text"] = f"{anzeige}: {verweis}"
+                tote.append(befund)
             elif not passt:
-                schreibweise.append(f"{anzeige}: {verweis} -> heisst wirklich '{richtig}'")
+                befund["richtig"] = richtig
+                befund["text"] = f"{anzeige}: {verweis} -> heisst wirklich '{richtig}'"
+                schreibweise.append(befund)
     return tote, schreibweise
 
 
-def pruefe_angekuendigte_pdfs():
+def pruefe_verweise():
+    tote, schreibweise = befunde_verweise()
+    return [b["text"] for b in tote], [b["text"] for b in schreibweise]
+
+
+TIMER_DATEIEN = ("timer.txt", "timer_trial.txt")
+
+
+def befunde_pdfs():
     fehlend = []
-    for name in ("timer.txt", "timer_trial.txt"):
+    for name in TIMER_DATEIEN:
         pfad = os.path.join(ROOT, "data", name)
         for zeile in h.lies_zeilen(pfad):
             teile = zeile.split(";")
             if len(teile) < 8 or not teile[7].strip():
                 continue
-            if not os.path.isfile(os.path.join(ROOT, teile[7].strip().lstrip("/"))):
-                fehlend.append(f"{name} ({teile[0]}.{teile[1]}.{teile[2]}): {teile[7].strip()}")
+            pdf = teile[7].strip()
+            if not os.path.isfile(os.path.join(ROOT, pdf.lstrip("/"))):
+                fehlend.append({
+                    "datei": pfad, "name": name, "pdf": pdf,
+                    "ziel": os.path.normpath(os.path.join(ROOT, pdf.lstrip("/"))),
+                    "text": f"{name} ({teile[0]}.{teile[1]}.{teile[2]}): {pdf}",
+                })
     return fehlend
+
+
+def pruefe_angekuendigte_pdfs():
+    return [b["text"] for b in befunde_pdfs()]
 
 
 def pruefe_build_aktuell():
@@ -150,7 +210,7 @@ EIGENE_HOSTS = ("mch-singen.de", "www.mch-singen.de")
 BESCHREIBUNG_MIN, BESCHREIBUNG_MAX = 50, 160
 
 
-def pruefe_alt_texte():
+def befunde_alt_texte():
     """<img> ohne alt-Attribut. Ein LEERES alt ("") ist erlaubt und richtig
     fuer reine Deko-Bilder - gemeldet wird nur ein ganz fehlendes alt."""
     fehlend = []
@@ -159,11 +219,19 @@ def pruefe_alt_texte():
         for treffer in IMG_MUSTER.findall(open(html, encoding="utf-8").read()):
             if not re.search(r"\balt=", treffer, re.IGNORECASE):
                 kurz = re.search(r'src="([^"]*)"', treffer)
-                fehlend.append(f"{anzeige}: {kurz.group(1) if kurz else treffer[:60]}")
+                fehlend.append({
+                    "datei": html, "anzeige": anzeige,
+                    "src": kurz.group(1) if kurz else None, "tag": treffer,
+                    "text": f"{anzeige}: {kurz.group(1) if kurz else treffer[:60]}",
+                })
     return fehlend
 
 
-def pruefe_doppelte_ids():
+def pruefe_alt_texte():
+    return [b["text"] for b in befunde_alt_texte()]
+
+
+def befunde_doppelte_ids():
     """Dieselbe id zweimal auf einer Seite - dann greift JavaScript immer nur
     auf die erste zu, und der Rest funktioniert stillschweigend nicht."""
     doppelte = []
@@ -172,15 +240,27 @@ def pruefe_doppelte_ids():
         for wert in ID_MUSTER.findall(open(html, encoding="utf-8").read()):
             (mehrfach if wert in gesehen else gesehen).add(wert)
         for wert in sorted(mehrfach):
-            doppelte.append(f"{os.path.relpath(html, ROOT)}: id=\"{wert}\"")
+            doppelte.append({"datei": html, "wert": wert, "suche": f'id="{wert}"',
+                             "text": f"{os.path.relpath(html, ROOT)}: id=\"{wert}\""})
     return doppelte
 
 
-def pruefe_meta():
+def pruefe_doppelte_ids():
+    return [b["text"] for b in befunde_doppelte_ids()]
+
+
+def befunde_meta():
     """Titel, Beschreibung, Vorschaubild und canonical - das, was Google und
-    WhatsApp anzeigen, wenn jemand die Seite teilt."""
+    WhatsApp anzeigen, wenn jemand die Seite teilt.
+
+    art: titel, beschreibung_fehlt, beschreibung_kurz, beschreibung_lang,
+         og_bild, canonical, beschreibung_doppelt
+    """
     maengel = []
     beschreibungen = {}
+
+    def melde(html, art, text):
+        maengel.append({"datei": html, "art": art, "text": text})
 
     for html in html_dateien():
         if os.path.basename(html) in INTERNE_SEITEN:
@@ -190,31 +270,40 @@ def pruefe_meta():
 
         titel = TITEL_MUSTER.search(inhalt)
         if not titel or not titel.group(1).strip():
-            maengel.append(f"{anzeige}: <title> fehlt oder ist leer")
+            melde(html, "titel", f"{anzeige}: <title> fehlt oder ist leer")
 
         beschreibung = BESCHREIBUNG_MUSTER.search(inhalt)
         if not beschreibung or not beschreibung.group(1).strip():
-            maengel.append(f"{anzeige}: meta-description fehlt (Google zeigt dann irgendeinen Textschnipsel)")
+            melde(html, "beschreibung_fehlt",
+                  f"{anzeige}: meta-description fehlt (Google zeigt dann irgendeinen Textschnipsel)")
         else:
             text = beschreibung.group(1).strip()
             if len(text) < BESCHREIBUNG_MIN:
-                maengel.append(f"{anzeige}: meta-description ist sehr kurz ({len(text)} Zeichen)")
+                melde(html, "beschreibung_kurz",
+                      f"{anzeige}: meta-description ist sehr kurz ({len(text)} Zeichen)")
             elif len(text) > BESCHREIBUNG_MAX:
-                maengel.append(f"{anzeige}: meta-description wird abgeschnitten ({len(text)} von max. {BESCHREIBUNG_MAX} Zeichen)")
-            beschreibungen.setdefault(text, []).append(anzeige)
+                melde(html, "beschreibung_lang",
+                      f"{anzeige}: meta-description wird abgeschnitten ({len(text)} von max. {BESCHREIBUNG_MAX} Zeichen)")
+            beschreibungen.setdefault(text, []).append(html)
 
         if not OG_BILD_MUSTER.search(inhalt):
-            maengel.append(f"{anzeige}: og:image fehlt (kein Vorschaubild beim Teilen)")
+            melde(html, "og_bild", f"{anzeige}: og:image fehlt (kein Vorschaubild beim Teilen)")
         # 404.html wird unter jeder beliebigen Adresse ausgeliefert - ein
         # canonical waere dort schlicht falsch.
         if os.path.basename(html) != "404.html" and not CANONICAL_MUSTER.search(inhalt):
-            maengel.append(f"{anzeige}: canonical-Link fehlt")
+            melde(html, "canonical", f"{anzeige}: canonical-Link fehlt")
 
     for text, seiten in beschreibungen.items():
         if len(seiten) > 1:
-            maengel.append(f"gleiche meta-description auf: {', '.join(seiten)}")
+            anzeigen = [os.path.relpath(s, ROOT) for s in seiten]
+            maengel.append({"datei": seiten[0], "dateien": seiten, "art": "beschreibung_doppelt",
+                            "text": f"gleiche meta-description auf: {', '.join(anzeigen)}"})
 
     return maengel
+
+
+def pruefe_meta():
+    return [b["text"] for b in befunde_meta()]
 
 
 def klaro_dienste():
@@ -289,7 +378,7 @@ def _adresse_erreichbar(adresse):
     return None
 
 
-def pruefe_externe_links(fortschritt=True):
+def befunde_externe_links(fortschritt=True):
     """Ruft jede externe Adresse einmal auf. Braucht Internet und ein paar
     Sekunden - laeuft deshalb nur auf ausdrueckliche Anforderung."""
     from concurrent.futures import ThreadPoolExecutor
@@ -306,8 +395,17 @@ def pruefe_externe_links(fortschritt=True):
         ergebnisse = list(pool.map(_adresse_erreichbar, adressen))
     for adresse, grund in zip(adressen, ergebnisse):
         if grund:
-            kaputt.append(f"{adresse}\n      {grund} - verlinkt auf {', '.join(sorted(adressen[adresse]))}")
+            seiten = sorted(adressen[adresse])
+            kaputt.append({
+                "adresse": adresse, "grund": grund,
+                "dateien": [os.path.join(ROOT, s) for s in seiten],
+                "text": f"{adresse}\n      {grund} - verlinkt auf {', '.join(seiten)}",
+            })
     return kaputt
+
+
+def pruefe_externe_links(fortschritt=True):
+    return [b["text"] for b in befunde_externe_links(fortschritt)]
 
 
 # ------------------------------------------------------------------
@@ -326,10 +424,14 @@ NICHT_SUCHBAR = {"suche.html", "404.html", "underconstruction.html", "status.htm
 INTERNE_SEITEN = {"status.html"}
 
 
-def pruefe_suchindex():
+def befunde_suchindex():
     """js/suche.js traegt die durchsuchbaren Seiten fest ein. Wird eine
     Seite neu angelegt, merkt das sonst niemand - sie ist dann ueber die
-    Suche der Webseite einfach nicht auffindbar."""
+    Suche der Webseite einfach nicht auffindbar.
+
+    art: fehlt (Seite nicht im Index), tot (Index zeigt ins Leere),
+         leer (Titel oder Beschreibung leer)
+    """
     if not os.path.isfile(SUCHE_JS):
         return []
 
@@ -342,22 +444,39 @@ def pruefe_suchindex():
         name = os.path.basename(pfad)
         if name in NICHT_SUCHBAR or name in im_index:
             continue
-        maengel.append(f"{name} fehlt im Suchindex - ueber die Suche nicht auffindbar")
+        maengel.append({"art": "fehlt", "name": name, "datei": pfad,
+                        "text": f"{name} fehlt im Suchindex - ueber die Suche nicht auffindbar"})
 
     for url, titel, beschreibung in eintraege:
         # Der Index enthaelt auch Verweise nach draussen (z. B. den Shop) -
         # die zeigen auf keine eigene Seite und muessen nicht existieren.
-        if url.startswith(("http://", "https://", "//")) or "." in url.split("/")[0]:
+        # Frueher wurde hier jede Adresse mit Punkt uebersprungen - also auch
+        # "aktuelles.html" und "../index.html". Die Pruefung auf tote
+        # Eintraege hat dadurch nie gegriffen.
+        erstes = url.split("/")[0]
+        if url.startswith(("http://", "https://", "//")) or (
+                "." in erstes and erstes not in (".", "..") and not erstes.endswith(".html")):
             continue
-        name = os.path.basename(url)
-        ziel = os.path.join(ROOT, "index.html") if name == "index.html" \
-            else os.path.join(ROOT, "pages", name)
+        name = os.path.basename(url.rstrip("/")) or url
+        # suche.js liegt in pages/ - die Adressen gelten von dort aus.
+        # Ordner-Adressen ("../kurs-planer/") zeigen auf deren index.html.
+        ziel = os.path.normpath(os.path.join(ROOT, "pages", url))
+        if url.endswith("/"):
+            ziel = os.path.join(ziel, "index.html")
         if not os.path.isfile(ziel):
-            maengel.append(f"Suchindex verweist auf {name} - diese Seite gibt es nicht")
+            maengel.append({"art": "tot", "name": name, "url": url, "datei": SUCHE_JS,
+                            "suche": f"url: '{url}'",
+                            "text": f"Suchindex verweist auf {name} - diese Seite gibt es nicht"})
         elif not titel.strip() or not beschreibung.strip():
-            maengel.append(f"Suchindex-Eintrag {name}: Titel oder Beschreibung ist leer")
+            maengel.append({"art": "leer", "name": name, "url": url, "datei": SUCHE_JS,
+                            "suche": f"url: '{url}'",
+                            "text": f"Suchindex-Eintrag {name}: Titel oder Beschreibung ist leer"})
 
     return maengel
+
+
+def pruefe_suchindex():
+    return [b["text"] for b in befunde_suchindex()]
 
 
 # Was der Browser ungefragt nachlaedt (verlinkte PDFs gehoeren NICHT dazu)
@@ -430,15 +549,20 @@ def seitengewicht(html):
     return summe // 1024, groesste
 
 
-def pruefe_ladebudget():
+def befunde_ladebudget():
     schwer = []
     for pfad in html_dateien():
         kb, (groesste_kb, groesste_datei) = seitengewicht(pfad)
         if kb > LADEBUDGET_KB:
             anzeige = os.path.relpath(pfad, ROOT)
-            schwer.append(f"{anzeige}: {kb / 1024:.1f} MB laden beim Aufruf "
-                          f"(groesste Datei: {groesste_datei}, {groesste_kb // 1024} KB)")
-    return sorted(schwer, reverse=True)
+            schwer.append({"datei": pfad, "groesste": groesste_datei,
+                           "text": f"{anzeige}: {kb / 1024:.1f} MB laden beim Aufruf "
+                                   f"(groesste Datei: {groesste_datei}, {groesste_kb // 1024} KB)"})
+    return sorted(schwer, key=lambda b: b["text"], reverse=True)
+
+
+def pruefe_ladebudget():
+    return [b["text"] for b in befunde_ladebudget()]
 
 
 # Gewuenschte Schreibweise -> was stattdessen im Text steht.
@@ -452,7 +576,7 @@ SCHREIBWEISEN = [
 ]
 
 
-def pruefe_schreibweisen():
+def befunde_schreibweisen():
     """Vereinsbegriffe einheitlich halten. Ueber Jahre und mehrere Autoren
     driftet das auseinander, ohne dass es beim Lesen auffaellt."""
     treffer = []
@@ -468,9 +592,52 @@ def pruefe_schreibweisen():
             for muster in falsche:
                 anzahl = len(re.findall(muster, text))
                 if anzahl:
-                    treffer.append(f"{anzeige}: {anzahl}x \"{muster}\" - "
-                                   f"ueblich ist \"{gewuenscht}\"")
+                    treffer.append({"datei": pfad, "muster": muster, "gewuenscht": gewuenscht,
+                                    "anzahl": anzahl,
+                                    "text": f"{anzeige}: {anzahl}x \"{muster}\" - "
+                                            f"ueblich ist \"{gewuenscht}\""})
     return treffer
+
+
+def pruefe_schreibweisen():
+    return [b["text"] for b in befunde_schreibweisen()]
+
+
+# ------------------------------------------------------------------
+# Ausgeblendete Hinweise
+# ------------------------------------------------------------------
+# Manche Hinweise sind bekannt und gewollt (z. B. eine lokale Testseite
+# ohne Suchindex-Eintrag). Im Pflege-Fenster lassen sie sich ausblenden;
+# gemerkt wird die Textzeile des Hinweises. Nur HINWEISE - echte Fehler
+# (tote Verweise, Schreibweise, Build) lassen sich bewusst nicht
+# ausblenden, sonst ginge ein kaputter Link unbemerkt online.
+
+AUSNAHMEN_DATEI = os.path.join(ROOT, "tools", "pruefe_ausnahmen.json")
+
+
+def ausnahmen():
+    import json
+    if not os.path.isfile(AUSNAHMEN_DATEI):
+        return set()
+    try:
+        with open(AUSNAHMEN_DATEI, encoding="utf-8") as f:
+            return set(json.load(f).get("ausgeblendet", []))
+    except (OSError, ValueError):
+        return set()
+
+
+def ausnahmen_speichern(menge):
+    import json
+    with open(AUSNAHMEN_DATEI, "w", encoding="utf-8", newline="\n") as f:
+        json.dump({"ausgeblendet": sorted(menge)}, f, ensure_ascii=False, indent=2)
+        f.write("\n")
+
+
+def ohne_ausgeblendete(eintraege, menge=None):
+    """Filtert Textzeilen oder Befunde (dict mit "text") gegen die Liste."""
+    menge = ausnahmen() if menge is None else menge
+    return [e for e in eintraege
+            if (e["text"] if isinstance(e, dict) else e) not in menge]
 
 
 # ------------------------------------------------------------------
@@ -539,6 +706,19 @@ def pruefe_alles(still=False, extern=False):
     fehlende_symbole = pruefe_symbole()
     kaputte_links = pruefe_externe_links(fortschritt=not still) if extern else []
 
+    # Ausgeblendete Hinweise (Pflege-Fenster -> Webseite pruefen) fallen weg
+    menge = ausnahmen()
+    vorher = sum(map(len, (fehlende_pdfs, ohne_alt, doppelte_ids, meta_maengel, drittanbieter,
+                           kaputte_links, suchindex, ladebudget, schreibweisen, fehlende_symbole)))
+    (fehlende_pdfs, ohne_alt, doppelte_ids, meta_maengel, drittanbieter, kaputte_links,
+     suchindex, ladebudget, schreibweisen, fehlende_symbole) = (
+        ohne_ausgeblendete(liste, menge) for liste in
+        (fehlende_pdfs, ohne_alt, doppelte_ids, meta_maengel, drittanbieter, kaputte_links,
+         suchindex, ladebudget, schreibweisen, fehlende_symbole))
+    ausgeblendet = vorher - sum(map(len, (fehlende_pdfs, ohne_alt, doppelte_ids, meta_maengel,
+                                          drittanbieter, kaputte_links, suchindex, ladebudget,
+                                          schreibweisen, fehlende_symbole)))
+
     kritisch = bool(tote or schreibweise or veralteter_build)
     hinweise = bool(fehlende_pdfs or ohne_alt or doppelte_ids or meta_maengel
                     or drittanbieter or kaputte_links or suchindex
@@ -604,6 +784,10 @@ def pruefe_alles(still=False, extern=False):
                fehlende_pdfs,
                "Menuepunkt 'Ausschreibungs-PDF einpflegen'")
 
+    if ausgeblendet and not still:
+        print(f"\n({ausgeblendet} bekannte(r) Hinweis(e) ausgeblendet - "
+              "Pflege-Fenster -> Webseite pruefen -> Wieder einblenden)")
+
     if not kritisch and not hinweise:
         if not still:
             print("\nAlles in Ordnung - keine Probleme gefunden.")
@@ -618,14 +802,29 @@ def main():
     print("  Webseite pruefen")
     print("=" * 60)
 
-    extern = False
-    try:
-        extern = h.frage_ja("\nAuch die Links ins Internet pruefen? "
-                            "(dauert ein paar Sekunden) (j/n): ")
-    except (h.Zurueck, EOFError):
-        pass
+    # Nur nachfragen, wenn jemand davorsitzt. Im Hintergrund (ohne
+    # Tastatur) hat die Frage den Lauf frueher endlos warten lassen.
+    interaktiv = sys.stdin is not None and sys.stdin.isatty()
 
-    pruefe_alles(extern=extern)
+    extern = "--extern" in sys.argv
+    if interaktiv and not extern:
+        try:
+            extern = h.frage_ja("\nAuch die Links ins Internet pruefen? "
+                                "(dauert ein paar Sekunden) (j/n): ")
+        except (h.Zurueck, EOFError):
+            pass
+
+    sauber = pruefe_alles(extern=extern)
+
+    # Fehler gleich hier beheben (tote Verweise, Schreibweise, Build) -
+    # dieselben Funktionen wie im Pflege-Fenster (tools/pruef_reparatur.py)
+    if not sauber and interaktiv:
+        try:
+            if h.frage_ja("\nGefundene Fehler jetzt beheben? (j/n): "):
+                import pruef_reparatur
+                pruef_reparatur.terminal_reparatur()
+        except (h.Zurueck, EOFError):
+            pass
 
 
 if __name__ == "__main__":

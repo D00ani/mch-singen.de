@@ -191,7 +191,8 @@ def pruefe_wanderpokal(heute):
 def pruefe_offene_arbeit():
     hinweise = []
 
-    fehlende_pdfs = pruefe_seite.pruefe_angekuendigte_pdfs()
+    # Im Pflege-Fenster ausgeblendete Hinweise zaehlen hier nicht mit
+    fehlende_pdfs = pruefe_seite.ohne_ausgeblendete(pruefe_seite.pruefe_angekuendigte_pdfs())
     if fehlende_pdfs:
         hinweise.append(_hinweis(
             HINWEIS, f"{len(fehlende_pdfs)} angekündigte PDF-Datei(en) fehlen noch",
