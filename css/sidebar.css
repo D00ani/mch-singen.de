@@ -348,3 +348,16 @@ nav ul li.nav-section-label {
 .sidebar-search button:hover {
     background: var(--dark-blue);
 }
+
+/* ── Nur fuer das Handy (css/mobile.css, Abschnitt 17) ──
+   Griff, Werkzeuge und Termin-Zusatz gehoeren zum Blatt von unten, der
+   Menue-Teil des Daumen-Knopfs auch. Darueber bleiben sie aus.
+
+   display: contents laesst die Huelle des Daumen-Knopfs verschwinden: der
+   Nach-oben-Knopf darin steht dann weiter frei am Fenster wie bisher. */
+.menue-griff,
+.menue-werkzeuge,
+.menue-info,
+.daumen-menue { display: none; }
+
+.daumen { display: contents; }

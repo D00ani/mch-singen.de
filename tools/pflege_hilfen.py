@@ -55,6 +55,7 @@ JAHR_VALIDIERER = lambda a: None if a.isdigit() and len(a) == 4 else "Muss eine 
 UHRZEIT_VALIDIERER = lambda a: None if re.fullmatch(r"([01]\d|2[0-3]):[0-5]\d", a) else "Format muss HH:MM sein (z. B. 09:00)."
 ZAHL_VALIDIERER = lambda a: None if a.isdigit() else "Muss eine Zahl sein."
 LINK_VALIDIERER = lambda a: None if a.startswith("http") else "Muss mit http(s):// beginnen."
+EMAIL_VALIDIERER = lambda a: None if re.fullmatch(r"[^@\s\":<>]+@[^@\s\":<>]+\.[^@\s\":<>]+", a) else "Muss eine E-Mail-Adresse sein (z. B. name@firma.de)."
 
 ZURUECK_TASTE = "x"
 

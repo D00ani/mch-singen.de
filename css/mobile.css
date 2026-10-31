@@ -406,18 +406,20 @@
 }
 
 /* =========================================
-   17. SCHNELLZUGRIFF UNTEN + AUFGERAEUMTE KOPFZEILE (nur Handy)
+   17. DAUMEN-KNOPF, MENUE VON UNTEN, AUFGERAEUMTE KOPFZEILE (nur Handy)
    =========================================
    Am Desktop liegt die Navigation oben, weil die Maus ueberall gleich
    schnell hinkommt. Am Handy haelt man das Geraet in einer Hand - oben
-   links, wo der Menue-Knopf sass, ist die am schwersten erreichbare Ecke
-   des Bildschirms. Die fuenf haeufigsten Ziele stehen deshalb unten, wo
-   der Daumen ohnehin liegt.
+   links ist die am schwersten erreichbare Ecke des Bildschirms.
 
-   Damit verliert die Kopfzeile ihre Navigationsaufgabe und darf wieder
-   ruhig werden: eine Zeile Marke, drei Knoepfe rechts. Der frei
-   schwebende Menue-Knopf mit Milchglas entfaellt ersatzlos - sein Ziel
-   steht unten in der Leiste.
+   Deshalb sitzt der Zugang zum Menue unten rechts, wo der Daumen liegt:
+   ein kleiner Knopf statt einer durchgehenden Leiste. Die frueher feste
+   Leiste mit fuenf Zielen lag auf jeder Seite dauerhaft ueber dem Inhalt
+   und am iPhone direkt ueber der Leiste von Safari. Fuer eine Seite, die
+   man kurz besucht, war das zu viel.
+
+   Das Menue selbst faehrt als Blatt von unten hoch (js/main.js, Abschnitt
+   15b): die haeufigsten Ziele gross oben, der Rest klein darunter.
    ========================================= */
 
 @media (max-width: 768px) {
@@ -502,132 +504,396 @@
 
     .social-header { gap: 7px; }
 
-    /* ── Die Leiste ──────────────────────────────────────────────────
-       Deckend, nicht durchscheinend: ueber wechselndem Inhalt (helle
-       Karten, dunkle Fotos) waere eine Glasleiste mal lesbar, mal nicht.
+    /* ── Daumen-Knopf ──────────────────────────────────────────────────
+       Knopf fuers Menue plus Nach-oben-Pfeil in einer Huelle. Der Pfeil
+       erscheint erst nach dem Scrollen (js/main.js, Abschnitt 6) und stand
+       frueher als eigener Knopf daneben.
 
-       env(safe-area-inset-bottom) haelt sie oberhalb des Wischbalkens
-       neuerer iPhones - ohne das liegen die Knoepfe genau unter der
-       Systemgeste. */
-    .tabbar {
-        display: grid;
-        grid-template-columns: repeat(5, 1fr);
+       Deckend statt durchscheinend: ueber wechselndem Inhalt (helle Karten,
+       dunkle Fotos) waere Glas mal lesbar und mal nicht. Die Flaeche ist
+       dieselbe wie in der Schublade (css/sidebar.css). */
+    .daumen {
+        display: flex;
         position: fixed;
+        right: max(12px, env(safe-area-inset-right));
+        bottom: calc(14px + env(safe-area-inset-bottom));
+        z-index: 940;
+        height: 46px;
+        border-radius: 23px;
+        overflow: hidden;
+        background: #06112e;
+        color: #fff;
+        box-shadow: 0 8px 22px rgba(0, 18, 72, 0.38),
+                    inset 0 0 0 1px rgba(255, 255, 255, 0.10);
+    }
+
+    .daumen-menue {
+        appearance: none;
+        -webkit-appearance: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 0 18px;
+        background: none;
+        border: 0;
+        color: inherit;
+        font: 600 0.85rem var(--font-body);
+        cursor: pointer;
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    .daumen-menue i { font-size: 1rem; }
+
+    .daumen #scroll-to-top {
+        position: static;
+        width: 46px;
+        height: 46px;
+        background: none;
+        border-right: 1px solid rgba(255, 255, 255, 0.14);
+        border-radius: 0;
+        box-shadow: none;
+        transform: none;
+        transition: none;
+        font-size: 0.95rem;
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    .daumen #scroll-to-top:not(.visible) { display: none; }
+
+    .daumen #scroll-to-top:hover,
+    body.dark-mode .daumen #scroll-to-top {
+        background: none;
+        box-shadow: none;
+        transform: none;
+    }
+
+    /* Kurzes Aufhellen auf den Fingerdruck, nicht erst beim Loslassen. */
+    .daumen-menue:active,
+    .daumen #scroll-to-top:active { background: rgba(255, 255, 255, 0.12); }
+
+    /* Die Huelle schneidet ueberstehende Kanten ab - der Fokusring liegt
+       deshalb innen. */
+    .daumen-menue:focus-visible,
+    .daumen #scroll-to-top:focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: -4px;
+        border-radius: 19px;
+    }
+
+    /* Am Seitenende laege der Knopf sonst auf den Verweisen der Unterzeile. */
+    .footer-bottom {
+        padding-bottom: calc(72px + env(safe-area-inset-bottom));
+    }
+
+    /* ── Menue von unten ───────────────────────────────────────────────
+       Die Flaeche folgt der Seite: weiss im hellen, dunkel im dunklen
+       Modus. Am Blatt kommt alles aus diesen Variablen, der Dark Mode setzt
+       nur sie neu (am Ende dieses Abschnitts).
+
+       Kein Verlauf und kein blauer Kopf wie bei der Schublade: das Blatt
+       liegt ueber abgedunkelter Seite und traegt sich selbst. */
+    aside {
+        --blatt-grund: #ffffff;
+        --blatt-text: var(--text-main);
+        --blatt-leise: var(--text-light);
+        --blatt-feld: #eef2fb;
+        --blatt-griff: #c3cde2;
+        --blatt-blau: var(--primary-blue);
+        --blatt-rot: #c4162a;
+
+        top: auto;
         left: 0;
         right: 0;
         bottom: 0;
-        z-index: 940;
-        background: #06112e;
-        border-top: 1px solid rgba(255, 255, 255, 0.10);
-        box-shadow: 0 -4px 22px rgba(0, 0, 0, 0.30);
-        padding-bottom: env(safe-area-inset-bottom);
-        padding-left: env(safe-area-inset-left);
-        padding-right: env(safe-area-inset-right);
-    }
-
-    .tabbar-link {
-        appearance: none;
-        -webkit-appearance: none;
-        background: none;
-        border: 0;
-        cursor: pointer;
-        font-family: inherit;
+        width: auto;
+        max-height: calc(100vh - 24px);
+        max-height: calc(100dvh - 24px);
         display: flex;
         flex-direction: column;
+        gap: 8px;
+        padding: 0 max(18px, env(safe-area-inset-right))
+                 calc(14px + env(safe-area-inset-bottom))
+                 max(18px, env(safe-area-inset-left));
+        background: var(--blatt-grund);
+        color: var(--blatt-text);
+        border-radius: 22px 22px 0 0;
+        box-shadow: 0 -10px 30px rgba(0, 18, 72, 0.28);
+        -webkit-tap-highlight-color: transparent;
+
+        /* Oeffnen und Schliessen laufen ueber Uebergaenge, nicht ueber
+           Keyframes: wer mitten im Fahren wieder tippt, startet nicht neu,
+           das Blatt dreht aus der aktuellen Lage um. Beim Ziehen und
+           Loslassen uebernimmt js/main.js. */
+        transform: translateY(100%);
+        transition: transform 0.24s cubic-bezier(0.32, 0.72, 0, 1),
+                    visibility 0s linear 0.24s;
+    }
+
+    aside.open {
+        transform: translateY(0);
+        transition: transform 0.32s cubic-bezier(0.32, 0.72, 0, 1),
+                    visibility 0s linear 0s;
+    }
+
+    /* Die Seite dahinter bleibt stehen, auch wenn man daneben wischt. */
+    .sidebar-scrim { touch-action: none; }
+
+    .menue-griff {
+        display: flex;
+        flex: none;
         align-items: center;
         justify-content: center;
-        gap: 3px;
-        min-height: calc(var(--tabbar-hoehe) - 2px);   /* 2px Oberkante */
-        padding: 7px 2px 8px;
-        color: rgba(255, 255, 255, 0.62);
-        text-decoration: none;
-        /* Die goldene Kante der aktuellen Seite sitzt OBEN auf dem Knopf -
-           dieselbe Rolle wie die Unterkante der Desktop-Reiter. */
-        border-top: 2px solid transparent;
-        transition: color 0.18s ease, background 0.18s ease;
+        height: 34px;
+        margin-bottom: -6px;
+        touch-action: none;
+        cursor: grab;
+        -webkit-user-select: none;
+        user-select: none;
     }
 
-    .tabbar-link i { font-size: 1.12rem; }
-
-    .tabbar-link span {
-        font-size: 0.66rem;
-        font-weight: 600;
-        letter-spacing: 0.01em;
-        line-height: 1;
+    .menue-griff span {
+        width: 38px;
+        height: 4px;
+        border-radius: 2px;
+        background: var(--blatt-griff);
     }
 
-    .tabbar-link:hover { color: #fff; background: rgba(255, 255, 255, 0.06); }
-
-    /* Kurzes Einsinken, damit sich der Tipp koerperlich anfuehlt. */
-    .tabbar-link:active { transform: translateY(1px); }
-
-    .tabbar-link.is-active {
-        color: #fff;
-        border-top-color: var(--accent);
-        background: rgba(255, 255, 255, 0.07);
+    /* Vom blauen Schubladen-Kopf bleibt nur der Schliessen-Knopf. */
+    .sidebar-kopf {
+        position: absolute;
+        top: 6px;
+        right: max(10px, env(safe-area-inset-right));
+        margin: 0;
+        padding: 0;
+        background: none;
+        border: 0;
     }
 
-    .tabbar-link:focus-visible {
-        outline: 2px solid var(--accent);
-        outline-offset: -2px;
-    }
+    .sidebar-brand { display: none; }
 
-    @media (prefers-reduced-motion: reduce) {
-        .tabbar-link { transition: none; }
-        .tabbar-link:active { transform: none; }
-    }
-
-    /* Der Platz UNTER der Leiste steht bewusst in css/style.css: das
-       Bundle haengt style.css ans Ende, und die dortigen body-Regeln sind
-       spezifischer. Eine Regel an dieser Stelle waere wirkungslos - die
-       Begruendung steht dort ausfuehrlich. */
-
-    /* Der Nach-oben-Knopf (css/modules.css, Abschnitt 12) steht auf dem
-       Handy auf bottom: 20px und liegt mit z-index: 800 unter der Leiste
-       (940) - er verschwaende also dahinter. 70px setzen ihn mit 12px
-       Luft darueber. Groesse und rechter Abstand bleiben, wie modules.css
-       sie fuer schmale Fenster schon festlegt. */
-    #scroll-to-top {
-        bottom: calc(var(--tabbar-hoehe) + 12px + env(safe-area-inset-bottom));
-    }
-
-    /* Klaro setzt das Cookie-Banner auf schmalen Fenstern auf bottom: 0 mit
-       voller Breite und z-index 999 - es laege also genau auf der Leiste und
-       wuerde die Navigation verdecken, bis jemand geantwortet hat. Der Wert
-       hebt es um die Leistenhoehe an, dann sind beide bedienbar.
-       !important ist hier der uebliche Weg, siehe css/cookie.css. */
-    .klaro .cookie-notice:not(.cookie-modal-notice) {
-        bottom: calc(var(--tabbar-hoehe) + env(safe-area-inset-bottom)) !important;
-    }
-
-    /* ── Seitenmenue ────────────────────────────────────────────────
-       300px fest waren auf einem 360px-Handy ein 60px-Streifen daneben. */
-    /* padding-top faellt weg: der Abstand zur Aussparung steckt jetzt in
-       .sidebar-kopf, damit Marke und Schliessen-Knopf gemeinsam rutschen. */
-    aside {
-        width: min(310px, 86vw);
-        padding-bottom: calc(40px + env(safe-area-inset-bottom));
-        /* Quer gehaltene Geraete mit Aussparung: der Rand waechst, und der
-           Kopf der Schublade waechst ueber die Variable mit. */
-        --panel-rand: max(16px, env(safe-area-inset-left));
-    }
-
-    aside nav ul li a {
-        padding: 12px 12px;
-        min-height: 44px;
-        border-radius: 10px;
-    }
-
-    /* Mit dem Finger sind 44px der Richtwert. "top" faellt weg: der Knopf
-       steht seit dem Umbau in der Kopfzeile der Schublade im Fluss, den
-       Abstand zur Aussparung setzt .sidebar-kopf einmal fuer beide. */
+    /* Mit dem Finger sind 44px der Richtwert. */
     .close-btn {
         width: 44px;
         height: 44px;
+        background: var(--blatt-feld);
+        border: 0;
+        color: var(--blatt-text);
     }
-}
 
-/* Ab 769px fuehrt die Hauptnavigation im Kopf - die Leiste bleibt aus. */
-@media (min-width: 769px) {
-    .tabbar { display: none; }
+    .close-btn:hover {
+        background: var(--blatt-feld);
+        color: var(--blatt-text);
+    }
+
+    aside nav {
+        flex: none;
+        margin: 0;
+    }
+
+    aside nav ul {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        column-gap: 12px;
+    }
+
+    aside nav ul li {
+        min-width: 0;
+        margin: 0;
+    }
+
+    aside nav ul li.nav-section-label { display: none; }
+
+    aside nav ul li a {
+        position: relative;
+        min-height: 44px;
+        padding: 0 2px;
+        gap: 0;
+        border: 0;
+        border-radius: 8px;
+        background: none;
+        color: var(--blatt-leise);
+        font-size: 0.94rem;
+        font-weight: 500;
+        touch-action: manipulation;
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        user-select: none;
+        transition: transform 0.12s ease-out;
+    }
+
+    aside nav ul li a:hover {
+        background: none;
+        color: var(--blatt-leise);
+    }
+
+    aside nav ul li a:active { transform: scale(0.97); }
+
+    /* Symbole braucht die Schriftliste nicht. Mit der ID, weil .fa-solid
+       selbst ein display setzt und sonst gewinnt - das Symbol stuende dann
+       links, und space-between schoebe den Text nach rechts. */
+    #side-menu nav ul li a i { display: none; }
+
+    /* Die haeufigsten Ziele. */
+    aside nav ul li.menue-gross { grid-column: 1 / -1; }
+
+    aside nav ul li.menue-gross a {
+        min-height: 48px;
+        justify-content: space-between;
+        gap: 10px;
+        color: var(--blatt-text);
+        font-family: var(--font-heading);
+        font-size: 1.5rem;
+        font-weight: 700;
+        line-height: 1.1;
+        letter-spacing: -0.01em;
+    }
+
+    aside .menue-info {
+        display: inline;
+        flex: none;
+        color: var(--blatt-blau);
+        font-family: var(--font-display);
+        font-size: 0.78rem;
+        font-weight: 700;
+        letter-spacing: 0;
+    }
+
+    /* Goldlinie unter dem Wort, nicht ueber die ganze Zeile. */
+    aside .menue-mitglied .menue-text {
+        padding: 0 2px 2px;
+        margin-left: -2px;
+        background: linear-gradient(transparent 84%, var(--accent) 84%,
+                                    var(--accent) 96%, transparent 96%);
+    }
+
+    aside nav ul li.menue-live a,
+    aside nav ul li.menue-live a:hover { color: var(--blatt-rot); }
+
+    aside .menue-live .menue-info {
+        color: var(--blatt-leise);
+        font-family: var(--font-body);
+        font-weight: 500;
+    }
+
+    aside nav ul li.menue-trenner {
+        grid-column: 1 / -1;
+        height: 1px;
+        margin: 6px 0;
+        background: var(--border-soft);
+    }
+
+    /* Aktuelle Seite: kleiner goldener Strich am Rand plus blaue Schrift.
+       Senkrecht, weil die Linie UNTER einem Wort schon "Mitglied werden"
+       heisst; die Schublade markiert ihre aktuelle Seite genauso links.
+       Der Strich steht im Seitenrand, damit alle Eintraege auf einer
+       Linie beginnen. */
+    aside nav ul li a.menu_current {
+        background: none;
+        color: var(--blatt-blau);
+        font-weight: 600;
+    }
+
+    aside nav ul li.menue-gross a.menu_current {
+        color: var(--blatt-blau);
+        font-weight: 700;
+    }
+
+    aside nav ul li a.menu_current::before {
+        content: "";
+        position: absolute;
+        left: -10px;
+        top: 50%;
+        width: 3px;
+        height: 16px;
+        margin-top: -8px;
+        border-radius: 2px;
+        background: var(--accent);
+    }
+
+    aside nav ul li.menue-gross a.menu_current::before {
+        height: 22px;
+        margin-top: -11px;
+    }
+
+    /* Suche, Hell/Dunkel und Instagram. Die Kopfzeile scrollt weg, hier
+       sind die drei von jeder Stelle der Seite aus erreichbar. Gesucht wird
+       ueber die Taste der Tastatur, deshalb entfaellt der Lupen-Knopf. */
+    .sidebar-search {
+        flex: none;
+        display: flex;
+        gap: 7px;
+        margin: 0;
+        padding: 0;
+        border: 0;
+    }
+
+    .sidebar-search-row {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .sidebar-search-row button { display: none; }
+
+    .sidebar-search input {
+        border: 0;
+        background: var(--blatt-feld);
+        color: var(--blatt-text);
+    }
+
+    .sidebar-search input:focus {
+        background: var(--blatt-feld);
+        box-shadow: inset 0 0 0 2px var(--blatt-blau);
+    }
+
+    .sidebar-search input::placeholder { color: var(--blatt-leise); }
+
+    .menue-werkzeuge {
+        display: flex;
+        flex: none;
+        gap: 7px;
+    }
+
+    /* Mit .sidebar-search, sonst faerbt die Regel fuer den Lupen-Knopf
+       (css/sidebar.css) den Schalter blau. */
+    .sidebar-search .menue-wz {
+        padding: 0;
+        appearance: none;
+        -webkit-appearance: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 44px;
+        height: 44px;
+        border: 0;
+        border-radius: 11px;
+        background: var(--blatt-feld);
+        color: var(--blatt-text);
+        font-size: 1.05rem;
+        text-decoration: none;
+        cursor: pointer;
+        touch-action: manipulation;
+    }
+
+    .sidebar-search .menue-wz:hover { background: var(--blatt-feld); }
+
+    .menue-wz i { pointer-events: none; }
+
+    body.dark-mode aside {
+        --blatt-grund: #1a1c2b;
+        --blatt-text: #f0f3fa;
+        --blatt-leise: #aab3c9;
+        --blatt-feld: rgba(255, 255, 255, 0.08);
+        --blatt-griff: rgba(255, 255, 255, 0.3);
+        --blatt-blau: #74a3ff;
+        --blatt-rot: #ff7a85;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        aside,
+        aside.open { transition-duration: 0s; }
+        aside nav ul li a { transition: none; }
+        aside nav ul li a:active { transform: none; }
+    }
 }

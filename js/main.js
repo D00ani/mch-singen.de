@@ -27,13 +27,34 @@ document.addEventListener('DOMContentLoaded', () => {
     const openMenuBtn = document.getElementById('open-menu');
     const closeMenuBtn = document.getElementById('close-menu');
 
-    // Die Schublade hat seit der Leiste am unteren Rand ZWEI Zugaenge: den
-    // Menue-Knopf im Kopf (ab 769px) und den Knopf "Menue" in der Leiste
-    // (darunter). Beide muessen ihren aria-expanded-Zustand mitfuehren,
-    // sonst meldet ein Vorleseprogramm "zugeklappt", waehrend das Menue
-    // offen dasteht.
-    const menueOeffner = [openMenuBtn, document.querySelector('.tabbar-menue')]
-        .filter(Boolean);
+    // Bis 768px wird aus der Schublade ein Blatt von unten (Abschnitt 15b).
+    // Das klinkt sich ueber diese beiden Haken in Oeffnen und Schliessen ein.
+    const menueHandy = window.matchMedia('(max-width: 768px)');
+    const menueBlatt = { auf: null, zu: null };
+
+    // Die Schublade hat ZWEI Zugaenge: den Menue-Knopf im Kopf (ab 769px)
+    // und den Daumen-Knopf unten rechts (darunter). Beide muessen ihren
+    // aria-expanded-Zustand mitfuehren, sonst meldet ein Vorleseprogramm
+    // "zugeklappt", waehrend das Menue offen dasteht.
+    //
+    // Der Daumen-Knopf entsteht hier statt im Markup: ohne JavaScript geht
+    // das Menue ohnehin nicht auf, die Navigation uebernimmt dann der
+    // Fussbereich. Abschnitt 6 setzt den Nach-oben-Knopf mit hinein.
+    let daumen = null;
+    let daumenMenue = null;
+    if (sideMenu) {
+        daumen = document.createElement('div');
+        daumen.className = 'daumen';
+        daumenMenue = document.createElement('button');
+        daumenMenue.type = 'button';
+        daumenMenue.className = 'daumen-menue';
+        daumenMenue.setAttribute('aria-controls', 'side-menu');
+        daumenMenue.setAttribute('aria-expanded', 'false');
+        daumenMenue.innerHTML = '<i class="fa-solid fa-bars" aria-hidden="true"></i><span>Menü</span>';
+        daumen.appendChild(daumenMenue);
+        document.body.appendChild(daumen);
+    }
+    const menueOeffner = [openMenuBtn, daumenMenue].filter(Boolean);
 
     function oeffnerZustand(offen) {
         menueOeffner.forEach(b => b.setAttribute('aria-expanded', String(offen)));
@@ -68,6 +89,7 @@ document.addEventListener('DOMContentLoaded', () => {
         sideMenu.classList.add('open');
         if (scrim) scrim.classList.add('open');
         oeffnerZustand(true);
+        if (menueBlatt.auf) menueBlatt.auf();
 
         // Fokus ins Panel holen, sonst steht er weiter hinter dem Menue
         // und die Tastaturbedienung beginnt im verdeckten Seiteninhalt.
@@ -84,6 +106,7 @@ document.addEventListener('DOMContentLoaded', () => {
         sideMenu.classList.remove('open');
         if (scrim) scrim.classList.remove('open');
         oeffnerZustand(false);
+        if (menueBlatt.zu) menueBlatt.zu();
 
         // Fokus zurueck an den Ausgangspunkt. Ohne das landet er nach dem
         // Schliessen am Seitenanfang und man navigiert von vorne.
@@ -179,21 +202,23 @@ document.addEventListener('DOMContentLoaded', () => {
     }));
 
     function updateThemeIcon() {
-        if (themeToggleBtn) {
-            themeToggleBtn.innerHTML = body.classList.contains('dark-mode') ?
-                '<i class="fa-solid fa-sun"></i>' : '<i class="fa-solid fa-moon"></i>';
-        }
+        const symbol = body.classList.contains('dark-mode') ?
+            '<i class="fa-solid fa-sun"></i>' : '<i class="fa-solid fa-moon"></i>';
+        if (themeToggleBtn) themeToggleBtn.innerHTML = symbol;
+        // Derselbe Schalter steht am Handy auch im Menue (Abschnitt 15b).
+        const imMenue = document.querySelector('.menue-licht');
+        if (imMenue) imMenue.innerHTML = symbol;
         themeColorMeta.content = body.classList.contains('dark-mode') ? '#1a1a1a' : '#0047cc';
     }
     updateThemeIcon(); // Initiale Icon-Anzeige
 
-    if (themeToggleBtn) {
-        themeToggleBtn.addEventListener('click', () => {
-            body.classList.toggle('dark-mode');
-            localStorage.setItem('dark-mode', body.classList.contains('dark-mode') ? 'enabled' : 'disabled');
-            updateThemeIcon();
-        });
+    function themaWechseln() {
+        body.classList.toggle('dark-mode');
+        localStorage.setItem('dark-mode', body.classList.contains('dark-mode') ? 'enabled' : 'disabled');
+        updateThemeIcon();
     }
+
+    if (themeToggleBtn) themeToggleBtn.addEventListener('click', themaWechseln);
 
     // --- 3. MOBILE SWIPE GESTURE (Wisch-Menü) ---
     let touchstartX = 0;
@@ -205,6 +230,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }, {passive: true});
 
     document.addEventListener('touchend', (e) => {
+        // Am Handy faehrt das Menue von unten - gewischt wird dort am Blatt
+        // selbst (Abschnitt 15b), der Wisch vom linken Rand ist dem Browser
+        // vorbehalten (eine Seite zurueck).
+        if (menueHandy.matches) return;
         let dx = e.changedTouches[0].screenX - touchstartX;
         let dy = Math.abs(e.changedTouches[0].screenY - touchstartY);
         
@@ -259,7 +288,8 @@ document.addEventListener('DOMContentLoaded', () => {
     scrollBtn.id = 'scroll-to-top';
     scrollBtn.setAttribute('aria-label', 'Nach oben scrollen');
     scrollBtn.innerHTML = '<i class="fa-solid fa-chevron-up"></i>';
-    document.body.appendChild(scrollBtn);
+    if (daumen) daumen.prepend(scrollBtn);
+    else document.body.appendChild(scrollBtn);
 
     window.addEventListener('scroll', () => {
         scrollBtn.classList.toggle('visible', window.scrollY > 400);
@@ -407,6 +437,375 @@ document.addEventListener('DOMContentLoaded', () => {
             label.textContent = match.label;
             navList.insertBefore(label, li);
         });
+    })();
+
+    // --- 15b. MENUE VON UNTEN (nur Handy) ---
+    // Bis 768px faehrt das Seitenmenue als Blatt von unten hoch, unter den
+    // Daumen. Es bleibt dasselbe Element mit denselben Eintraegen: Fokus,
+    // Escape, Tipp daneben und die Markierung der aktuellen Seite kommen
+    // weiter aus den Abschnitten 1 und 14. Gestaltung: css/mobile.css,
+    // Abschnitt 17.
+    //
+    // Hier kommt nur dazu, was das Blatt anders macht: die haeufigsten Ziele
+    // gross oben, kuerzere Namen, der Griff zum Ziehen, Hell/Dunkel und
+    // Instagram neben der Suche, der naechste Termin und am Renntag "Jetzt
+    // live". Ab 769px bleibt die Schublade, wie sie war.
+    (function initMenueBlatt() {
+        const navListe = document.querySelector('#side-menu nav ul');
+        if (!sideMenu || !navListe) return;
+
+        const nav = navListe.parentElement;
+        const suche = sideMenu.querySelector('.sidebar-search');
+        const ursprung = [...navListe.children];
+
+        // Der Text bekommt ein eigenes Element: so laesst er sich kuerzen,
+        // und die Goldlinie unter "Mitglied werden" wird nur so breit wie
+        // das Wort.
+        ursprung.forEach(li => {
+            const a = li.querySelector('a');
+            if (!a) return;
+            const knoten = [...a.childNodes]
+                .find(n => n.nodeType === Node.TEXT_NODE && n.textContent.trim());
+            if (!knoten) return;
+            const text = document.createElement('span');
+            text.className = 'menue-text';
+            text.textContent = knoten.textContent.trim();
+            text.dataset.voll = text.textContent;
+            a.replaceChild(text, knoten);
+        });
+
+        const finde = teil => ursprung
+            .find(li => (li.querySelector('a')?.getAttribute('href') || '').includes(teil));
+
+        const gross = ['aktuelles.html', 'kartsport.html', 'trialsport.html', 'ueber-uns.html',
+                       'mitglied-werden.html'].map(finde).filter(Boolean);
+        const klein = ['index.html', 'sommerferienprogramm.html', 'statistiken.html', 'teamkleidung',
+                       'sponsoren-links.html', 'geschichte.html', 'archiv.html', 'faq.html',
+                       'kontakt.html', 'impressum-datenschutz.html'].map(finde).filter(Boolean);
+        // Ein spaeter ergaenzter Eintrag landet von selbst unten in der Liste.
+        const rest = ursprung.filter(li => li.querySelector('a')
+            && !gross.includes(li) && !klein.includes(li));
+
+        const KURZ = {
+            'index.html': 'Startseite',
+            'aktuelles.html': 'Termine',
+            'sommerferienprogramm.html': 'Ferienprogramm',
+            'teamkleidung': 'Vereins-Shop',
+            'geschichte.html': 'Geschichte',
+            'kontakt.html': 'Kontakt',
+            'impressum-datenschutz.html': 'Impressum',
+        };
+
+        gross.forEach(li => li.classList.add('menue-gross'));
+        finde('mitglied-werden.html')?.classList.add('menue-mitglied');
+
+        // Griff zum Ziehen. Fuer Vorleseprogramme ohne Bedeutung: geschlossen
+        // wird fuer sie ueber den Knopf.
+        const griff = document.createElement('div');
+        griff.className = 'menue-griff';
+        griff.setAttribute('aria-hidden', 'true');
+        griff.innerHTML = '<span></span>';
+        sideMenu.prepend(griff);
+
+        const trenner = document.createElement('li');
+        trenner.className = 'menue-trenner';
+        trenner.setAttribute('aria-hidden', 'true');
+
+        const vorsatz = window.location.pathname.toLowerCase().includes('/pages/') ? '../' : '';
+
+        const terminInfo = document.createElement('small');
+        terminInfo.className = 'menue-info';
+        finde('aktuelles.html')?.querySelector('a').appendChild(terminInfo);
+
+        const live = document.createElement('li');
+        live.className = 'menue-gross menue-live';
+        live.hidden = true;
+        live.innerHTML = `<a href="${vorsatz ? '' : 'pages/'}live.html">`
+                       + '<span class="menue-text">Jetzt live</span>'
+                       + '<small class="menue-info">Ergebnisse ansehen</small></a>';
+
+        // Hell/Dunkel und Instagram stehen im Kopf der Seite, der am Handy
+        // wegscrollt. Im Blatt sind sie von jeder Stelle aus erreichbar.
+        if (suche) {
+            const werkzeuge = document.createElement('div');
+            werkzeuge.className = 'menue-werkzeuge';
+
+            const licht = document.createElement('button');
+            licht.type = 'button';
+            licht.className = 'menue-wz menue-licht';
+            licht.setAttribute('aria-label', 'Hell oder dunkel umschalten');
+            licht.addEventListener('click', themaWechseln);
+
+            const insta = document.createElement('a');
+            insta.className = 'menue-wz';
+            insta.href = 'https://www.instagram.com/mch_singen/';
+            insta.target = '_blank';
+            insta.rel = 'noopener noreferrer';
+            insta.setAttribute('aria-label', 'MCH Singen auf Instagram');
+            insta.innerHTML = '<i class="fa-brands fa-instagram" aria-hidden="true"></i>';
+
+            werkzeuge.append(licht, insta);
+            suche.appendChild(werkzeuge);
+            updateThemeIcon();
+
+            const feld = suche.querySelector('input');
+            if (feld) feld.enterKeyHint = 'search';
+        }
+
+        // Auch die Reihenfolge im Dokument wechselt, nicht nur die Ansicht:
+        // sonst springt der Fokus beim Tabben kreuz und quer durchs Blatt.
+        function ordnen() {
+            const blatt = menueHandy.matches;
+            if (blatt) {
+                [live, ...gross, trenner, ...klein, ...rest].forEach(li => navListe.appendChild(li));
+                if (suche) sideMenu.appendChild(suche);
+            } else {
+                live.remove();
+                trenner.remove();
+                ursprung.forEach(li => navListe.appendChild(li));
+                if (suche) sideMenu.insertBefore(suche, nav);
+            }
+            Object.entries(KURZ).forEach(([teil, kurz]) => {
+                const text = finde(teil)?.querySelector('.menue-text');
+                if (text) text.textContent = blatt ? kurz : text.dataset.voll;
+            });
+        }
+        ordnen();
+
+        menueHandy.addEventListener('change', () => {
+            closeSidebar();
+            ordnen();
+        });
+
+        // Naechster Termin aus Kart und Trial zusammen, einmal je Seite.
+        const tagAnfang = d => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+        let terminGeladen = false;
+
+        function terminZeigen() {
+            if (terminGeladen) return;
+            terminGeladen = true;
+            Promise.all(['timer.txt', 'timer_trial.txt'].map(name =>
+                fetch(`${vorsatz}data/${name}`)
+                    .then(r => (r.ok ? r.text() : ''))
+                    .catch(() => '')
+            )).then(texte => {
+                const ev = naechsterTermin(liesTermine(texte.join('\n')));
+                if (!ev) return;
+                const tage = Math.round((tagAnfang(new Date(ev.zeit)) - tagAnfang(new Date())) / 86400000);
+                terminInfo.textContent = tage <= 0 ? 'heute' : tage === 1 ? 'morgen' : `in ${tage} Tagen`;
+            });
+        }
+
+        // "Jetzt live": dieselben Regeln wie beim Hinweis auf der Startseite
+        // (js/index.js, Abschnitt Live-Timing). Geprueft wird erst beim
+        // Oeffnen, damit nicht jeder Seitenaufruf die Datei laedt.
+        const FRISCH_MINUTEN = 45;
+        let liveGeprueft = 0;
+
+        async function liveZeigen() {
+            if (Date.now() - liveGeprueft < 60000) return;
+            liveGeprueft = Date.now();
+            try {
+                const antwort = await fetch(`${vorsatz}data/livedata.json?t=${Date.now()}`);
+                if (!antwort.ok) return;
+                const daten = await antwort.json();
+
+                const jetzt = new Date();
+                const heute = jetzt.getFullYear() + '-' +
+                              String(jetzt.getMonth() + 1).padStart(2, '0') + '-' +
+                              String(jetzt.getDate()).padStart(2, '0');
+                const stand = daten.stand_iso ? new Date(daten.stand_iso) : null;
+                const alterMin = stand ? Math.floor((Date.now() - stand.getTime()) / 60000) : -1;
+
+                live.hidden = !(Array.isArray(daten.results) && daten.results.length
+                    && (!daten.datum_iso || daten.datum_iso === heute)
+                    && alterMin >= 0 && alterMin <= FRISCH_MINUTEN);
+            } catch (e) {
+                // Ohne Netz oder Datei bleibt der Eintrag einfach weg.
+            }
+        }
+
+        // Zurueck-Taste: schliesst zuerst das Menue und verlaesst nicht die
+        // Seite. Dafuer bekommt das offene Menue einen eigenen Verlaufsschritt.
+        let imVerlauf = false;
+
+        menueBlatt.auf = () => {
+            if (!menueHandy.matches) return;
+            // Passt das Blatt auf den Schirm, zieht man es ueberall. Ist es
+            // hoeher (kleines Handy, quer gehalten), scrollt es, und gezogen
+            // wird nur noch am Griff.
+            sideMenu.style.touchAction = sideMenu.scrollHeight > sideMenu.clientHeight + 1 ? '' : 'none';
+            history.pushState({ menue: true }, '');
+            imVerlauf = true;
+            terminZeigen();
+            liveZeigen();
+        };
+
+        menueBlatt.zu = () => {
+            if (!imVerlauf) return;
+            imVerlauf = false;
+            history.back();
+        };
+
+        window.addEventListener('popstate', () => {
+            if (!imVerlauf) return;
+            imVerlauf = false;
+            closeSidebar();
+        });
+
+        // Kommt die Seite aus dem Zwischenspeicher des Browsers zurueck,
+        // darf das Menue nicht noch offen dastehen.
+        window.addEventListener('pageshow', (e) => {
+            if (!e.persisted || !sideMenu.classList.contains('open')) return;
+            imVerlauf = false;
+            closeSidebar();
+        });
+
+        // Ziehen: das Blatt klebt am Finger. Beim Loslassen entscheidet nicht
+        // die Lage allein, sondern wohin der Wisch getragen haette - ein
+        // kurzer schneller Wisch schliesst also genauso wie ein langer Zug.
+        // Die Feder startet mit der Fingergeschwindigkeit, dadurch gibt es
+        // zwischen Ziehen und Weiterfahren keine sichtbare Naht.
+        let finger = null;
+        let startZeiger = 0;
+        let startY = 0;
+        let gezogen = false;
+        let spur = [];
+        let federStopp = null;
+        let eben = false;
+
+        const lageJetzt = () => new DOMMatrixReadOnly(getComputedStyle(sideMenu).transform).m42;
+
+        function stellen(y) {
+            sideMenu.style.transform = `translate3d(0, ${y}px, 0)`;
+            if (scrim) scrim.style.opacity = String(Math.max(0, Math.min(1, 1 - y / sideMenu.offsetHeight)));
+        }
+
+        function freigeben() {
+            sideMenu.style.transform = '';
+            sideMenu.style.transition = '';
+            if (scrim) {
+                scrim.style.opacity = '';
+                scrim.style.transition = '';
+            }
+        }
+
+        // Daempfung 1 schwingt nicht nach; 0.84 nur nach einem echten Wurf.
+        function feder(von, nach, v0, fertig) {
+            const w = 2 * Math.PI / 0.34;
+            const k = w * w;
+            const c = 2 * (Math.abs(v0) > 300 ? 0.84 : 1) * w;
+            let x = von;
+            let v = v0;
+            let alt = performance.now();
+            let bild = 0;
+
+            function schritt(t) {
+                const dt = Math.min((t - alt) / 1000, 1 / 30);
+                alt = t;
+                for (let i = 0; i < 4; i++) {
+                    v += (-k * (x - nach) - c * v) * dt / 4;
+                    x += v * dt / 4;
+                }
+                stellen(x);
+                if (Math.abs(x - nach) < 0.4 && Math.abs(v) < 10) {
+                    fertig();
+                    return;
+                }
+                bild = requestAnimationFrame(schritt);
+            }
+            bild = requestAnimationFrame(schritt);
+            return () => cancelAnimationFrame(bild);
+        }
+
+        sideMenu.addEventListener('pointerdown', (e) => {
+            if (!menueHandy.matches || finger !== null || e.button > 0) return;
+            if (e.target.closest('input')) return;
+            if (!e.target.closest('.menue-griff') && sideMenu.scrollHeight > sideMenu.clientHeight + 1) return;
+            finger = e.pointerId;
+            startZeiger = e.clientY;
+            gezogen = false;
+            spur = [{ t: e.timeStamp, y: e.clientY }];
+            if (federStopp) {
+                federStopp();
+                federStopp = null;
+            }
+        });
+
+        sideMenu.addEventListener('pointermove', (e) => {
+            if (e.pointerId !== finger) return;
+            if (!gezogen) {
+                if (Math.abs(e.clientY - startZeiger) < 8) return;
+                gezogen = true;
+                sideMenu.setPointerCapture(e.pointerId);
+                startZeiger = e.clientY;
+                startY = lageJetzt();
+                sideMenu.style.transition = 'none';
+                if (scrim) scrim.style.transition = 'none';
+            }
+            const y = startY + e.clientY - startZeiger;
+            if (y < 0) {
+                // Nach oben ist Schluss, aber kein harter Anschlag: je weiter,
+                // desto weniger folgt das Blatt.
+                const mass = sideMenu.offsetHeight;
+                stellen(y * mass * 0.55 / (mass + 0.55 * Math.abs(y)));
+            } else {
+                stellen(y);
+            }
+            spur.push({ t: e.timeStamp, y: e.clientY });
+            while (spur.length > 2 && e.timeStamp - spur[0].t > 100) spur.shift();
+        });
+
+        function loslassen(e) {
+            if (e.pointerId !== finger) return;
+            finger = null;
+            if (!gezogen) return;
+
+            // Der Klick nach dem Ziehen darf keinen Eintrag ausloesen.
+            eben = true;
+            setTimeout(() => { eben = false; }, 60);
+
+            const hoehe = sideMenu.offsetHeight;
+            const y = lageJetzt();
+            const a = spur[0];
+            const b = spur[spur.length - 1];
+            const v = (b.y - a.y) / Math.max(1, b.t - a.t) * 1000;
+            const zielpunkt = y + (v / 1000) * 0.998 / (1 - 0.998);
+            const ziel = Math.abs(zielpunkt) < Math.abs(hoehe - zielpunkt) ? 0 : hoehe;
+
+            const fertig = () => {
+                federStopp = null;
+                if (ziel) closeSidebar();
+                freigeben();
+            };
+            if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) fertig();
+            else federStopp = feder(y, ziel, v, fertig);
+        }
+
+        sideMenu.addEventListener('pointerup', loslassen);
+        sideMenu.addEventListener('pointercancel', loslassen);
+
+        sideMenu.addEventListener('click', (e) => {
+            if (eben) {
+                e.preventDefault();
+                e.stopPropagation();
+                return;
+            }
+            const a = e.target.closest('a[href]');
+            if (!a || !imVerlauf || a.target) return;
+
+            // Die aktuelle Seite noch einmal zu laden waere sinnlos.
+            if (a.classList.contains('menu_current')) {
+                e.preventDefault();
+                closeSidebar();
+                return;
+            }
+            // Ersetzt den Verlaufsschritt des Menues: sonst braucht "Zurueck"
+            // auf der neuen Seite zwei Tipps.
+            e.preventDefault();
+            imVerlauf = false;
+            window.location.replace(a.href);
+        }, true);
     })();
 
     // --- 16. HAUPTNAVIGATION (Desktop-Leiste) ---
@@ -583,33 +982,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     })();
 
-    // --- 19. SCHNELLZUGRIFF UNTEN: AKTUELLE SEITE MARKIEREN ---
-    // Gleiche Erkennung wie im Seitenmenue (Abschnitt 14). Die Leiste
-    // selbst steht im Markup jeder Seite, damit sie auch ohne JavaScript
-    // da ist - nur die Markierung kommt von hier.
-    (function initTabbarActive() {
-        const links = document.querySelectorAll('.tabbar a.tabbar-link');
-        if (!links.length) return;
-
-        const pfad = window.location.pathname.toLowerCase();
-        const aktuell = pfad.split('/').pop() || 'index.html';
-
-        links.forEach(link => {
-            const ziel = (link.getAttribute('href') || '').toLowerCase().split('?')[0];
-            const datei = ziel.split('/').pop();
-            if (!datei) return;
-
-            const istStart = datei === 'index.html';
-            const trifftStart = istStart && (aktuell === 'index.html' || aktuell === '');
-            const trifftSeite = !istStart && aktuell === datei;
-
-            if (trifftStart || trifftSeite) {
-                link.classList.add('is-active');
-                link.setAttribute('aria-current', 'page');
-            }
-        });
-    })();
-
     // --- 20. BREADCRUMB: GRUPPE AUFKLAPPBAR ---
     // Die mittlere Stufe ("Startseite / Sport / Kartsport") steht als
     // schlichter Text im Markup und bleibt ohne JavaScript genau das.
@@ -758,6 +1130,31 @@ document.addEventListener('DOMContentLoaded', () => {
         handy.addEventListener('change', abgleichen);
     })();
 
+    // Format wie in js/index.js: Tag;Monat;Jahr;Uhrzeit;Verein;Ort;Karte;PDF;Titel
+    function liesTermine(text) {
+        const termine = [];
+        for (const roh of text.split('\n')) {
+            const zeile = roh.trim();
+            if (!zeile || zeile.startsWith('#')) continue;
+            const t = zeile.split(';').map(x => x.trim());
+            if (t.length < 4) continue;
+            const zeit = new Date(`${t[1]} ${t[0]}, ${t[2]} ${t[3]}`).getTime();
+            if (isNaN(zeit)) continue;
+            termine.push({ zeit, verein: t[4] || '', ort: t[5] || '', pdf: t[7] || '', titel: t[8] || '' });
+        }
+        return termine.sort((a, b) => a.zeit - b.zeit);
+    }
+
+    // Ein Termin von heute bleibt den ganzen Tag stehen (dann "Heute").
+    function naechsterTermin(termine) {
+        const jetzt = new Date();
+        return termine.find(ev => {
+            const d = new Date(ev.zeit);
+            const heute = d.toDateString() === jetzt.toDateString();
+            return ev.zeit > jetzt.getTime() || heute;
+        }) || null;
+    }
+
     // --- 22. NAECHSTER TERMIN AUF UNTERSEITEN (nur Handy sichtbar) ---
     // Derselbe Streifen wie auf der Startseite (die fuellt ihn selbst in
     // js/index.js). Hier fuer Unterseiten: welche Datei gelesen wird und ob
@@ -779,35 +1176,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const teil = name => streifen.querySelector('.termin-streifen-' + name);
         const zahlen = streifen.querySelectorAll('.termin-streifen-zahl');
 
-        // Format wie in js/index.js: Tag;Monat;Jahr;Uhrzeit;Verein;Ort;Karte;PDF;Titel
-        function lies(text) {
-            const termine = [];
-            for (const roh of text.split('\n')) {
-                const zeile = roh.trim();
-                if (!zeile || zeile.startsWith('#')) continue;
-                const t = zeile.split(';').map(x => x.trim());
-                if (t.length < 4) continue;
-                const zeit = new Date(`${t[1]} ${t[0]}, ${t[2]} ${t[3]}`).getTime();
-                if (isNaN(zeit)) continue;
-                termine.push({ zeit, verein: t[4] || '', ort: t[5] || '', pdf: t[7] || '', titel: t[8] || '' });
-            }
-            return termine.sort((a, b) => a.zeit - b.zeit);
-        }
-
-        // Ein Termin von heute bleibt den ganzen Tag stehen (dann "Heute").
-        function naechster(termine) {
-            const jetzt = new Date();
-            return termine.find(ev => {
-                const d = new Date(ev.zeit);
-                const heute = d.toDateString() === jetzt.toDateString();
-                return ev.zeit > jetzt.getTime() || heute;
-            }) || null;
-        }
-
         let geprueftesPdf = null;
 
         function zeigen(termine) {
-            const ev = naechster(termine);
+            const ev = naechsterTermin(termine);
             if (!ev) { streifen.hidden = true; return; }
 
             const titel = ev.titel
@@ -847,7 +1219,7 @@ document.addEventListener('DOMContentLoaded', () => {
         fetch(datei)
             .then(r => { if (!r.ok) throw new Error(); return r.text(); })
             .then(text => {
-                const termine = lies(text);
+                const termine = liesTermine(text);
                 zeigen(termine);
                 // Minuten zeigt der Streifen nicht - 30 Sekunden reichen.
                 setInterval(() => zeigen(termine), 30000);
@@ -1146,5 +1518,17 @@ document.addEventListener('DOMContentLoaded', () => {
         stellen();
         handy.addEventListener('change', stellen);
     })();
+
+    // --- 29. SPONSOREN: BRIEF-KNOPF MIT SPAMSCHUTZ ---
+    // Die Adresse steht nicht am Stueck im HTML, Adress-Sammler suchen dort
+    // nach name@domain. Zusammengesetzt wird sie erst beim Klick, den kein
+    // Programm ausloest. Ohne JavaScript bleibt der Knopf versteckt, statt
+    // ins Leere zu fuehren.
+    document.querySelectorAll('.sponsor-card-mail').forEach(knopf => {
+        knopf.hidden = false;
+        knopf.addEventListener('click', () => {
+            knopf.href = 'mailto:' + knopf.dataset.name + '@' + knopf.dataset.domain;
+        });
+    });
 
 });

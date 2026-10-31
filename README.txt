@@ -399,6 +399,12 @@ Dann im Menü wählen:
     erzeugt die WebP-Fassung, berechnet die Anzeigegröße und legt die
     Banden-Karte an der gewünschten Stelle an.
 
+    E-MAIL (freiwillig): Ist beim Sponsor eine Adresse eingetragen, erscheint
+    oben rechts auf seiner Karte ein Brief-Knopf. Feld leer = kein Knopf.
+    Spamschutz: Im HTML steht die Adresse getrennt (data-name, data-domain),
+    erst beim Klick setzt js/main.js sie zusammen. Deshalb immer übers
+    Werkzeug eintragen, nicht als mailto: von Hand.
+
     ZUR ANZEIGEGRÖSSE: Die Logos haben sehr unterschiedliche Seitenverhältnisse.
     Würde man alle gleich hoch anzeigen, wirkten hochkante Logos halb so groß
     wie querformatige. Das Werkzeug rechnet deshalb für jedes Logo eine eigene
@@ -855,7 +861,8 @@ WAS DAS FENSTER SELBST KANN:
     Banden, befreundete Vereine, nützliche Links, die Zahlen im Kopf und
     der Aufruf "Werde Sponsor". Beim Anlegen einer Bande entsteht die
     WebP-Fassung und die Anzeigegröße wird berechnet. "Alle Logo-Größen
-    neu berechnen" zeigt vorher, was sich ändert.
+    neu berechnen" zeigt vorher, was sich ändert. Eine E-Mail ist freiwillig;
+    nur mit Adresse erscheint auf der Karte der Brief-Knopf.
 
   BILDER AUFNEHMEN
     Liste der Bilder ohne WebP-Fassung mit Größe und Pixelmaßen. Nach dem

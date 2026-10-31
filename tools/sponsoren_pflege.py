@@ -38,11 +38,19 @@ MAX_HOEHE = 110
 WEBP_QUALITAET = 82
 
 GRID_ANKER = '<div class="sponsor-grid">'
+# Der Rahmen steht nur um Karten mit E-Mail: Karte und Brief-Knopf sind beide
+# Links und duerfen nicht ineinander liegen. Er gehoert mit zum Treffer, damit
+# Aendern und Loeschen nichts von ihm stehen lassen. Die Adresse steht als
+# Spamschutz getrennt in data-name und data-domain, js/main.js setzt sie beim
+# Klick zusammen.
 KARTEN_MUSTER = re.compile(
+    r'(?:<div class="sponsor-card-rahmen">\s*)?'
     r'<a href="([^"]*)"[^>]*class="sponsor-card">\s*'
     r'<picture>\s*(?:<source[^>]*srcset="([^"]*)"[^>]*>\s*)?'
     r'<img src="([^"]*)"\s+alt="([^"]*)"[^>]*>\s*</picture>\s*'
-    r'<span class="sponsor-card-name">(.*?)</span>\s*</a>',
+    r'<span class="sponsor-card-name">(.*?)</span>\s*</a>'
+    r'(?:\s*<a href="#" class="sponsor-card-mail" data-name="([^"]*)" data-domain="([^"]*)"'
+    r'[^>]*>.*?</a>\s*</div>)?',
     re.DOTALL,
 )
 
@@ -68,30 +76,42 @@ def finde_sponsoren(html):
             "bild": treffer.group(3),
             "alt": treffer.group(4),
             "name": treffer.group(5).strip(),
+            "email": f"{treffer.group(6)}@{treffer.group(7)}" if treffer.group(6) else "",
         })
     return sponsoren
 
 
 def beschreibe(sponsor):
     ziel = sponsor["link"] if sponsor["link"] not in ("#", "") else "(kein Link)"
-    return f"{sponsor['name']}  ->  {ziel}"
+    mail = f"  [{sponsor['email']}]" if sponsor["email"] else ""
+    return f"{sponsor['name']}  ->  {ziel}{mail}"
 
 
-def baue_karte(name, link, bild_relativ, webp_relativ, breite, hoehe, einrueckung=" " * 12):
+def baue_karte(name, link, bild_relativ, webp_relativ, breite, hoehe, email="", einrueckung=" " * 12):
+    innen = einrueckung + " " * 4 if email else einrueckung
     extern = ' target="_blank" rel="noopener noreferrer"' if link.startswith("http") else ' target="_blank"'
     zeilen = [
-        f'{einrueckung}<a href="{link}"{extern} class="sponsor-card">',
-        f"{einrueckung}    <picture>",
+        f'{innen}<a href="{link}"{extern} class="sponsor-card">',
+        f"{innen}    <picture>",
     ]
     if webp_relativ:
-        zeilen.append(f'{einrueckung}        <source type="image/webp" srcset="{webp_relativ}">')
+        zeilen.append(f'{innen}        <source type="image/webp" srcset="{webp_relativ}">')
     zeilen += [
-        f'{einrueckung}        <img src="{bild_relativ}" alt="{name}" loading="lazy" '
+        f'{innen}        <img src="{bild_relativ}" alt="{name}" loading="lazy" '
         f'width="{breite}" height="{hoehe}" decoding="async">',
-        f"{einrueckung}    </picture>",
-        f'{einrueckung}    <span class="sponsor-card-name">{name}</span>',
-        f"{einrueckung}</a>",
+        f"{innen}    </picture>",
+        f'{innen}    <span class="sponsor-card-name">{name}</span>',
+        f"{innen}</a>",
     ]
+    if email:
+        lokal, domain = email.split("@")
+        zeilen.insert(0, f'{einrueckung}<div class="sponsor-card-rahmen">')
+        zeilen += [
+            f'{innen}<a href="#" class="sponsor-card-mail" data-name="{lokal}" data-domain="{domain}" '
+            f'title="E-Mail an {name}" aria-label="E-Mail an {name}" hidden>'
+            f'<i class="fa-solid fa-envelope" aria-hidden="true"></i></a>',
+            f"{einrueckung}</div>",
+        ]
     return "\r\n".join(zeilen)
 
 
@@ -212,6 +232,8 @@ def sponsor_hinzufuegen():
     eingaben = h.formular([
         ("name", lambda _: h.frage("\nName des Sponsors: ")),
         ("link", lambda _: h.frage("Webseite (leer = kein Link): ", pflicht=False)),
+        ("email", lambda _: h.frage("E-Mail (leer = kein Brief-Knopf): ",
+                                    h.EMAIL_VALIDIERER, pflicht=False)),
     ])
     if eingaben is None:
         print("Abgebrochen.")
@@ -223,7 +245,8 @@ def sponsor_hinzufuegen():
     bild_relativ = f"../media/sponsoren/{os.path.basename(quelle)}"
     webp_relativ = f"../media/sponsoren/{webp_name}" if webp_name != os.path.basename(quelle) else ""
 
-    neue_karte = baue_karte(name, link, bild_relativ, webp_relativ, breite, hoehe)
+    neue_karte = baue_karte(name, link, bild_relativ, webp_relativ, breite, hoehe,
+                            eingaben["email"])
     print("\nNeue Sponsoren-Bande:")
     print(neue_karte)
     if not h.frage_ja("\nEinfuegen? (j/n): "):
@@ -257,6 +280,8 @@ def sponsor_bearbeiten():
         ("name", lambda _: h.frage_mit_default("Name", sponsor["name"])),
         ("link", lambda _: h.frage_mit_default("Webseite ('-' = kein Link)",
                                                sponsor["link"], leer_erlaubt=True)),
+        ("email", lambda _: h.frage_mit_default("E-Mail ('-' = keine)", sponsor["email"],
+                                                h.EMAIL_VALIDIERER, leer_erlaubt=True)),
     ])
     if eingaben is None:
         print("Abgebrochen.")
@@ -264,6 +289,7 @@ def sponsor_bearbeiten():
 
     name = eingaben["name"]
     link = eingaben["link"] or "#"
+    email = eingaben["email"]
 
     masse = bildmasse(sponsor["bild"])
     if masse:
@@ -273,8 +299,8 @@ def sponsor_bearbeiten():
         alt = re.search(r'width="(\d+)"\s+height="(\d+)"', sponsor["match"].group(0))
         breite, hoehe = (int(alt.group(1)), int(alt.group(2))) if alt else (120, 80)
 
-    neue_karte = baue_karte(name, link, sponsor["bild"], sponsor["webp"], breite, hoehe)
-    print(f"\nNeu: {name} -> {link}")
+    neue_karte = baue_karte(name, link, sponsor["bild"], sponsor["webp"], breite, hoehe, email)
+    print(f"\nNeu: {name} -> {link}" + (f"  [{email}]" if email else ""))
     if not h.frage_ja("Aendern? (j/n): "):
         print("Abgebrochen.")
         return
@@ -340,7 +366,7 @@ def groessen_neu_berechnen():
     for sponsor, _, (breite, hoehe) in sorted(aenderungen, key=lambda e: -e[0]["match"].start()):
         m = sponsor["match"]
         karte = baue_karte(sponsor["name"], sponsor["link"], sponsor["bild"],
-                           sponsor["webp"], breite, hoehe)
+                           sponsor["webp"], breite, hoehe, sponsor["email"])
         anfang = m.start()
         while anfang > 0 and html[anfang - 1] in " \t":
             anfang -= 1
@@ -677,7 +703,8 @@ def logos_in_webp_umwandeln():
         breite, hoehe = anzeigegroesse(*masse)
 
         # WebP wird zur Hauptdatei, die getrennte <source>-Zeile entfaellt
-        karte = baue_karte(sponsor["name"], sponsor["link"], webp_relativ, "", breite, hoehe)
+        karte = baue_karte(sponsor["name"], sponsor["link"], webp_relativ, "", breite, hoehe,
+                           sponsor["email"])
         m = sponsor["match"]
         anfang = m.start()
         while anfang > 0 and html[anfang - 1] in " \t":
@@ -710,7 +737,7 @@ def sponsoren_menue():
 
         aktion = h.menue("Sponsoren:", [
             ("Sponsor hinzufuegen (Logo einbinden)", sponsor_hinzufuegen),
-            ("Sponsor bearbeiten (Name/Webseite)", sponsor_bearbeiten),
+            ("Sponsor bearbeiten (Name/Webseite/E-Mail)", sponsor_bearbeiten),
             ("Sponsor entfernen", sponsor_loeschen),
             ("Alle Logo-Groessen neu berechnen", groessen_neu_berechnen),
             ("Logos in WebP umwandeln (schnelleres Laden)", logos_in_webp_umwandeln),

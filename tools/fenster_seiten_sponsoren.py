@@ -39,6 +39,9 @@ class SponsorenSeite(Seite):
                   "und der Sponsoren-Aufruf - die komplette Seite ohne HTML.")
 
     VORNE = "Ganz vorne"
+    EMAIL_FELD = {"schluessel": "email", "beschriftung": "E-Mail", "pflicht": False,
+                  "pruefer": h.EMAIL_VALIDIERER,
+                  "hinweis": "leer = kein Brief-Knopf auf der Karte"}
 
     def baue(self):
         self.knopf_loeschen = self.knopf("Löschen", self.loeschen, "warnung")
@@ -96,8 +99,9 @@ class SponsorenSeite(Seite):
             self.baum = None
             return
 
-        self.baum = self.tabelle(self.inhalt, ("Name", "Webseite", "Anzeigegröße", "Logo"),
-                                 (185, 275, 105, 105),
+        self.baum = self.tabelle(self.inhalt,
+                                 ("Name", "Webseite", "E-Mail", "Anzeigegröße", "Logo"),
+                                 (150, 185, 150, 105, 80),
                                  hoehe=min(len(self.eintraege), 12),
                                  zeilenzahl=len(self.eintraege))
         for nummer, sponsor in enumerate(self.eintraege):
@@ -111,7 +115,8 @@ class SponsorenSeite(Seite):
             logo = endung if (sponsor["webp"] or endung == "WEBP") else f"{endung} (kein WebP)"
 
             self.baum.insert("", "end", iid=str(nummer),
-                             values=(B.lesbar(sponsor["name"]), ziel, groesse, logo))
+                             values=(B.lesbar(sponsor["name"]), ziel,
+                                     sponsor["email"] or "-", groesse, logo))
 
         B.knopf(self.inhalt, "Alle Logo-Größen neu berechnen", self.groessen_neu,
                 self.s).pack(anchor="w", pady=(12, 0))
@@ -234,6 +239,7 @@ class SponsorenSeite(Seite):
             {"schluessel": "name", "beschriftung": "Name"},
             {"schluessel": "link", "beschriftung": "Webseite", "pflicht": False,
              "hinweis": "leer = kein Link"},
+            self.EMAIL_FELD,
         ]
         if sponsoren:
             felder.append({"schluessel": "stelle", "beschriftung": "Position",
@@ -267,7 +273,7 @@ class SponsorenSeite(Seite):
         breite, hoehe = sp.anzeigegroesse(*masse)
 
         karte = sp.baue_karte(B.fuer_html(werte["name"]), werte["link"] or "#",
-                              bild_relativ, webp_relativ, breite, hoehe)
+                              bild_relativ, webp_relativ, breite, hoehe, werte["email"])
 
         stelle = 0
         if sponsoren:
@@ -335,9 +341,11 @@ class SponsorenSeite(Seite):
                 {"schluessel": "name", "beschriftung": "Name"},
                 {"schluessel": "link", "beschriftung": "Webseite", "pflicht": False,
                  "hinweis": "leer = kein Link"},
+                self.EMAIL_FELD,
             ],
             {"name": B.lesbar(sponsor["name"]),
-             "link": "" if sponsor["link"] in ("#", "") else sponsor["link"]},
+             "link": "" if sponsor["link"] in ("#", "") else sponsor["link"],
+             "email": sponsor["email"]},
             einleitung="Die Anzeigegröße wird aus dem Logo neu berechnet.")
         if not werte:
             return
@@ -354,7 +362,7 @@ class SponsorenSeite(Seite):
                 "bleibt stehen.")
 
         karte = sp.baue_karte(B.fuer_html(werte["name"]), werte["link"] or "#",
-                              sponsor["bild"], sponsor["webp"], breite, hoehe)
+                              sponsor["bild"], sponsor["webp"], breite, hoehe, werte["email"])
         html = sp.lade_html()
         aktuell = sp.finde_sponsoren(html)
         if nummer >= len(aktuell):
@@ -533,7 +541,7 @@ class SponsorenSeite(Seite):
                 continue
             breite, hoehe = sp.anzeigegroesse(*masse)
             karte = sp.baue_karte(sponsor["name"], sponsor["link"], sponsor["bild"],
-                                  sponsor["webp"], breite, hoehe)
+                                  sponsor["webp"], breite, hoehe, sponsor["email"])
             html = sp.ersetze_sponsor(html, sponsor, karte)
 
         h.schreibe_datei(sp.SPONSOREN_HTML, html)

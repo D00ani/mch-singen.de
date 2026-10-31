@@ -154,6 +154,65 @@
     color: var(--primary-blue);
 }
 
+/* Brief-Knopf fuer Sponsoren mit hinterlegter E-Mail.
+   Ein Link darf nicht in einem Link stecken - Karte und Knopf liegen darum
+   nebeneinander im Rahmen, und der Knopf wird in die Ecke gesetzt. Den Rahmen
+   schreibt tools/sponsoren_pflege.py nur um Karten mit Adresse. Als Raster,
+   damit die Karte wie ihre Nachbarn die volle Zeilenhoehe ausfuellt. */
+.sponsor-card-rahmen {
+    position: relative;
+    display: grid;
+}
+
+/* Beim Darueberfahren hebt sich beides gemeinsam, sonst sackt die Karte
+   weg, sobald die Maus von ihr auf den Knopf wechselt. */
+.sponsor-card-rahmen:hover .sponsor-card,
+.sponsor-card-rahmen:hover .sponsor-card-mail {
+    transform: translateY(-2px);
+}
+
+.sponsor-card-mail {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    /* Feste helle Farben: die Logo-Tafel darunter bleibt auch im Dark Mode hell */
+    background: #fff;
+    border: 1px solid rgba(15, 23, 42, 0.12);
+    box-shadow: var(--shadow-sm);
+    color: var(--primary-blue);
+    font-size: 0.85rem;
+    transition: transform 0.2s ease, background-color 0.2s ease, color 0.2s ease;
+}
+
+/* Bis js/main.js ihn freigibt: display: grid wuerde [hidden] sonst aushebeln */
+.sponsor-card-mail[hidden] {
+    display: none;
+}
+
+/* Trefferflaeche 44px, auch wenn der Knopf am Handy kleiner gezeichnet ist */
+.sponsor-card-mail::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 44px;
+    height: 44px;
+    transform: translate(-50%, -50%);
+}
+
+.sponsor-card-mail:hover,
+.sponsor-card-mail:focus-visible {
+    background: var(--primary-blue);
+    border-color: var(--primary-blue);
+    color: #fff;
+    text-decoration: none;
+}
+
 /* Link-Card-Grid (Befreundete Vereine & Links) */
 .link-card-grid {
     display: grid;
@@ -283,6 +342,13 @@ main hr.section-hr {
     .sponsor-card picture {
         height: 100px;
         padding: 12px 14px;
+    }
+    .sponsor-card-mail {
+        top: 6px;
+        right: 6px;
+        width: 28px;
+        height: 28px;
+        font-size: 0.75rem;
     }
     .sponsor-cta-benefits {
         flex-direction: column;

@@ -367,14 +367,3 @@ body.dark-mode .breadcrumb-gruppe-feld a[aria-current="page"] {
     background: #1a2340;
     color: #74a3ff;
 }
-
-/* Schnellzugriff unten (css/mobile.css, Abschnitt 17).
-   Die Flaeche bleibt in beiden Modi #06112e - derselbe Wert wie beim
-   Seitenmenue (css/sidebar.css). Die Bedienung der Seite soll EINE dunkle
-   Flaeche haben; wuerde nur die Leiste im Dark Mode nachdunkeln, haette
-   man wieder zwei Toene fuer dieselbe Sache. Vom Seitenhintergrund
-   (#121212) trennt sie ohnehin die Oberkante und der Schatten - sie ist
-   blaeulicher und dunkler, nicht heller. */
-@media (max-width: 768px) {
-    body.dark-mode .tabbar { border-top-color: rgba(255, 255, 255, 0.14); }
-}
