@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <link rel="icon" type="image/png" href="../media/logos/favicon.png">
+    <link rel="apple-touch-icon" href="../media/logos/favicon.png">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex">
+    <link rel="canonical" href="https://mch-singen.de/pages/shop.html">
+    <meta name="description" content="Der Vereins-Shop des MCH Singen ist wegen eines Problems beim externen Anbieter derzeit nicht erreichbar.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://mch-singen.de/pages/shop.html">
+    <meta property="og:site_name" content="MCH Singen Motorsportclub Hohentwiel e.V.">
+    <meta property="og:title" content="Vereins-Shop - MCH Singen">
+    <meta property="og:description" content="Der Vereins-Shop des MCH Singen ist wegen eines Problems beim externen Anbieter derzeit nicht erreichbar.">
+    <meta property="og:image" content="https://mch-singen.de/media/bilder/mch_pic.jpg">
+    <title>Vereins-Shop - MCH Singen Motorsportclub "Hohentwiel" e.V. im DMV</title>
+    <!-- Fonts der sichtbaren Inhalte vorladen (Text + Ueberschriften) -->
+    <link rel="preload" href="../webfonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="../webfonts/outfit-latin.woff2" as="font" type="font/woff2" crossorigin>
+    <!-- Ein gebuendeltes Stylesheet statt style.css mit 9 @imports (10 Requests -> 1) -->
+    <link rel="stylesheet" href="../css/bundle.min.css">
+    <!-- Font Awesome asynchron: blockiert das Rendering nicht mehr -->
+    <link rel="preload" href="../css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="../css/all.min.css"></noscript>
+    
+    <script defer type="text/javascript" src="../js/klaro-config.min.js"></script>
+    <script defer type="text/javascript" src="../js/vendor/klaro.js"></script>
+    <script defer type="text/javascript" src="../js/main.min.js"></script>
+</head>
+<body>
+    <!-- Dark-Mode setzen, BEVOR der Browser zeichnet - sonst blitzt bei jedem
+         Seitenaufruf kurz die helle Seite auf. Muss inline und ohne defer als
+         erstes im <body> stehen: im <head> gibt es document.body noch nicht,
+         und css/dark.css haengt komplett an body.dark-mode.
+         Der Umschalter selbst bleibt in js/main.js (Abschnitt 2). -->
+    <script id="mch-dark-mode-vorab">
+    (function(){try{var s=localStorage.getItem('dark-mode');
+    if(s==='enabled'||(s===null&&window.matchMedia('(prefers-color-scheme: dark)').matches))
+    document.body.classList.add('dark-mode');}catch(e){}})();
+    </script>
+
+    <!-- Erste Station fuer Tastatur und Screenreader: ueberspringt Kopfzeile
+         und Navigation. Sichtbar wird der Verweis erst beim Antabben
+         (css/style.css, .skip-link). Stand frueher nur in js/main.js -
+         ohne JavaScript gab es ihn dadurch gar nicht. -->
+    <a class="skip-link" href="#main-content">Zum Inhalt springen</a>
+    <header>
+        <div class="logo-container">
+            <a href="../index.html">
+                <img src="../media/logos/mch-logo-128.png" alt="MCH Logo" class="header-logo" width="128" height="128">
+            </a>
+            <a href="https://www.dmv-motorsport.de/" target="_blank" rel="noopener noreferrer" title="Zur offiziellen DMV Website">
+                <img src="../media/logos/dmv.png" alt="DMV Logo" class="header-logo" width="400" height="400">
+            </a>
+        </div>
+        
+        <a href="../index.html" class="home-link-text">
+            <div class="header-text">
+                <p class="header-title">Motorsport-Club <span class="accent-text">"Hohentwiel"</span> Singen e.V. im DMV</p>
+                <p>Motorsport aus Leidenschaft</p>
+            </div>
+        </a>
+        
+        <div class="social-header">
+            <span class="social-text">Folgt uns auf Social Media:</span>
+            <a href="suche.html" class="search-header-btn" title="Suchen">
+                <i class="fa-solid fa-magnifying-glass"></i>
+            </a>
+            <button id="theme-toggle" class="theme-toggle-btn" title="Dark Mode umschalten">
+            <i class="fa-solid fa-moon"></i>
+            </button>
+            <a href="https://www.instagram.com/mch_singen/" target="_blank" rel="noopener noreferrer" class="insta-btn" title="Folgt uns auf Instagram!">
+                <i class="fa-brands fa-instagram"></i>
+            </a>
+        </div>
+
+        <!-- Hauptnavigation (Desktop, ab 900px). Darunter uebernimmt
+             der Menue-Knopf mit dem Seitenmenue. -->
+        <nav class="main-nav" aria-label="Hauptnavigation">
+            <ul class="main-nav-list">
+                <li class="main-nav-item"><a class="main-nav-link" href="../index.html">Startseite</a></li>
+                <li class="main-nav-item has-sub">
+                    <button type="button" class="main-nav-link" aria-expanded="false">Verein <i class="fa-solid fa-chevron-down main-nav-chevron" aria-hidden="true"></i></button>
+                    <ul class="main-nav-sub">
+                        <li><a href="ueber-uns.html"><i class="fa-solid fa-users" aria-hidden="true"></i> Über uns</a></li>
+                        <li><a href="geschichte.html"><i class="fa-solid fa-book-open" aria-hidden="true"></i> Geschichte des MCH</a></li>
+                        <li><a href="sponsoren-links.html"><i class="fa-solid fa-handshake" aria-hidden="true"></i> Sponsoren &amp; Links</a></li>
+                        <li><a href="faq.html"><i class="fa-solid fa-circle-question" aria-hidden="true"></i> Fragen &amp; Antworten</a></li>
+                        <li><a href="impressum-datenschutz.html"><i class="fa-solid fa-scale-balanced" aria-hidden="true"></i> Impressum &amp; Datenschutz</a></li>
+                    </ul>
+                </li>
+                <li class="main-nav-item has-sub">
+                    <button type="button" class="main-nav-link" aria-expanded="false">Sport <i class="fa-solid fa-chevron-down main-nav-chevron" aria-hidden="true"></i></button>
+                    <ul class="main-nav-sub">
+                        <li><a href="kartsport.html"><i class="fa-solid fa-flag-checkered" aria-hidden="true"></i> Kartsport</a></li>
+                        <li><a href="trialsport.html"><i class="fa-solid fa-motorcycle" aria-hidden="true"></i> Trialsport</a></li>
+                        <li><a href="sommerferienprogramm.html"><i class="fa-solid fa-sun" aria-hidden="true"></i> Sommerferienprogramm</a></li>
+                    </ul>
+                </li>
+                <li class="main-nav-item has-sub">
+                    <button type="button" class="main-nav-link" aria-expanded="false">Aktuelles <i class="fa-solid fa-chevron-down main-nav-chevron" aria-hidden="true"></i></button>
+                    <ul class="main-nav-sub">
+                        <li><a href="aktuelles.html"><i class="fa-solid fa-newspaper" aria-hidden="true"></i> News &amp; Termine</a></li>
+                        <li><a href="live.html"><i class="fa-solid fa-stopwatch" aria-hidden="true"></i> Live-Ergebnisse</a></li>
+                        <li><a href="statistiken.html"><i class="fa-solid fa-chart-line" aria-hidden="true"></i> Statistiken &amp; Erfolge</a></li>
+                        <li><a href="archiv.html"><i class="fa-solid fa-box-archive" aria-hidden="true"></i> Ergebnis-Archiv</a></li>
+                    </ul>
+                </li>
+                <li class="main-nav-item"><a class="main-nav-link" href="kontakt.html">Kontakt</a></li>
+                <li class="main-nav-item main-nav-item--right"><a class="main-nav-link" href="shop.html"><i class="fa-solid fa-cart-shopping" aria-hidden="true"></i> Shop</a></li>
+            </ul>
+        </nav>
+    </header>
+    <button class="hamburger-btn" id="open-menu" aria-expanded="false" aria-controls="side-menu" aria-label="Menü öffnen">
+        <i class="fa-solid fa-bars"></i>
+    </button>
+
+    <main id="main-content">
+        <nav class="breadcrumb" aria-label="Breadcrumb">
+            <a href="../index.html"><i class="fa-solid fa-house" aria-hidden="true"></i> Startseite</a>
+            <span class="breadcrumb-sep" aria-hidden="true">/</span>
+            <span class="breadcrumb-gruppe" data-gruppe="verein">Verein</span>
+            <span class="breadcrumb-sep" aria-hidden="true">/</span>
+            <span aria-current="page">Vereins-Shop</span>
+        </nav>
+        <!-- Auffangseite: Alle Verweise auf den Shop zeigen hierher, solange
+             die Adresse des Anbieters (mch-singen.teamkleidung24.de) nicht
+             sicher erreichbar ist. Stand 19.11.2026: Zertifikat abgelaufen,
+             Weiterleitung auf einen fremden Shop. Geht der Shop wieder, die
+             Verweise in allen Seiten und in js/suche.js zurueckstellen. -->
+        <div class="page-head">
+            <p class="page-kicker">Verein</p>
+            <h1>Vereins-Shop</h1>
+            <p class="page-lead">Unser Shop für Vereinskleidung ist gerade nicht erreichbar.</p>
+        </div>
+
+        <p>Der Shop läuft bei einem externen Anbieter. Dort gibt es im Moment ein technisches Problem, deshalb haben wir den Verweis vorübergehend abgeschaltet. Sobald der Shop wieder sicher erreichbar ist, kommst du hier wie gewohnt hin.</p>
+        <p>Du möchtest trotzdem Vereinskleidung bestellen oder hast eine Frage dazu? Schreib uns einfach.</p>
+
+        <div class="button-group">
+            <a href="kontakt.html" class="action-btn"><i class="fa-solid fa-envelope" aria-hidden="true"></i> Zum Kontaktformular</a>
+            <a href="../index.html" class="action-btn"><i class="fa-solid fa-house" aria-hidden="true"></i> Zur Startseite</a>
+        </div>
+    </main>
+
+    <footer>
+        <div class="footer-inner">
+            <div class="footer-col footer-brand">
+                <a href="../index.html" title="Zur Startseite">
+                    <img src="../media/logos/mch-logo-128.png" alt="MCH Logo" class="footer-logo" width="128" height="128" loading="lazy">
+                </a>
+                <p class="footer-tagline">Motorsport aus Leidenschaft</p>
+                <p class="footer-desc">Der Motorsportclub "Hohentwiel" e.V. ist ein gemeinnütziger Verein in Singen - aktiver Kart- und Trialsport für Jung und Alt.</p>
+                <a href="https://www.instagram.com/mch_singen/" target="_blank" rel="noopener noreferrer" class="footer-social-btn">
+                    <i class="fa-brands fa-instagram" aria-hidden="true"></i> Instagram folgen
+                </a>
+            </div>
+            <div class="footer-col">
+                <h2 class="footer-heading">Kontakt</h2>
+                <ul class="footer-contact">
+                    <li><i class="fa-solid fa-envelope" aria-hidden="true"></i><a href="kontakt.html">Kontaktformular</a></li>
+                </ul>
+                <h2 class="footer-heading footer-heading--spaced">Kart-Training</h2>
+                <ul class="footer-contact">
+                    <li><i class="fa-solid fa-stopwatch" aria-hidden="true"></i><span>Samstags 9:00 &ndash; 13:30 Uhr</span></li>
+                    <li><i class="fa-solid fa-location-dot" aria-hidden="true"></i><span>Münchriedstraße 10<br>78224 Singen (Hohentwiel)</span></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h2 class="footer-heading">Sport</h2>
+                <ul class="footer-links">
+                    <li><a href="kartsport.html"><i class="fa-solid fa-flag-checkered" aria-hidden="true"></i> Kartsport</a></li>
+                    <li><a href="trialsport.html"><i class="fa-solid fa-motorcycle" aria-hidden="true"></i> Trialsport</a></li>
+                    <li><a href="sommerferienprogramm.html"><i class="fa-solid fa-sun" aria-hidden="true"></i> Ferienprogramm</a></li>
+                    <li><a href="aktuelles.html"><i class="fa-solid fa-newspaper" aria-hidden="true"></i> Aktuelles</a></li>
+                    <li><a href="statistiken.html"><i class="fa-solid fa-chart-line" aria-hidden="true"></i> Statistiken</a></li>
+                    <li><a href="shop.html"><i class="fa-solid fa-cart-shopping" aria-hidden="true"></i> Vereins-Shop</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h2 class="footer-heading">Verein</h2>
+                <ul class="footer-links">
+                    <li><a href="ueber-uns.html"><i class="fa-solid fa-users" aria-hidden="true"></i> Über uns</a></li>
+                    <li><a href="mitglied-werden.html"><i class="fa-solid fa-user-plus" aria-hidden="true"></i> Mitglied werden</a></li>
+                    <li><a href="geschichte.html"><i class="fa-solid fa-book-open" aria-hidden="true"></i> Geschichte</a></li>
+                    <li><a href="sponsoren-links.html"><i class="fa-solid fa-handshake" aria-hidden="true"></i> Sponsoren</a></li>
+                    <li><a href="faq.html"><i class="fa-solid fa-circle-question" aria-hidden="true"></i> Fragen &amp; Antworten</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <span>&copy; 2026 MCH Singen Motorsportclub "Hohentwiel" e.V. im DMV</span>
+            <span class="footer-legal">
+                <a href="impressum-datenschutz.html">Impressum &amp; Datenschutz</a>
+                <a href="#" onclick="return klaro.show();">Cookie-Einstellungen</a>
+            </span>
+        </div>
+    </footer>
+
+    <aside id="side-menu">
+        <!-- Marke und Schliessen-Knopf stehen in EINER Zeile. Vorher lag der
+             Knopf absolut ueber dem Markenblock und schnitt in den Text;
+             ausserdem verschob env(safe-area-inset-top) beide verschieden. -->
+        <div class="sidebar-kopf">
+            <a href="../index.html" class="sidebar-brand">
+                <img src="../media/logos/mch-logo-128.png" alt="MCH Logo" class="sidebar-logo" width="128" height="128">
+                <div class="sidebar-brand-info">
+                    <span class="sidebar-brand-name">MCH Singen</span>
+                    <span class="sidebar-brand-tagline">Motorsport aus Leidenschaft</span>
+                </div>
+            </a>
+            <button class="close-btn" id="close-menu" aria-label="Menü schließen">
+                <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+            </button>
+        </div>
+        
+        <div class="sidebar-search">
+            <form action="suche.html" method="GET" class="sidebar-search-row">
+                <input type="text" name="q" placeholder="Seite suchen..." aria-label="Seite suchen">
+                <button type="submit" title="Suchen"><i class="fa-solid fa-magnifying-glass"></i></button>
+            </form>
+        </div>
+        <nav>
+            <ul>
+                <li><a href="../index.html"><i class="fa-solid fa-house"></i> Startseite</a></li>
+                <li><a href="aktuelles.html"><i class="fa-solid fa-calendar-days"></i> Aktuelle News &amp; Termine</a></li>
+                <li><a href="ueber-uns.html"><i class="fa-solid fa-users"></i> Über uns</a></li>
+                <li><a href="kartsport.html"><i class="fa-solid fa-flag-checkered"></i> Kartsport</a></li>
+                <li><a href="trialsport.html"><i class="fa-solid fa-motorcycle"></i> Trialsport</a></li>
+                <li><a href="sommerferienprogramm.html"><i class="fa-solid fa-sun"></i> Sommerferienprogramm</a></li>
+                <li><a href="statistiken.html"><i class="fa-solid fa-chart-line"></i> Statistiken</a></li>
+<li><a href="shop.html" class="shop-menu-link menu_current"><i class="fa-solid fa-cart-shopping"></i> MCH Vereins-Shop</a></li>
+                <li><a href="mitglied-werden.html"><i class="fa-solid fa-user-plus"></i> Mitglied werden</a></li>
+                <li><a href="sponsoren-links.html"><i class="fa-solid fa-handshake"></i> Sponsoren &amp; Links</a></li>
+                <li><a href="geschichte.html"><i class="fa-solid fa-book-open"></i> Geschichte des MCH</a></li>
+                <li><a href="faq.html"><i class="fa-solid fa-circle-question"></i> FAQ</a></li>
+                <li><a href="kontakt.html"><i class="fa-solid fa-envelope"></i> Kontakt &amp; Formular</a></li>
+                <li><a href="archiv.html"><i class="fa-solid fa-box-archive"></i> Archiv</a></li>
+                <li><a href="impressum-datenschutz.html"><i class="fa-solid fa-scale-balanced"></i> Impressum &amp; Datenschutz</a></li>
+            </ul>
+        </nav>
+    </aside>
+</body>
+</html>
+
+

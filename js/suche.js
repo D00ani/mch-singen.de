@@ -16,7 +16,7 @@ const websiteSeiten = [
     { url: 'archiv.html', titel: 'Ergebnis-Archiv', beschreibung: 'Historische Ergebnisse, Wertungen und Berichte vergangener Jahre.', keywords: 'archiv früher vergangenheit historie alte ergebnisse vergangen saison jahre rückblick dokumente 2022 2023 2024 alt aufzeichnungen' },
     { url: 'impressum-datenschutz.html', titel: 'Impressum & Datenschutz', beschreibung: 'Rechtliche Angaben und Informationen zur Datenverarbeitung (DSGVO).', keywords: 'impressum haftung rechtliches gesetz regeln agb datenschutz dsgvo privacy daten privatsphäre cookies tracking sicherheit' },
     { url: 'sommerferienprogramm.html', titel: 'Sommerferienprogramm', beschreibung: 'Kart fahren in den Sommerferien - für Kinder und Jugendliche.', keywords: 'sommerferienprogramm sommerferien ferien sommer ferienprogramm kinder jugend spaß aktion camp schnuppern kennenlernen ausprobieren ferienaktivität ferienaktion singen stadtprogramm' },
-    { url: 'https://mch-singen.teamkleidung24.de', titel: 'MCH Vereins-Shop', beschreibung: 'Hier kommst du zu unserem Shop für Teamkleidung.', keywords: 'shop t-shirt tshirt pulli hoodie shirt kleidung bekleidung vereinskleidung teamkleidung fanartikel merch merchandise kaufen bestellen jacke mütze cap kappe polo sweater zip reißverschluss vereinsshirt' }
+    { url: 'shop.html', titel: 'MCH Vereins-Shop', beschreibung: 'Der Shop für Vereinskleidung ist gerade nicht erreichbar.', keywords: 'shop t-shirt tshirt pulli hoodie shirt kleidung bekleidung vereinskleidung teamkleidung fanartikel merch merchandise kaufen bestellen jacke mütze cap kappe polo sweater zip reißverschluss vereinsshirt' }
 ];
 
 const pageIcons = {
@@ -35,7 +35,7 @@ const pageIcons = {
     'archiv.html': 'fa-box-archive',
     'impressum-datenschutz.html': 'fa-scale-balanced',
     'sommerferienprogramm.html': 'fa-sun',
-    'https://mch-singen.teamkleidung24.de': 'fa-cart-shopping',
+    'shop.html': 'fa-cart-shopping',
 };
 
 // --- SUCH-LOGIK ---

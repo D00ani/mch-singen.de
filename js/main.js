@@ -424,7 +424,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const sections = [
             { key: 'aktuelles',    label: 'Neuigkeiten'    },
             { key: 'ueber-uns',    label: 'Sport & Verein' },
-            { key: 'teamkleidung', label: 'Mitmachen'      },
+            { key: 'shop.html',    label: 'Mitmachen'      },
             { key: 'geschichte',   label: 'Mehr'           },
         ];
         [...navList.querySelectorAll('li')].forEach(li => {
@@ -479,7 +479,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const gross = ['aktuelles.html', 'kartsport.html', 'trialsport.html', 'ueber-uns.html',
                        'mitglied-werden.html'].map(finde).filter(Boolean);
-        const klein = ['index.html', 'sommerferienprogramm.html', 'statistiken.html', 'teamkleidung',
+        const klein = ['index.html', 'sommerferienprogramm.html', 'statistiken.html', 'shop.html',
                        'sponsoren-links.html', 'geschichte.html', 'archiv.html', 'faq.html',
                        'kontakt.html', 'impressum-datenschutz.html'].map(finde).filter(Boolean);
         // Ein spaeter ergaenzter Eintrag landet von selbst unten in der Liste.
@@ -490,7 +490,7 @@ document.addEventListener('DOMContentLoaded', () => {
             'index.html': 'Startseite',
             'aktuelles.html': 'Termine',
             'sommerferienprogramm.html': 'Ferienprogramm',
-            'teamkleidung': 'Vereins-Shop',
+            'shop.html': 'Vereins-Shop',
             'geschichte.html': 'Geschichte',
             'kontakt.html': 'Kontakt',
             'impressum-datenschutz.html': 'Impressum',
