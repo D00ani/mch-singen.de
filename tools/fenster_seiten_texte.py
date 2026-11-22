@@ -106,8 +106,10 @@ class NewsSeite(Seite):
                 {"schluessel": "badge", "beschriftung": "Kennzeichen", "art": "auswahl",
                  "optionen": [name for name, _ in news_pflege.BADGES],
                  "hinweis": "farbiges Etikett oben in der Karte"},
-                {"schluessel": "datum", "beschriftung": "Datum",
-                 "hinweis": "Freitext, z. B. „Saison 2026“ oder „Sa, 08.08.2026“"},
+                {"schluessel": "datum", "beschriftung": "Datum", "art": "datum",
+                 "format": "wochentag", "frei": True,
+                 "hinweis": "Kalender-Knopf trägt „Sa, 08.08.2026“ ein - "
+                            "Freitext wie „Saison 2026“ geht auch"},
                 {"schluessel": "titel", "beschriftung": "Titel"},
                 {"schluessel": "beschreibung", "beschriftung": "Text", "art": "mehrzeilig"},
                 {"schluessel": "link_ziel", "beschriftung": "Link-Ziel", "pflicht": False,
@@ -169,12 +171,15 @@ class NewsSeite(Seite):
         # Nur die Felder anbieten, die diese Karte wirklich hat - manche
         # Karten bestehen nur aus Titel und Schaltflaechen.
         felder, werte = [], {}
-        for schluessel, beschriftung, art in (("datum", "Datum", "text"),
+        for schluessel, beschriftung, art in (("datum", "Datum", "datum"),
                                               ("titel", "Titel", "text"),
                                               ("beschreibung", "Text", "mehrzeilig")):
             if karte[schluessel] is not None:
-                felder.append({"schluessel": schluessel, "beschriftung": beschriftung,
-                               "art": art})
+                feld = {"schluessel": schluessel, "beschriftung": beschriftung, "art": art}
+                if art == "datum":
+                    # Freitext bleibt erlaubt ("Saison 2026"), der Kalender hilft nur
+                    feld.update(format="wochentag", frei=True)
+                felder.append(feld)
                 werte[schluessel] = B.lesbar(karte[schluessel])
 
         if not felder:

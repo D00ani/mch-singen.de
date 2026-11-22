@@ -8,10 +8,13 @@ und Abstaende mitbringt - und eine Aenderung hier wirkt ueberall.
 
 Wird nicht direkt ausgefuehrt.
 """
+import calendar
 import html as html_modul
 import queue
+import re
 import threading
 import tkinter as tk
+from datetime import date
 from tkinter import font as tkfont
 
 # Dieselben Farben wie die Webseite (css/style.css, :root), damit sich
@@ -180,13 +183,149 @@ def fuer_html(text):
     return html_modul.escape(text or "", quote=False)
 
 
+# ------------------------------------------------------------------
+# Datum und Uhrzeit
+# ------------------------------------------------------------------
+
+MONATE_LANG = ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli",
+               "August", "September", "Oktober", "November", "Dezember"]
+WOCHENTAGE_KURZ = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"]
+UHRZEIT_MUSTER = r"([01]\d|2[0-3]):[0-5]\d"
+
+
+def datum_lesen(text):
+    """Findet ein Datum in "08.08.2026", "Sa, 08.08.2026" oder "8.8.26".
+    None, wenn keins drinsteht oder es den Tag nicht gibt."""
+    treffer = re.search(r"(\d{1,2})\.(\d{1,2})\.(\d{2,4})", text or "")
+    if not treffer:
+        return None
+    tag, monat, jahr = (int(x) for x in treffer.groups())
+    if jahr < 100:
+        jahr += 2000
+    try:
+        return date(jahr, monat, tag)
+    except ValueError:
+        return None
+
+
+def datum_schreiben(tag, mit_wochentag=False):
+    """08.08.2026 oder - wie auf der Webseite ueblich - Sa, 08.08.2026."""
+    kurz = tag.strftime("%d.%m.%Y")
+    return f"{WOCHENTAGE_KURZ[tag.weekday()]}, {kurz}" if mit_wochentag else kurz
+
+
+class Kalender(tk.Toplevel):
+    """Monatskalender zum Anklicken - statt Tag, Monat und Jahr einzeln
+    einzutippen. Ruft waehlen(date) auf und schliesst sich.
+
+    Bedienung: Klick auf einen Tag; Pfeile oben oder Bild auf/ab blaettern
+    den Monat; "Heute" springt zum heutigen Tag; Esc schliesst."""
+
+    def __init__(self, eltern, schriften, start, waehlen, anker):
+        super().__init__(eltern)
+        self.s = schriften
+        self.waehlen = waehlen
+        self.gewaehlt = start
+        self.monat = (start or date.today()).replace(day=1)
+
+        self.title("Datum wählen")
+        self.configure(bg=FARBEN["karte"], highlightbackground=FARBEN["linie"],
+                       highlightthickness=1)
+        self.transient(eltern)
+        self.resizable(False, False)
+
+        kopf = tk.Frame(self, bg=FARBEN["tief"])
+        kopf.pack(fill="x")
+        pfeil = dict(bg=FARBEN["tief"], fg=FARBEN["weiss"], relief="flat", bd=0,
+                     font=self.s.kopf, cursor="hand2", padx=12, pady=6,
+                     activebackground=FARBEN["rail_hell"], activeforeground=FARBEN["weiss"])
+        tk.Button(kopf, text="‹", command=lambda: self._blaettern(-1), **pfeil).pack(side="left")
+        tk.Button(kopf, text="›", command=lambda: self._blaettern(1), **pfeil).pack(side="right")
+        self.titel = tk.Label(kopf, bg=FARBEN["tief"], fg=FARBEN["weiss"], font=self.s.kopf)
+        self.titel.pack(side="left", expand=True)
+
+        self.gitter = tk.Frame(self, bg=FARBEN["karte"])
+        self.gitter.pack(padx=10, pady=(8, 4))
+
+        fuss = tk.Frame(self, bg=FARBEN["karte"])
+        fuss.pack(fill="x", padx=10, pady=(0, 10))
+        knopf(fuss, "Heute", lambda: self._nimm(date.today()), schriften,
+              padx=10, pady=3).pack(side="left")
+        knopf(fuss, "Abbrechen", self._zu, schriften, padx=10, pady=3).pack(side="right")
+
+        self.bind("<Escape>", lambda _: self._zu())
+        self.bind("<Prior>", lambda _: self._blaettern(-1))
+        self.bind("<Next>", lambda _: self._blaettern(1))
+        self.protocol("WM_DELETE_WINDOW", self._zu)
+
+        self._zeichnen()
+        self.update_idletasks()
+        x = anker.winfo_rootx()
+        y = anker.winfo_rooty() + anker.winfo_height() + 4
+        self.geometry(f"+{max(x, 0)}+{max(y, 0)}")
+        self.grab_set()
+        self.focus_set()
+
+    def _blaettern(self, schritt):
+        jahr, monat = self.monat.year, self.monat.month + schritt
+        if monat < 1:
+            jahr, monat = jahr - 1, 12
+        elif monat > 12:
+            jahr, monat = jahr + 1, 1
+        self.monat = date(jahr, monat, 1)
+        self._zeichnen()
+
+    def _zeichnen(self):
+        for kind in self.gitter.winfo_children():
+            kind.destroy()
+        self.titel.configure(text=f"{MONATE_LANG[self.monat.month - 1]} {self.monat.year}")
+        for spalte, name in enumerate(WOCHENTAGE_KURZ):
+            tk.Label(self.gitter, text=name, bg=FARBEN["karte"], width=4,
+                     fg=FARBEN["faellig"] if spalte == 6 else FARBEN["gedimmt"],
+                     font=self.s.klein).grid(row=0, column=spalte, pady=(0, 4))
+        heute = date.today()
+        wochen = calendar.Calendar(firstweekday=0).monthdatescalendar(self.monat.year, self.monat.month)
+        for reihe, woche in enumerate(wochen, start=1):
+            for spalte, tag in enumerate(woche):
+                if tag.month != self.monat.month:
+                    tk.Label(self.gitter, text="", bg=FARBEN["karte"], width=4).grid(row=reihe, column=spalte)
+                    continue
+                gewaehlt = tag == self.gewaehlt
+                tk.Button(
+                    self.gitter, text=str(tag.day), width=3, relief="flat", bd=0, cursor="hand2",
+                    font=self.s.fett if tag == heute else self.s.text,
+                    bg=FARBEN["blau"] if gewaehlt else FARBEN["karte"],
+                    fg=FARBEN["weiss"] if gewaehlt else (FARBEN["blau"] if tag == heute else FARBEN["text"]),
+                    activebackground=FARBEN["tief"], activeforeground=FARBEN["weiss"],
+                    command=lambda t=tag: self._nimm(t)).grid(row=reihe, column=spalte, padx=1, pady=1)
+
+    def _nimm(self, tag):
+        self._zu()
+        self.waehlen(tag)
+
+    def _zu(self):
+        self.grab_release()
+        eltern = self.master
+        self.destroy()
+        try:
+            eltern.grab_set()   # das Formular darunter bleibt modal
+        except tk.TclError:
+            pass
+
+
 class Formular(tk.Toplevel):
     """Eingabefenster fuer einen Datensatz.
 
     felder: Liste von Woerterbuechern
         schluessel    Name im Ergebnis
         beschriftung  Text links daneben
-        art           "text" (Standard), "auswahl", "mehrzeilig"
+        art           "text" (Standard), "auswahl", "mehrzeilig",
+                      "datum" (Feld mit Kalender-Knopf),
+                      "uhrzeit" (Feld mit Auswahlliste in Viertelstunden)
+        format        nur bei "datum": "kurz" (08.08.2026, Standard) oder
+                      "wochentag" (Sa, 08.08.2026)
+        frei          nur bei "datum": True = auch Freitext wie "Saison 2026"
+                      erlaubt, der Kalender ist dann eine Hilfe
         optionen      Liste, nur bei "auswahl"
         pruefer       Funktion(wert) -> Fehlertext oder None
         hinweis       kleine Zeile unter dem Feld
@@ -280,12 +419,31 @@ class Formular(tk.Toplevel):
             eingabe = tk.Text(eltern, height=4, width=36, font=self.s.text, wrap="word",
                               relief="solid", bd=1, bg=FARBEN["karte"], fg=FARBEN["text"])
             eingabe.insert("1.0", wert)
+        elif art == "uhrzeit":
+            from tkinter import ttk
+            zeiten = [f"{stunde:02d}:{minute:02d}" for stunde in range(6, 23) for minute in (0, 15, 30, 45)]
+            eingabe = ttk.Combobox(eltern, values=zeiten, font=self.s.text, width=34)
+            eingabe.set(wert)
         else:
             eingabe = tk.Entry(eltern, font=self.s.text, width=36, relief="solid", bd=1,
                                bg=FARBEN["karte"], fg=FARBEN["text"])
             eingabe.insert(0, wert)
 
-        eingabe.grid(row=reihe, column=1, sticky="ew", pady=(0, 2))
+        platz = eingabe
+        if art == "datum":
+            # Feld bleibt zum Tippen da; der Knopf daneben oeffnet den Kalender
+            platz = tk.Frame(eltern, bg=FARBEN["grund"])
+            eingabe.destroy()
+            eingabe = tk.Entry(platz, font=self.s.text, width=24, relief="solid", bd=1,
+                               bg=FARBEN["karte"], fg=FARBEN["text"])
+            eingabe.insert(0, wert)
+            eingabe.pack(side="left", fill="x", expand=True)
+            knopf(platz, "Kalender", lambda e=eingabe, f=feld: self._kalender(e, f), self.s,
+                  padx=10, pady=1).pack(side="left", padx=(6, 0))
+            eingabe.bind("<Alt-Down>", lambda _, e=eingabe, f=feld: self._kalender(e, f))
+            eingabe.bind("<F4>", lambda _, e=eingabe, f=feld: self._kalender(e, f))
+
+        platz.grid(row=reihe, column=1, sticky="ew", pady=(0, 2))
         self._eingaben[feld["schluessel"]] = eingabe
         self._reihenfolge.append(eingabe)
 
@@ -301,6 +459,9 @@ class Formular(tk.Toplevel):
             eingabe.bind("<Shift-Return>", lambda _, w=eingabe: self._weiter(w, -1))
 
         hinweis = feld.get("hinweis", "")
+        if art == "datum" and not hinweis:
+            hinweis = ("Kalender-Knopf (oder F4) - oder tippen, z. B. 08.08.2026"
+                       + (" - Freitext geht auch" if feld.get("frei") else ""))
         if art == "mehrzeilig":
             # Enter ist hier der Absatz - das muss dabeistehen, sonst sucht
             # man vergeblich nach dem Weiterspringen.
@@ -317,6 +478,15 @@ class Formular(tk.Toplevel):
         fehler.grid(row=reihe + 2, column=1, sticky="w", pady=(0, 10))
         self._fehlerzeilen[feld["schluessel"]] = fehler
 
+    def _kalender(self, eingabe, feld):
+        def gewaehlt(tag):
+            eingabe.delete(0, "end")
+            eingabe.insert(0, datum_schreiben(tag, feld.get("format") == "wochentag"))
+            self._fehlerzeilen[feld["schluessel"]].configure(text="")
+            eingabe.focus_set()
+        Kalender(self, self.s, datum_lesen(eingabe.get()), gewaehlt, eingabe)
+        return "break"
+
     def _lies(self, schluessel):
         eingabe = self._eingaben[schluessel]
         if isinstance(eingabe, tk.Text):
@@ -330,9 +500,19 @@ class Formular(tk.Toplevel):
             wert = self._lies(schluessel)
             meldung = None
 
+            art = feld.get("art", "text")
             if not wert and feld.get("pflicht", True):
                 meldung = "Darf nicht leer sein."
-            elif wert and feld.get("pruefer"):
+            elif wert and art == "datum" and not feld.get("frei"):
+                tag = datum_lesen(wert)
+                if tag:
+                    # "8.8.26" wird zu "08.08.2026" - so steht es einheitlich in der Datei
+                    wert = datum_schreiben(tag, feld.get("format") == "wochentag")
+                else:
+                    meldung = "Kein gültiges Datum - bitte TT.MM.JJJJ oder den Kalender."
+            elif wert and art == "uhrzeit" and not re.fullmatch(UHRZEIT_MUSTER, wert):
+                meldung = "Uhrzeit bitte als HH:MM, z. B. 09:00."
+            if not meldung and wert and feld.get("pruefer"):
                 meldung = feld["pruefer"](wert)
 
             self._fehlerzeilen[schluessel].configure(text=meldung or "")

@@ -140,13 +140,9 @@ class RenntermineSeite(Seite):
         _, reihenfolge = tv.lade_bekannte_orte(zeilen)
         orte = [f"{verein} {ort}" for verein, ort in reihenfolge]
         datum = [
-            {"schluessel": "tag", "beschriftung": "Tag", "pruefer": h.TAG_VALIDIERER,
-             "hinweis": "1–31"},
-            {"schluessel": "monat", "beschriftung": "Monat", "art": "auswahl",
-             "optionen": tv.MONATE_DE},
-            {"schluessel": "jahr", "beschriftung": "Jahr", "pruefer": h.JAHR_VALIDIERER},
-            {"schluessel": "uhrzeit", "beschriftung": "Uhrzeit",
-             "pruefer": h.UHRZEIT_VALIDIERER, "hinweis": "HH:MM, z. B. 09:00"},
+            {"schluessel": "datum", "beschriftung": "Datum", "art": "datum"},
+            {"schluessel": "uhrzeit", "beschriftung": "Uhrzeit", "art": "uhrzeit",
+             "hinweis": "aus der Liste wählen oder tippen, z. B. 09:00"},
         ]
         if self._ist_event_reiter():
             return datum + [
@@ -173,8 +169,10 @@ class RenntermineSeite(Seite):
     def _zu_werten(self, zeile):
         teile = (zeile.split(";") + [""] * 9)[:9]
         monat = tv.MONAT_ALIASE.get(teile[1].strip().lower())
-        return {"tag": teile[0], "monat": tv.MONATE_DE[monat[0] - 1] if monat else "",
-                "jahr": teile[2], "uhrzeit": teile[3], "verein": teile[4],
+        datum = ""
+        if monat and teile[0].strip().isdigit() and teile[2].strip().isdigit():
+            datum = f"{int(teile[0]):02d}.{monat[0]:02d}.{teile[2].strip()}"
+        return {"datum": datum, "uhrzeit": teile[3], "verein": teile[4],
                 "ort": teile[5], "link": teile[6], "pdf": teile[7], "titel": teile[8]}
 
     def _zu_zeile(self, werte, alte_zeile=None):
@@ -195,21 +193,20 @@ class RenntermineSeite(Seite):
         return ";".join([zeile] + rest) if rest else zeile
 
     def _zeile_ohne_rest(self, werte):
-        monat_nr, monat_en = tv.MONAT_ALIASE[werte["monat"].lower()]
-        try:
-            date(int(werte["jahr"]), monat_nr, int(werte["tag"]))
-        except ValueError:
-            messagebox.showerror(
-                "Kein gültiges Datum",
-                f"{werte['tag']}.{monat_nr}.{werte['jahr']} gibt es im Kalender nicht.")
+        # Das Formular prueft das Datum schon (Feldart "datum"); hier nur
+        # noch in das Format der Datei bringen: 08;August;2026
+        tag = B.datum_lesen(werte["datum"])
+        if not tag:
+            messagebox.showerror("Kein gültiges Datum",
+                                 f"„{werte['datum']}“ ist kein Datum im Kalender.")
             return None
 
         pfad, korrekturen = h.normalisiere_medienpfad(werte["pdf"], praefix="")
         if korrekturen:
             messagebox.showinfo("Pfad angepasst", "\n".join(korrekturen) + f"\n\n{pfad}")
 
-        return ";".join([werte["tag"].zfill(2), monat_en, werte["jahr"], werte["uhrzeit"],
-                         werte["verein"], werte["ort"], werte["link"], pfad])
+        return ";".join([f"{tag.day:02d}", tv.MONATE_EN[tag.month - 1], str(tag.year),
+                         werte["uhrzeit"], werte["verein"], werte["ort"], werte["link"], pfad])
 
     def _speichern(self, zeilen, neue_zeile, ersetze=None):
         if ersetze is not None:
