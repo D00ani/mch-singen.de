@@ -37,9 +37,15 @@ ROOT = h.ROOT
 class RenntermineSeite(Seite):
     titel = "Renntermine verwalten"
     untertitel = ("Die Termine, aus denen der Countdown auf der Startseite und der "
-                  "Kalender-Download entstehen.")
+                  "Kalender-Download entstehen. Unter „Event“ stehen Termine, die "
+                  "kein Rennen sind, etwa eine Feier oder die Siegerehrung.")
 
-    DATEIEN = {"Kart": "timer.txt", "Trial": "timer_trial.txt"}
+    # Events stehen in derselben Datei wie die Kart-Rennen, tragen aber in
+    # Spalte 9 ihren Namen (tv.ist_event). Die Webseite zeigt dann diesen
+    # Namen statt "Rennen beim ...". Damit "Kart" nur die Rennen zeigt, haben
+    # Events einen eigenen Reiter.
+    DATEIEN = {"Kart": "timer.txt", "Trial": "timer_trial.txt", "Event": "timer.txt"}
+    EVENT_VEREIN = "MCH"  # Spalte 5 eines neuen Events, auf der Seite unsichtbar
 
     def baue(self):
         self.sportart = tk.StringVar(value="Kart")
@@ -64,9 +70,24 @@ class RenntermineSeite(Seite):
     def _zeilen(self):
         return h.lies_zeilen(self._datei())
 
+    def _ist_event_reiter(self):
+        return self.sportart.get() == "Event"
+
+    def _eintraege(self, zeilen):
+        """(Zeilennummer in der Datei, Zeile) fuer den gewaehlten Reiter.
+
+        Die Nummer bleibt die der ganzen Datei - Bearbeiten und Loeschen
+        treffen so die richtige Zeile, auch wenn der Reiter nur einen Teil
+        zeigt."""
+        if self._ist_event_reiter():
+            return [(i, z) for i, z in enumerate(zeilen) if tv.ist_event(z)]
+        if self.sportart.get() == "Kart":
+            return [(i, z) for i, z in enumerate(zeilen) if not tv.ist_event(z)]
+        return list(enumerate(zeilen))
+
     def _spalten(self, zeile):
         """Eine timer.txt-Zeile als lesbare Tabellenzeile."""
-        teile = (zeile.split(";") + [""] * 8)[:8]
+        teile = (zeile.split(";") + [""] * 9)[:9]
         monat = tv.MONAT_ALIASE.get(teile[1].strip().lower())
         if monat and teile[0].strip().isdigit():
             datum = f"{int(teile[0]):02d}.{monat[0]:02d}.{teile[2]}"
@@ -79,25 +100,31 @@ class RenntermineSeite(Seite):
             pdf = os.path.basename(teile[7])
         else:
             pdf = os.path.basename(teile[7]) + "  (fehlt)"
-        return datum, teile[3], teile[4], teile[5], pdf
+        # Beim Event steht statt des Vereins der Name in der Tabelle
+        wer = teile[8] if self._ist_event_reiter() else teile[4]
+        return datum, teile[3], wer, teile[5], pdf
 
     def aktualisieren(self):
         self.leeren()
-        zeilen = self._zeilen()
+        eintraege = self._eintraege(self._zeilen())
+        event = self._ist_event_reiter()
 
-        B.abschnitt(self.inhalt, self.s, f"{self.sportart.get()}-Termine",
-                    f"{len(zeilen)} Einträge · data/{self.DATEIEN[self.sportart.get()]}")
+        B.abschnitt(self.inhalt, self.s,
+                    "Events" if event else f"{self.sportart.get()}-Termine",
+                    f"{len(eintraege)} Einträge · data/{self.DATEIEN[self.sportart.get()]}")
 
-        if not zeilen:
+        if not eintraege:
             B.karte(self.inhalt, self.s, uebersicht.INFO,
-                    "Noch keine Termine eingetragen.", "Oben rechts auf „Neuer Termin“.")
+                    "Noch keine Events eingetragen." if event else "Noch keine Termine eingetragen.",
+                    "Oben rechts auf „Neuer Termin“.")
             self.baum = None
             return
 
         self.baum = self.tabelle(
-            self.inhalt, ("Datum", "Zeit", "Verein", "Ort", "PDF"),
-            (95, 60, 80, 180, 230), hoehe=min(len(zeilen), 14), zeilenzahl=len(zeilen))
-        for nummer, zeile in enumerate(zeilen):
+            self.inhalt, ("Datum", "Zeit", "Event" if event else "Verein", "Ort", "PDF"),
+            (95, 60, 220 if event else 80, 140 if event else 180, 230),
+            hoehe=min(len(eintraege), 14), zeilenzahl=len(eintraege))
+        for nummer, zeile in eintraege:
             self.baum.insert("", "end", iid=str(nummer), values=self._spalten(zeile))
         self.baum.bind("<Double-1>", lambda _: self.bearbeiten())
 
@@ -112,7 +139,7 @@ class RenntermineSeite(Seite):
     def _felder(self, zeilen):
         _, reihenfolge = tv.lade_bekannte_orte(zeilen)
         orte = [f"{verein} {ort}" for verein, ort in reihenfolge]
-        return [
+        datum = [
             {"schluessel": "tag", "beschriftung": "Tag", "pruefer": h.TAG_VALIDIERER,
              "hinweis": "1–31"},
             {"schluessel": "monat", "beschriftung": "Monat", "art": "auswahl",
@@ -120,6 +147,19 @@ class RenntermineSeite(Seite):
             {"schluessel": "jahr", "beschriftung": "Jahr", "pruefer": h.JAHR_VALIDIERER},
             {"schluessel": "uhrzeit", "beschriftung": "Uhrzeit",
              "pruefer": h.UHRZEIT_VALIDIERER, "hinweis": "HH:MM, z. B. 09:00"},
+        ]
+        if self._ist_event_reiter():
+            return datum + [
+                {"schluessel": "titel", "beschriftung": "Event",
+                 "pruefer": lambda a: "Bitte ohne Semikolon (;)" if ";" in a else None,
+                 "hinweis": "so steht es auf der Startseite, z. B. Weihnachtsfeier"},
+                {"schluessel": "ort", "beschriftung": "Ort"},
+                {"schluessel": "link", "beschriftung": "Maps-Link",
+                 "pruefer": h.LINK_VALIDIERER},
+                {"schluessel": "pdf", "beschriftung": "PDF-Pfad", "pflicht": False,
+                 "hinweis": "z. B. eine Einladung - leer lassen, wenn es keine gibt"},
+            ]
+        return datum + [
             {"schluessel": "verein", "beschriftung": "Verein",
              "hinweis": "Kürzel, z. B. AC, MSC, MSG, MCH"},
             {"schluessel": "ort", "beschriftung": "Ort"},
@@ -131,13 +171,30 @@ class RenntermineSeite(Seite):
         ]
 
     def _zu_werten(self, zeile):
-        teile = (zeile.split(";") + [""] * 8)[:8]
+        teile = (zeile.split(";") + [""] * 9)[:9]
         monat = tv.MONAT_ALIASE.get(teile[1].strip().lower())
         return {"tag": teile[0], "monat": tv.MONATE_DE[monat[0] - 1] if monat else "",
                 "jahr": teile[2], "uhrzeit": teile[3], "verein": teile[4],
-                "ort": teile[5], "link": teile[6], "pdf": teile[7]}
+                "ort": teile[5], "link": teile[6], "pdf": teile[7], "titel": teile[8]}
 
-    def _zu_zeile(self, werte):
+    def _zu_zeile(self, werte, alte_zeile=None):
+        """Baut die timer.txt-Zeile. alte_zeile: beim Bearbeiten die bisherige
+        Zeile - was das Formular nicht zeigt (beim Event der Verein, sonst
+        Spalte 9 und dahinter), bleibt so erhalten statt still zu verschwinden."""
+        alt = (alte_zeile.split(";") + [""] * 9) if alte_zeile else None
+        if self._ist_event_reiter():
+            werte = dict(werte, verein=(alt[4] if alt and alt[4] else self.EVENT_VEREIN))
+            rest = [werte["titel"].strip()]
+        else:
+            rest = [t for t in (alte_zeile.split(";")[8:] if alte_zeile else [])]
+        zeile = self._zeile_ohne_rest(werte)
+        if zeile is None:
+            return None
+        while rest and not rest[-1].strip():
+            rest.pop()
+        return ";".join([zeile] + rest) if rest else zeile
+
+    def _zeile_ohne_rest(self, werte):
         monat_nr, monat_en = tv.MONAT_ALIASE[werte["monat"].lower()]
         try:
             date(int(werte["jahr"]), monat_nr, int(werte["tag"]))
@@ -167,10 +224,16 @@ class RenntermineSeite(Seite):
 
     def neu(self):
         zeilen = self._zeilen()
+        event = self._ist_event_reiter()
         werte = B.frage_formular(
-            self.rahmen, self.s, f"Neuer {self.sportart.get()}-Termin", self._felder(zeilen),
-            einleitung="Der Termin wird automatisch an die richtige Stelle der Saison "
-                       "einsortiert - um die Reihenfolge musst du dich nicht kümmern.")
+            self.rahmen, self.s,
+            "Neues Event" if event else f"Neuer {self.sportart.get()}-Termin",
+            self._felder(zeilen),
+            einleitung=("Das Event erscheint mit seinem Namen auf der Startseite und im "
+                        "Kalender - nicht als „Rennen beim …“. Einsortiert wird es von selbst."
+                        if event else
+                        "Der Termin wird automatisch an die richtige Stelle der Saison "
+                        "einsortiert - um die Reihenfolge musst du dich nicht kümmern."))
         if not werte:
             return
         zeile = self._zu_zeile(werte)
@@ -182,13 +245,14 @@ class RenntermineSeite(Seite):
         if nummer is None:
             return
         zeilen = self._zeilen()
+        event = self._ist_event_reiter()
         werte = B.frage_formular(
-            self.rahmen, self.s, "Termin bearbeiten", self._felder(zeilen),
-            self._zu_werten(zeilen[nummer]),
+            self.rahmen, self.s, "Event bearbeiten" if event else "Termin bearbeiten",
+            self._felder(zeilen), self._zu_werten(zeilen[nummer]),
             einleitung="Wird das Datum geändert, rutscht der Termin an die passende Stelle.")
         if not werte:
             return
-        zeile = self._zu_zeile(werte)
+        zeile = self._zu_zeile(werte, alte_zeile=zeilen[nummer])
         if zeile:
             self._speichern(zeilen, zeile, ersetze=nummer)
 

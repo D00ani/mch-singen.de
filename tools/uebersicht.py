@@ -66,7 +66,10 @@ def naechste_rennen(heute=None):
     heute = heute or date.today()
     ergebnis = []
     for name, sportart in (("timer.txt", "Kart"), ("timer_trial.txt", "Trial")):
-        zeilen = h.lies_zeilen(os.path.join(ROOT, "data", name))
+        # Events (eigener Name in Spalte 9) sind keine Rennen - sonst hiesse
+        # die Weihnachtsfeier hier "Naechstes Kart-Rennen".
+        zeilen = [z for z in h.lies_zeilen(os.path.join(ROOT, "data", name))
+                  if not tv.ist_event(z)]
         termine = [(termin_datum(z), z) for z in zeilen]
         termine = [(d, z) for d, z in termine if d]
         if not termine:

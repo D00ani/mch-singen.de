@@ -99,6 +99,18 @@ def beschreibe_termin(zeile):
     return zeile
 
 
+def ist_event(zeile):
+    """True fuer Termine, die kein Rennen sind (Feier, Siegerehrung ...).
+
+    Erkennungszeichen ist der eigene Name in Spalte 9 - genau daran macht
+    auch die Webseite fest, ob sie "Rennen beim ..." schreibt oder den Namen.
+    Uebersicht, Statusseite und der Assistent "Nach dem Rennen" lassen
+    Events deshalb aus, wenn sie nach Rennen fragen.
+    """
+    teile = zeile.split(";")
+    return len(teile) >= 9 and bool(teile[8].strip())
+
+
 def waehle_zeile(zeilen, aktion_text):
     return h.waehle_aus_liste(zeilen, aktion_text, beschreibe_termin)
 

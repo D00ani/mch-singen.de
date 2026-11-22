@@ -539,6 +539,8 @@ class RennwochenendeSeite(AssistentSeite):
         gefunden = []
         for name, sportart in (("timer.txt", "Kart"), ("timer_trial.txt", "Trial")):
             for zeile in h.lies_zeilen(os.path.join(ROOT, "data", name)):
+                if uebersicht.tv.ist_event(zeile):  # Events sind keine Rennen
+                    continue
                 wann = uebersicht.termin_datum(zeile)
                 if wann and frueheste <= wann <= heute:
                     gefunden.append((wann, sportart, zeile))

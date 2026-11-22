@@ -38,6 +38,8 @@ def letzte_rennen(heute=None):
     gefunden = []
     for name, sportart in (("timer.txt", "Kart"), ("timer_trial.txt", "Trial")):
         for zeile in h.lies_zeilen(os.path.join(ROOT, "data", name)):
+            if tv.ist_event(zeile):  # nach einer Feier gibt es keine Ergebnisse
+                continue
             wann = uebersicht.termin_datum(zeile)
             if wann and frueheste <= wann <= heute:
                 gefunden.append((wann, sportart, zeile))
