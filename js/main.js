@@ -1531,4 +1531,19 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    // --- 30. E-MAIL-ADRESSEN MIT SPAMSCHUTZ ---
+    // Gleiche Idee wie beim Brief-Knopf (Abschnitt 29) fuer alle sichtbaren
+    // Adressen (Impressum, Kontakt, Ueber uns): Name und Domain liegen
+    // getrennt in data-name und data-domain, im Text steht "name [at] domain".
+    // Erst hier wird daraus ein normaler Mail-Link mit lesbarer Adresse.
+    // Ohne JavaScript bleibt die [at]-Schreibweise stehen - fuer Menschen
+    // lesbar, fuer Adress-Sammler keine Adresse.
+    // Hat der Link ein Symbol, steht der Text in .mail-text, damit das
+    // Symbol erhalten bleibt.
+    document.querySelectorAll('a.mail-link[data-name][data-domain]').forEach(link => {
+        const adresse = link.dataset.name + '@' + link.dataset.domain;
+        link.href = 'mailto:' + adresse;
+        (link.querySelector('.mail-text') || link).textContent = adresse;
+    });
+
 });

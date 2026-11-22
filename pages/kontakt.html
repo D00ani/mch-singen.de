@@ -154,7 +154,7 @@
                     <div class="ci-icon"><i class="fa-solid fa-envelope"></i></div>
                     <div class="ci-text">
                         <strong>E-Mail</strong>
-                        <a href="mailto:info@mch-singen.de">info@mch-singen.de</a>
+                        <a class="mail-link" data-name="info" data-domain="mch-singen.de">info [at] mch-singen.de</a>
                     </div>
                 </div>
 
@@ -181,7 +181,15 @@
 
                 <p class="form-hinweis">Mit <span class="pflicht" aria-hidden="true">*</span> gekennzeichnete Felder sind Pflichtfelder.</p>
 
-                <form id="my-contact-form" class="contact-form" action="https://formsubmit.co/info@mch-singen.de" method="POST" style="margin-top: 0;">
+                <!-- Die Zieladresse steht nicht im HTML: js/kontakt.js setzt die
+                     Adresse fuer formsubmit.co erst beim Laden aus data-name und
+                     data-domain zusammen. Spam-Programme, die Formulare nach
+                     "formsubmit.co/name@domain" absuchen, finden hier nichts. -->
+                <noscript>
+                    <p class="form-fehler">Das Formular braucht JavaScript. Schreib uns sonst eine E-Mail an info [at] mch-singen.de.</p>
+                </noscript>
+
+                <form id="my-contact-form" class="contact-form" data-name="info" data-domain="mch-singen.de" method="POST" style="margin-top: 0;">
 
                     <input type="hidden" name="_subject" value="Neue Nachricht von der MCH Webseite!">
                     <input type="hidden" name="_captcha" value="false">
@@ -194,6 +202,29 @@
                          echten Besuchern eine Aufgabe vorzusetzen. NICHT entfernen
                          und NICHT umbenennen - der Name "_honey" ist vorgegeben. -->
                     <input type="text" name="_honey" value="" tabindex="-1" autocomplete="off"
+                           aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0;">
+
+                    <!-- Sperrliste: Nachrichten mit einem dieser Begriffe verwirft
+                         formsubmit.co ganz. Hoechstens 20 Begriffe (Vorgabe von
+                         FormSubmit), durch Komma getrennt. Nur Woerter, die in
+                         einer echten Anfrage an den Verein nicht vorkommen. -->
+                    <input type="hidden" name="_blacklist" value="SEO, backlinks, guest post, rank your website, web traffic, lead generation, outsourcing, crypto, bitcoin, forex, casino, viagra, cialis, porn, loan offer, unsubscribe">
+
+                    <!-- Echtheits-Pruefung. Das Feld fuellt erst js/kontakt.js beim
+                         Absenden: "mch-check-ok" plus die Ausfuellzeit. Spam-Programme,
+                         die direkt an formsubmit.co senden, laden diese Seite nie -
+                         bei ihnen fehlt der Wert. Im Postfach sortiert eine Regel
+                         alles ohne "mch-check-ok" in den Spam-Ordner. Name und Wert
+                         NICHT aendern, sonst greift die Regel nicht mehr. -->
+                    <input type="hidden" name="Pruefung" value="">
+
+                    <!-- Zweite Spamfalle mit unauffaelligem Namen: "_honey" kennen
+                         viele Spam-Programme und lassen es leer. Ist dieses Feld
+                         ausgefuellt, schreibt js/kontakt.js "mch-check-verdacht"
+                         statt "ok" - die Nachricht kommt an, landet aber im
+                         Spam-Ordner. Bewusst nicht "Webseite" oder "Firma":
+                         die fuellt der Browser sonst selbst aus. -->
+                    <input type="text" name="Hinweis" value="" tabindex="-1" autocomplete="off"
                            aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0;">
 
                     <div class="form-field">

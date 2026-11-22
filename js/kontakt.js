@@ -11,6 +11,16 @@
             const emailFormatError = document.getElementById('email-format-error');
             const sendeFehler = document.getElementById('sende-fehler');
 
+            // Zieladresse erst hier zusammensetzen - im HTML steht sie nicht
+            // am Stueck (Spamschutz, siehe pages/kontakt.html).
+            const adresse = contactForm.dataset.name + '@' + contactForm.dataset.domain;
+            contactForm.action = 'https://formsubmit.co/' + adresse;
+
+            // Fuer die Echtheits-Pruefung beim Absenden (siehe pages/kontakt.html).
+            const geladen = Date.now();
+            const pruefFeld = contactForm.querySelector('input[name="Pruefung"]');
+            const falle = contactForm.querySelector('input[name="Hinweis"]');
+
             // Meldung ein- oder ausblenden und das zugehoerige Feld als
             // fehlerhaft markieren. aria-invalid steuert gleichzeitig die rote
             // Kante (siehe style.css) und das, was Screenreader vorlesen -
@@ -87,6 +97,18 @@
                 submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Wird gesendet...';
                 submitBtn.disabled = true;
 
+                // Echtheits-Pruefung: Wer schneller als in 3 Sekunden absendet
+                // oder die versteckte Falle ausfuellt, ist fast sicher ein
+                // Programm. Gesendet wird trotzdem - nur ohne "ok", damit die
+                // Postfach-Regel es aussortiert und nichts verloren geht, falls
+                // sie doch einmal einen Menschen trifft.
+                if (pruefFeld) {
+                    const sekunden = Math.round((Date.now() - geladen) / 1000);
+                    const verdacht = sekunden < 3 || (falle && falle.value.trim() !== '');
+                    pruefFeld.value = (verdacht ? 'mch-check-verdacht' : 'mch-check-ok')
+                        + ', ' + sekunden + (sekunden === 1 ? ' Sekunde' : ' Sekunden');
+                }
+
                 const formData = new FormData(contactForm);
                 formData.delete('_email_confirm');
 
@@ -116,13 +138,13 @@
                     } else {
                         fehlgeschlagen('Die Nachricht konnte nicht gesendet werden. '
                             + 'Bitte versuche es noch einmal oder schreib uns direkt '
-                            + 'an info@mch-singen.de.');
+                            + 'an ' + adresse + '.');
                     }
                 })
                 .catch(() => {
                     fehlgeschlagen('Keine Verbindung zum Server. Bitte prüfe deine '
                         + 'Internetverbindung und versuche es erneut. Alternativ '
-                        + 'erreichst du uns unter info@mch-singen.de.');
+                        + 'erreichst du uns unter ' + adresse + '.');
                 });
             });
         }

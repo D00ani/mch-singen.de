@@ -367,3 +367,8 @@ body.dark-mode .breadcrumb-gruppe-feld a[aria-current="page"] {
     background: #1a2340;
     color: #74a3ff;
 }
+
+/* Mail-Adresse auf den Vorstandskarten (Ueber uns). Der Link traegt
+   inline color: var(--text-main) - das ist im Dark Mode fast schwarz
+   auf dunkler Karte. !important, weil der Inline-Stil sonst gewinnt. */
+body.dark-mode .member-contact a { color: #c9cfdb !important; }

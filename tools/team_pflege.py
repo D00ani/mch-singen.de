@@ -66,6 +66,28 @@ def text_von(muster, block):
     return treffer.group(1).strip() if treffer else None
 
 
+# E-Mail-Adressen stehen mit Spamschutz in der Seite: Name und Domain getrennt
+# in data-name/data-domain, sichtbar "name [at] domain". Den richtigen Link
+# setzt js/main.js (Abschnitt 30) erst im Browser zusammen.
+def email_von(block):
+    treffer = re.search(r'data-name="([^"]*)" data-domain="([^"]*)"', block)
+    if treffer:
+        return f"{treffer.group(1)}@{treffer.group(2)}"
+    return text_von(r'href="mailto:([^"]*)"', block)
+
+
+def email_teile(adresse):
+    name, _, domain = adresse.strip().partition("@")
+    return name, domain
+
+
+def email_link(adresse, stil):
+    """Mail-Link im Spamschutz-Format (siehe email_von)."""
+    name, domain = email_teile(adresse)
+    return (f'<a class="mail-link" data-name="{name}" data-domain="{domain}" style="{stil}">',
+            f'<span class="mail-text">{name} [at] {domain}</span>')
+
+
 def finde_personen(html, anker):
     start, ende = bereichsgrenzen(html, anker)
     personen = []
@@ -81,7 +103,7 @@ def finde_personen(html, anker):
             "kurzrolle": text_von(r'<p class="trainer-role-overlay">(.*?)</p>', block),
             "rolle": text_von(r'<p class="member-role">(.*?)</p>', block),
             "spruch": text_von(r'<p class="trainer-quote">(.*?)</p>', block),
-            "email": text_von(r'href="mailto:([^"]*)"', block),
+            "email": email_von(block),
             "instagram": text_von(r'<a class="trainer-card" href="([^"]*)"', block),
         })
     return personen, start, ende
@@ -128,9 +150,12 @@ def aendere_person(person, werte):
             block = ersetze_feld(block, muster, werte[schluessel])
 
     if "email" in werte and werte["email"] != person["email"] and person["email"]:
-        block = block.replace(f'mailto:{person["email"]}', f'mailto:{werte["email"]}')
-        block = re.sub(rf"(</i>\s*){re.escape(person['email'])}",
-                       lambda m: m.group(1) + werte["email"], block)
+        alt_name, alt_domain = email_teile(person["email"])
+        neu_name, neu_domain = email_teile(werte["email"])
+        block = block.replace(f'data-name="{alt_name}" data-domain="{alt_domain}"',
+                              f'data-name="{neu_name}" data-domain="{neu_domain}"')
+        block = ersetze_feld(block, r'<span class="mail-text">(.*?)</span>',
+                             f"{neu_name} [at] {neu_domain}")
 
     return block
 
@@ -247,10 +272,11 @@ def baue_personen_karte(ist_vorstand, bilddatei, name, kurzrolle,
     if ist_vorstand:
         zeilen.append(f'{e}        <p class="member-role">{rolle}</p>')
         if email:
+            link_auf, mail_text = email_link(email, "color: var(--text-main); text-decoration: none;")
             zeilen += [
                 f'{e}        <p class="member-contact" style="margin-top: 8px; font-size: 0.9em;">',
-                f'{e}            <a href="mailto:{email}" style="color: var(--text-color); text-decoration: none;">',
-                f'{e}                <i class="fa-solid fa-envelope" style="color: var(--primary-blue); margin-right: 5px;"></i> {email}',
+                f'{e}            {link_auf}',
+                f'{e}                <i class="fa-solid fa-envelope" style="color: var(--primary-blue); margin-right: 5px;"></i> {mail_text}',
                 f"{e}            </a>",
                 f"{e}        </p>",
             ]

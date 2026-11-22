@@ -29,7 +29,7 @@ DETAILS_MUSTER = re.compile(
     re.DOTALL
 )
 LI_MUSTER = re.compile(
-    r'<li><a href="([^"]*)" target="_blank"><i class="fa-solid fa-file-pdf"></i> (.*?)</a></li>'
+    r'<li><a href="([^"]*)" target="_blank"(?: rel="noopener noreferrer")?><i class="fa-solid fa-file-pdf"></i> (.*?)</a></li>'
 )
 
 
@@ -73,7 +73,7 @@ def pruefe_pdf_existiert(relativer_pfad_von_seite):
 
 
 def baue_li(href, text, einrueckung):
-    return f'{einrueckung}<li><a href="{href}" target="_blank"><i class="fa-solid fa-file-pdf"></i> {text}</a></li>'
+    return f'{einrueckung}<li><a href="{href}" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-file-pdf"></i> {text}</a></li>'
 
 
 def ersetze_block(html, treffer, neuer_block):
