@@ -19,10 +19,114 @@ import faq_pflege
 import fenster_bausteine as B
 import news_pflege
 import pflege_hilfen as h
+import seitentexte
 import uebersicht
 from fenster_seiten import Seite
 
 ROOT = h.ROOT
+
+
+# ------------------------------------------------------------------
+# Texte & Zahlen (Startseite, Training, Preise) und Shop-Link
+# ------------------------------------------------------------------
+
+class SeitentexteSeite(Seite):
+    titel = "Texte & Zahlen"
+    untertitel = ("Kurze Texte, Zahlen, Trainingszeiten und Preise der Webseite. Steht etwas "
+                  "an mehreren Stellen (z. B. die Trainingszeit im Fußbereich jeder Seite), "
+                  "ändert ein Speichern alle Stellen gemeinsam.")
+
+    def baue(self):
+        self.knopf("Shop-Link", self.shop)
+        self.knopf("Bearbeiten", self.bearbeiten, "haupt")
+        self.baum = None
+        self.schluessel = []
+
+    def aktualisieren(self):
+        self.leeren()
+        werte = seitentexte.lies_alle()
+
+        art, adresse = seitentexte.shop_stand()
+        B.abschnitt(self.inhalt, self.s, "Shop-Link", "Kopfzeile, Menü und Fußbereich aller Seiten")
+        if art == seitentexte.SHOP_AUFFANG:
+            B.karte(self.inhalt, self.s, uebersicht.HINWEIS,
+                    "Zeigt auf die Auffangseite „Shop nicht erreichbar“",
+                    "Läuft der Shop wieder, hier auf die Adresse des Shops umstellen.",
+                    "Umstellen", self.shop)
+        else:
+            B.karte(self.inhalt, self.s, uebersicht.INFO, f"Zeigt auf den Shop: {adresse}",
+                    "Geht der Shop nicht, hier auf die Auffangseite zurückstellen.",
+                    "Umstellen", self.shop)
+
+        B.abschnitt(self.inhalt, self.s, "Texte und Zahlen",
+                    "Doppelklick oder „Bearbeiten“ - die Änderung gilt an allen genannten Stellen")
+        self.schluessel = [f[1] for f in seitentexte.FELDER]
+        self.baum = self.tabelle(
+            self.inhalt, ("Bereich", "Was", "Steht jetzt da", "Wo"), (110, 230, 300, 130),
+            hoehe=min(len(self.schluessel), 16), zeilenzahl=len(self.schluessel))
+        for nummer, (gruppe, schluessel, beschriftung, _, _) in enumerate(seitentexte.FELDER):
+            eintrag = werte.get(schluessel)
+            if not eintrag:
+                wo, wert = "nicht gefunden", "-"
+            else:
+                anzahl = len(eintrag["stellen"])
+                wo = (f"{anzahl} Stelle" if anzahl == 1 else f"{anzahl} Stellen")
+                wo += " - unterschiedlich!" if eintrag["abweichend"] else ""
+                wert = eintrag["wert"]
+            self.baum.insert("", "end", iid=str(nummer),
+                             values=(gruppe, beschriftung, wert, wo))
+        self.baum.bind("<Double-1>", lambda _: self.bearbeiten())
+
+    def bearbeiten(self):
+        if not self.baum or not self.baum.selection():
+            messagebox.showinfo("Nichts gewählt", "Bitte zuerst eine Zeile in der Liste anklicken.")
+            return
+        gruppe, schluessel, beschriftung, hinweis, art = seitentexte.FELDER[int(self.baum.selection()[0])]
+        eintrag = seitentexte.lies_alle().get(schluessel)
+        if not eintrag:
+            messagebox.showerror(
+                "Stelle nicht gefunden",
+                f"„{beschriftung}“ steht auf keiner Seite mehr - vermutlich wurde die "
+                f"Markierung data-pflege=\"{schluessel}\" beim Bearbeiten entfernt.")
+            return
+        seiten = sorted(set(eintrag["stellen"]))
+        wo = ", ".join(seiten[:4]) + (f" und {len(seiten) - 4} weitere" if len(seiten) > 4 else "")
+        werte = B.frage_formular(
+            self.rahmen, self.s, beschriftung,
+            [{"schluessel": "wert", "beschriftung": beschriftung, "art": art,
+              "hinweis": hinweis, "pruefer": seitentexte.pruefe_wert}],
+            {"wert": eintrag["wert"]},
+            einleitung=f"{gruppe} · steht hier: {wo}")
+        if not werte or werte["wert"] == eintrag["wert"]:
+            return
+        seitentexte.setze(schluessel, werte["wert"])
+        self.aktualisieren()
+        self.app.fuss_auffrischen()
+
+    def shop(self):
+        art, adresse = seitentexte.shop_stand()
+        auffang, echt = "Auffangseite „Shop nicht erreichbar“", "Echter Shop"
+        werte = B.frage_formular(
+            self.rahmen, self.s, "Shop-Link umstellen",
+            [{"schluessel": "ziel", "beschriftung": "Shop-Link zeigt auf", "art": "auswahl",
+              "optionen": [auffang, echt]},
+             {"schluessel": "adresse", "beschriftung": "Adresse des Shops", "pflicht": False,
+              "hinweis": "nur bei „Echter Shop“ nötig, mit https:// am Anfang"}],
+            {"ziel": auffang if art == seitentexte.SHOP_AUFFANG else echt,
+             "adresse": adresse or "https://mch-singen.teamkleidung24.de/"},
+            einleitung=seitentexte.SHOP_HINWEIS)
+        if not werte:
+            return
+        if werte["ziel"] == echt:
+            fehler = seitentexte.pruefe_shop_adresse(werte["adresse"])
+            if fehler:
+                messagebox.showerror("Adresse prüfen", fehler)
+                return
+            seitentexte.shop_setzen(werte["adresse"].strip())
+        else:
+            seitentexte.shop_setzen(None)
+        self.aktualisieren()
+        self.app.fuss_auffrischen()
 
 
 # ------------------------------------------------------------------
@@ -113,7 +217,10 @@ class NewsSeite(Seite):
                 {"schluessel": "titel", "beschriftung": "Titel"},
                 {"schluessel": "beschreibung", "beschriftung": "Text", "art": "mehrzeilig"},
                 {"schluessel": "link_ziel", "beschriftung": "Link-Ziel", "pflicht": False,
-                 "hinweis": "leer = kein Link; z. B. ../media/dokumente/datei.pdf"},
+                 "art": "datei", "basis": ROOT, "ordner": "media/dokumente", "praefix": "../",
+                 "typen": [("PDF-Dateien", "*.pdf"), ("Alle Dateien", "*.*")],
+                 "hinweis": "„Auswählen…“ für eine Datei - oder eine Adresse tippen; "
+                            "leer = kein Link"},
                 {"schluessel": "link_text", "beschriftung": "Link-Beschriftung",
                  "pflicht": False},
             ],

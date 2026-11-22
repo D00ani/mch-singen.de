@@ -326,6 +326,13 @@ class Formular(tk.Toplevel):
                       "wochentag" (Sa, 08.08.2026)
         frei          nur bei "datum": True = auch Freitext wie "Saison 2026"
                       erlaubt, der Kalender ist dann eine Hilfe
+        art "datei"   Feld mit Knopf "Auswählen…". Dazu: basis (Ordner der
+                      Webseite), ordner (Startordner und Ziel beim Kopieren,
+                      relativ zu basis), praefix ("" oder "../" - wie der Pfad
+                      geschrieben wird), typen (Liste fuer den Dateidialog)
+        art "vorlage" Auswahl, die beim Wechsel andere Felder ausfuellt.
+                      vorlagen = {Anzeige: {schluessel: wert, ...}}. Taucht
+                      im Ergebnis nicht auf.
         optionen      Liste, nur bei "auswahl"
         pruefer       Funktion(wert) -> Fehlertext oder None
         hinweis       kleine Zeile unter dem Feld
@@ -415,6 +422,13 @@ class Formular(tk.Toplevel):
             eingabe = ttk.Combobox(eltern, values=feld["optionen"], font=self.s.text,
                                    state="readonly", width=34)
             eingabe.set(wert or (feld["optionen"][0] if feld["optionen"] else ""))
+        elif art == "vorlage":
+            from tkinter import ttk
+            eingabe = ttk.Combobox(eltern, values=list(feld["vorlagen"]), font=self.s.text,
+                                   state="readonly", width=34)
+            eingabe.set("")
+            eingabe.bind("<<ComboboxSelected>>",
+                         lambda _, e=eingabe, f=feld: self._vorlage_anwenden(f, e.get()))
         elif art == "mehrzeilig":
             eingabe = tk.Text(eltern, height=4, width=36, font=self.s.text, wrap="word",
                               relief="solid", bd=1, bg=FARBEN["karte"], fg=FARBEN["text"])
@@ -430,7 +444,16 @@ class Formular(tk.Toplevel):
             eingabe.insert(0, wert)
 
         platz = eingabe
-        if art == "datum":
+        if art == "datei":
+            platz = tk.Frame(eltern, bg=FARBEN["grund"])
+            eingabe.destroy()
+            eingabe = tk.Entry(platz, font=self.s.text, width=24, relief="solid", bd=1,
+                               bg=FARBEN["karte"], fg=FARBEN["text"])
+            eingabe.insert(0, wert)
+            eingabe.pack(side="left", fill="x", expand=True)
+            knopf(platz, "Auswählen…", lambda e=eingabe, f=feld: self._datei_waehlen(e, f), self.s,
+                  padx=10, pady=1).pack(side="left", padx=(6, 0))
+        elif art == "datum":
             # Feld bleibt zum Tippen da; der Knopf daneben oeffnet den Kalender
             platz = tk.Frame(eltern, bg=FARBEN["grund"])
             eingabe.destroy()
@@ -462,6 +485,8 @@ class Formular(tk.Toplevel):
         if art == "datum" and not hinweis:
             hinweis = ("Kalender-Knopf (oder F4) - oder tippen, z. B. 08.08.2026"
                        + (" - Freitext geht auch" if feld.get("frei") else ""))
+        if art == "vorlage" and not hinweis:
+            hinweis = "füllt die Felder darunter aus - danach lässt sich alles noch ändern"
         if art == "mehrzeilig":
             # Enter ist hier der Absatz - das muss dabeistehen, sonst sucht
             # man vergeblich nach dem Weiterspringen.
@@ -477,6 +502,65 @@ class Formular(tk.Toplevel):
                           font=self.s.klein, anchor="w", justify="left", wraplength=300)
         fehler.grid(row=reihe + 2, column=1, sticky="w", pady=(0, 10))
         self._fehlerzeilen[feld["schluessel"]] = fehler
+
+    def _setze(self, schluessel, wert):
+        eingabe = self._eingaben.get(schluessel)
+        if eingabe is None:
+            return
+        from tkinter import ttk
+        if isinstance(eingabe, tk.Text):
+            eingabe.delete("1.0", "end")
+            eingabe.insert("1.0", wert)
+        elif isinstance(eingabe, ttk.Combobox):
+            # Vor tk.Entry pruefen: die Combobox ist auch ein Entry, und bei
+            # reinen Auswahlfeldern (readonly) greift insert() nicht
+            eingabe.set(wert)
+        else:
+            eingabe.delete(0, "end")
+            eingabe.insert(0, wert)
+        if schluessel in self._fehlerzeilen:
+            self._fehlerzeilen[schluessel].configure(text="")
+
+    def _vorlage_anwenden(self, feld, auswahl):
+        for schluessel, wert in feld["vorlagen"].get(auswahl, {}).items():
+            self._setze(schluessel, wert)
+
+    def _datei_waehlen(self, eingabe, feld):
+        """Dateidialog; liegt die Datei ausserhalb der Webseite, wird sie nach
+        Rueckfrage in den passenden Ordner kopiert."""
+        import os
+        import shutil
+        from tkinter import filedialog, messagebox
+
+        basis = feld["basis"]
+        ordner = feld.get("ordner", "")
+        startordner = os.path.join(basis, ordner)
+        pfad = filedialog.askopenfilename(
+            parent=self, title=f"{feld['beschriftung']} auswählen",
+            initialdir=startordner if os.path.isdir(startordner) else basis,
+            filetypes=feld.get("typen") or [("Alle Dateien", "*.*")])
+        if not pfad:
+            return
+        pfad = os.path.abspath(pfad)
+        if os.path.commonpath([pfad, os.path.abspath(basis)]) != os.path.abspath(basis):
+            ziel = os.path.join(startordner, os.path.basename(pfad))
+            if not messagebox.askyesno(
+                    "Datei übernehmen?",
+                    f"„{os.path.basename(pfad)}“ liegt außerhalb der Webseite.\n\n"
+                    f"In den Ordner {ordner or 'der Webseite'} kopieren und von dort verlinken?",
+                    parent=self):
+                return
+            if os.path.exists(ziel) and not messagebox.askyesno(
+                    "Datei ersetzen?", f"{os.path.basename(ziel)} gibt es dort schon. Ersetzen?",
+                    parent=self):
+                return
+            os.makedirs(startordner, exist_ok=True)
+            shutil.copy2(pfad, ziel)
+            pfad = ziel
+        relativ = os.path.relpath(pfad, basis).replace("\\", "/")
+        eingabe.delete(0, "end")
+        eingabe.insert(0, feld.get("praefix", "") + relativ)
+        self._fehlerzeilen[feld["schluessel"]].configure(text="")
 
     def _kalender(self, eingabe, feld):
         def gewaehlt(tag):
@@ -497,6 +581,8 @@ class Formular(tk.Toplevel):
         werte, fehlerhaft = {}, False
         for feld in self.felder:
             schluessel = feld["schluessel"]
+            if feld.get("art") == "vorlage":
+                continue        # nur eine Ausfuellhilfe, kein eigener Wert
             wert = self._lies(schluessel)
             meldung = None
 

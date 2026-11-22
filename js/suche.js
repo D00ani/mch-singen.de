@@ -38,6 +38,21 @@ const pageIcons = {
     'shop.html': 'fa-cart-shopping',
 };
 
+// Der Shop zeigt je nach Lage auf die Auffangseite (shop.html) oder auf den
+// echten Shop - umgeschaltet im Pflege-Fenster unter "Texte & Zahlen".
+// Massgeblich ist der markierte Shop-Link im Menue dieser Seite; so muss
+// beim Umschalten in dieser Datei nichts geaendert werden.
+(function shopVomMenue() {
+    const link = document.querySelector('a[data-shop-link]');
+    const eintrag = websiteSeiten.find(s => s.titel === 'MCH Vereins-Shop');
+    if (!link || !eintrag) return;
+    eintrag.url = link.getAttribute('href');
+    pageIcons[eintrag.url] = 'fa-cart-shopping';
+    if (eintrag.url.startsWith('http')) {
+        eintrag.beschreibung = 'Hier kommst du zu unserem Shop für Teamkleidung.';
+    }
+})();
+
 // --- SUCH-LOGIK ---
 function highlight(text, terms) {
     if (!terms.length) return text;

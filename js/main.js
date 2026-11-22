@@ -421,15 +421,19 @@ document.addEventListener('DOMContentLoaded', () => {
     (function initSidebarLabels() {
         const navList = document.querySelector('#side-menu nav ul');
         if (!navList) return;
+        // Der Shop wird an seiner Markierung erkannt, nicht an der Adresse:
+        // die wechselt zwischen Auffangseite und echtem Shop (Pflege-Fenster,
+        // "Texte & Zahlen").
         const sections = [
             { key: 'aktuelles',    label: 'Neuigkeiten'    },
             { key: 'ueber-uns',    label: 'Sport & Verein' },
-            { key: 'shop.html',    label: 'Mitmachen'      },
+            { key: '[data-shop-link]', label: 'Mitmachen'  },
             { key: 'geschichte',   label: 'Mehr'           },
         ];
         [...navList.querySelectorAll('li')].forEach(li => {
             const href = li.querySelector('a')?.getAttribute('href') ?? '';
-            const match = sections.find(s => href.includes(s.key));
+            const match = sections.find(s => s.key.startsWith('[')
+                ? li.querySelector(s.key) : href.includes(s.key));
             if (!match) return;
             const label = document.createElement('li');
             label.className = 'nav-section-label';
@@ -474,12 +478,15 @@ document.addEventListener('DOMContentLoaded', () => {
             a.replaceChild(text, knoten);
         });
 
-        const finde = teil => ursprung
-            .find(li => (li.querySelector('a')?.getAttribute('href') || '').includes(teil));
+        // teil ist ein Stueck der Adresse oder - fuer den Shop, dessen Adresse
+        // wechseln kann - ein Selektor in eckigen Klammern.
+        const finde = teil => ursprung.find(li => teil.startsWith('[')
+            ? li.querySelector(teil)
+            : (li.querySelector('a')?.getAttribute('href') || '').includes(teil));
 
         const gross = ['aktuelles.html', 'kartsport.html', 'trialsport.html', 'ueber-uns.html',
                        'mitglied-werden.html'].map(finde).filter(Boolean);
-        const klein = ['index.html', 'sommerferienprogramm.html', 'statistiken.html', 'shop.html',
+        const klein = ['index.html', 'sommerferienprogramm.html', 'statistiken.html', '[data-shop-link]',
                        'sponsoren-links.html', 'geschichte.html', 'archiv.html', 'faq.html',
                        'kontakt.html', 'impressum-datenschutz.html'].map(finde).filter(Boolean);
         // Ein spaeter ergaenzter Eintrag landet von selbst unten in der Liste.
@@ -490,7 +497,7 @@ document.addEventListener('DOMContentLoaded', () => {
             'index.html': 'Startseite',
             'aktuelles.html': 'Termine',
             'sommerferienprogramm.html': 'Ferienprogramm',
-            'shop.html': 'Vereins-Shop',
+            '[data-shop-link]': 'Vereins-Shop',
             'geschichte.html': 'Geschichte',
             'kontakt.html': 'Kontakt',
             'impressum-datenschutz.html': 'Impressum',

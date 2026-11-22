@@ -137,33 +137,43 @@ class RenntermineSeite(Seite):
 
     # -------------------------------------------------- Formular
     def _felder(self, zeilen):
-        _, reihenfolge = tv.lade_bekannte_orte(zeilen)
-        orte = [f"{verein} {ort}" for verein, ort in reihenfolge]
+        bekannte, reihenfolge = tv.lade_bekannte_orte(zeilen)
         datum = [
             {"schluessel": "datum", "beschriftung": "Datum", "art": "datum"},
             {"schluessel": "uhrzeit", "beschriftung": "Uhrzeit", "art": "uhrzeit",
              "hinweis": "aus der Liste wählen oder tippen, z. B. 09:00"},
         ]
+        # PDF per Dateiauswahl; in timer.txt stehen Pfade ab dem Hauptordner
+        pdf = {"schluessel": "pdf", "beschriftung": "PDF", "pflicht": False, "art": "datei",
+               "basis": ROOT, "ordner": "media/dokumente", "praefix": "",
+               "typen": [("PDF-Dateien", "*.pdf")]}
         if self._ist_event_reiter():
+            orte = {}
+            for verein, ort in reihenfolge:
+                orte.setdefault(f"{ort} ({verein})", {"ort": ort, "link": bekannte[(verein, ort)]})
+            vorlage = ([{"schluessel": "vorlage", "beschriftung": "Bekannter Ort", "art": "vorlage",
+                         "vorlagen": orte}] if orte else [])
             return datum + [
                 {"schluessel": "titel", "beschriftung": "Event",
                  "pruefer": lambda a: "Bitte ohne Semikolon (;)" if ";" in a else None,
                  "hinweis": "so steht es auf der Startseite, z. B. Weihnachtsfeier"},
+            ] + vorlage + [
                 {"schluessel": "ort", "beschriftung": "Ort"},
                 {"schluessel": "link", "beschriftung": "Maps-Link",
                  "pruefer": h.LINK_VALIDIERER},
-                {"schluessel": "pdf", "beschriftung": "PDF-Pfad", "pflicht": False,
-                 "hinweis": "z. B. eine Einladung - leer lassen, wenn es keine gibt"},
+                dict(pdf, hinweis="z. B. eine Einladung - leer lassen, wenn es keine gibt"),
             ]
-        return datum + [
+        orte = {f"{verein} {ort}": {"verein": verein, "ort": ort, "link": bekannte[(verein, ort)]}
+                for verein, ort in reihenfolge}
+        vorlage = ([{"schluessel": "vorlage", "beschriftung": "Bekannter Ort", "art": "vorlage",
+                     "vorlagen": orte}] if orte else [])
+        return datum + vorlage + [
             {"schluessel": "verein", "beschriftung": "Verein",
              "hinweis": "Kürzel, z. B. AC, MSC, MSG, MCH"},
             {"schluessel": "ort", "beschriftung": "Ort"},
             {"schluessel": "link", "beschriftung": "Maps-Link",
-             "pruefer": h.LINK_VALIDIERER,
-             "hinweis": "bereits bekannt: " + (", ".join(orte[:3]) or "noch nichts")},
-            {"schluessel": "pdf", "beschriftung": "PDF-Pfad", "pflicht": False,
-             "hinweis": "leer lassen, wenn die Ausschreibung noch fehlt"},
+             "pruefer": h.LINK_VALIDIERER},
+            dict(pdf, hinweis="leer lassen, wenn die Ausschreibung noch fehlt"),
         ]
 
     def _zu_werten(self, zeile):
@@ -339,8 +349,10 @@ class ArchivSeite(Seite):
         return [
             {"schluessel": "text", "beschriftung": "Beschriftung",
              "hinweis": "z. B. „BKC Gesamtwertung 2026 (PDF)“"},
-            {"schluessel": "pfad", "beschriftung": "Pfad zur PDF",
-             "hinweis": "ab /pages/ gerechnet, also mit ../ am Anfang"},
+            {"schluessel": "pfad", "beschriftung": "PDF", "art": "datei",
+             "basis": ROOT, "ordner": "media/dokumente/archiv", "praefix": "../",
+             "typen": [("PDF-Dateien", "*.pdf")],
+             "hinweis": "„Auswählen…“ - oder Pfad ab /pages/ mit ../ am Anfang"},
         ]
 
     def _liste_schreiben(self, jahre, nummer, lis):
