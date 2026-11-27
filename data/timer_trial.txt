@@ -34,5 +34,5 @@
 03;October;2026;12:00;eKids-Cup BW;Schorndorf;https://maps.google.com/?q=Schorndorf,+Württemberg;media/dokumente/termine/termine_trial_2026.pdf
 04;October;2026;12:00;Senioren-Trial;Schorndorf;https://maps.google.com/?q=Schorndorf,+Württemberg;media/dokumente/termine/termine_trial_2026.pdf
 11;October;2026;12:00;Senioren-Trial;Neusatz;https://maps.google.com/?q=Neusatz,+Bühl;media/dokumente/termine/termine_trial_2026.pdf
-08;November;2026;12:00;TSG-Jahresabschluss (JHV);Ölbronn;https://maps.google.com/?q=Ölbronn-Dürrn;media/dokumente/termine/termine_trial_2026.pdf
+08;November;2026;12:00;TSG;Ölbronn;https://maps.google.com/?q=Ölbronn-Dürrn;media/dokumente/termine/termine_trial_2026.pdf;TSG-Jahresabschluss (JHV)
 15;November;2026;12:00;Senioren-Trial;Baden-Baden;https://maps.google.com/?q=Baden-Baden,+Deutschland;media/dokumente/termine/termine_trial_2026.pdf

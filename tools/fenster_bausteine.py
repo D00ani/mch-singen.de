@@ -333,19 +333,27 @@ class Formular(tk.Toplevel):
         art "vorlage" Auswahl, die beim Wechsel andere Felder ausfuellt.
                       vorlagen = {Anzeige: {schluessel: wert, ...}}. Taucht
                       im Ergebnis nicht auf.
-        optionen      Liste, nur bei "auswahl"
+        hoehe, breite nur bei "mehrzeilig": Zeilen und Zeichen (Standard 4 x 36)
+        optionen      Liste, nur bei "auswahl" (frei=True: auch eigene Eingabe)
         pruefer       Funktion(wert) -> Fehlertext oder None
         hinweis       kleine Zeile unter dem Feld
         pflicht       True/False (Standard True)
+
+    vorschau: Funktion(werte) -> None oder Meldungstext. Gibt es sie, steht
+    im Fuss ein Knopf "Vorschau im Browser". Sie bekommt die Eingaben so,
+    wie sie gerade dastehen (ungeprueft), und zeigt den Entwurf an, ohne zu
+    speichern - siehe vorschau.entwurf_zeigen().
 
     Nach wait_window() steht das Ergebnis in .werte (dict) oder ist None,
     wenn abgebrochen wurde.
     """
 
-    def __init__(self, eltern, schriften, titel, felder, werte=None, einleitung=None):
+    def __init__(self, eltern, schriften, titel, felder, werte=None, einleitung=None,
+                 vorschau=None):
         super().__init__(eltern)
         self.s = schriften
         self.felder = felder
+        self._vorschau_befehl = vorschau
         self.werte = None
         self._eingaben = {}
         self._fehlerzeilen = {}
@@ -378,9 +386,14 @@ class Formular(tk.Toplevel):
         knopf(fuss, "Speichern", self._speichern, schriften, "haupt",
               padx=18, pady=7).pack(side="right", padx=(6, 18), pady=12)
         knopf(fuss, "Abbrechen", self.destroy, schriften).pack(side="right", pady=12)
-        tk.Label(fuss, text="Enter = nächstes Feld · im letzten Feld speichern · Esc = abbrechen",
-                 bg=FARBEN["erhoben"], fg=FARBEN["gedimmt"],
-                 font=schriften.klein).pack(side="left", padx=18, pady=12)
+        if vorschau:
+            knopf(fuss, "Vorschau im Browser", self._vorschau, schriften,
+                  fg=FARBEN["blau"]).pack(side="right", padx=(0, 6), pady=12)
+        if felder:
+            tk.Label(fuss, text="Enter = nächstes Feld · im letzten Feld speichern · Esc = abbrechen",
+                     bg=FARBEN["erhoben"], fg=FARBEN["gedimmt"], font=schriften.klein,
+                     wraplength=230 if vorschau else 0,
+                     justify="left").pack(side="left", padx=18, pady=12)
 
         self.bind("<Escape>", lambda _: self.destroy())
 
@@ -420,7 +433,7 @@ class Formular(tk.Toplevel):
         if art == "auswahl":
             from tkinter import ttk
             eingabe = ttk.Combobox(eltern, values=feld["optionen"], font=self.s.text,
-                                   state="readonly", width=34)
+                                   state="normal" if feld.get("frei") else "readonly", width=34)
             eingabe.set(wert or (feld["optionen"][0] if feld["optionen"] else ""))
         elif art == "vorlage":
             from tkinter import ttk
@@ -430,7 +443,8 @@ class Formular(tk.Toplevel):
             eingabe.bind("<<ComboboxSelected>>",
                          lambda _, e=eingabe, f=feld: self._vorlage_anwenden(f, e.get()))
         elif art == "mehrzeilig":
-            eingabe = tk.Text(eltern, height=4, width=36, font=self.s.text, wrap="word",
+            eingabe = tk.Text(eltern, height=feld.get("hoehe", 4), width=feld.get("breite", 36),
+                              font=self.s.text, wrap="word",
                               relief="solid", bd=1, bg=FARBEN["karte"], fg=FARBEN["text"])
             eingabe.insert("1.0", wert)
         elif art == "uhrzeit":
@@ -577,6 +591,25 @@ class Formular(tk.Toplevel):
             return eingabe.get("1.0", "end").strip()
         return eingabe.get().strip()
 
+    def _vorschau(self):
+        """Zeigt den Entwurf im Browser - gespeichert wird dabei nichts."""
+        from tkinter import messagebox
+        werte = {f["schluessel"]: self._lies(f["schluessel"])
+                 for f in self.felder if f.get("art") != "vorlage"}
+        for feld in self.felder:
+            pruefer = feld.get("pruefer")
+            wert = werte.get(feld["schluessel"])
+            meldung = pruefer(wert) if (pruefer and wert) else None
+            self._fehlerzeilen[feld["schluessel"]].configure(text=meldung or "")
+            if meldung:
+                return
+        try:
+            meldung = self._vorschau_befehl(werte)
+        except Exception as fehler:          # Vorschau darf das Formular nie kippen
+            meldung = f"Die Vorschau ging nicht: {fehler}"
+        if meldung:
+            messagebox.showinfo("Vorschau", meldung, parent=self)
+
     def _speichern(self):
         werte, fehlerhaft = {}, False
         for feld in self.felder:
@@ -617,9 +650,10 @@ class Formular(tk.Toplevel):
         self.geometry(f"+{max(x, 0)}+{max(y, 0)}")
 
 
-def frage_formular(eltern, schriften, titel, felder, werte=None, einleitung=None):
+def frage_formular(eltern, schriften, titel, felder, werte=None, einleitung=None,
+                   vorschau=None):
     """Zeigt ein Formular und wartet auf die Eingabe. Gibt dict oder None."""
-    fenster = Formular(eltern, schriften, titel, felder, werte, einleitung)
+    fenster = Formular(eltern, schriften, titel, felder, werte, einleitung, vorschau)
     eltern.wait_window(fenster)
     return fenster.werte
 

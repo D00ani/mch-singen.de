@@ -22,6 +22,7 @@ import pflege_hilfen as h
 ROOT = h.ROOT
 DATA_DIR = os.path.join(ROOT, "data")
 AKTUELLES_JS = os.path.join(ROOT, "js", "aktuelles.js")
+INDEX_JS = os.path.join(ROOT, "js", "index.js")
 
 MONATE_DE = ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli",
              "August", "September", "Oktober", "November", "Dezember"]
@@ -162,29 +163,39 @@ def wandle_um(text):
 
 
 def js_referenz_anpassen(dateiname):
-    """Setzt den Dateinamen in js/aktuelles.js auf die neue Datei."""
-    if not os.path.isfile(AKTUELLES_JS):
-        print("  Hinweis: js/aktuelles.js nicht gefunden - Verweis bitte selbst pruefen.")
-        return False
+    """Setzt den Dateinamen in js/aktuelles.js (Kalender-Download) und
+    js/index.js (Winterpause-Hinweis der Startseite) auf die neue Datei.
+    Gibt True zurueck, wenn mindestens eine Datei geaendert wurde."""
+    # Unterseiten holen die Datei mit "../data/", die Startseite mit "data/".
+    muster = re.compile(r"(fetch\(['\"](?:\.\./)?data/)trainingstermine[^'\"]*(['\"]\))")
+    geaendert = False
 
-    inhalt = h.lies_datei(AKTUELLES_JS)
-    muster = re.compile(r"(fetch\(['\"]\.\./data/)trainingstermine[^'\"]*(['\"]\))")
-    treffer = muster.search(inhalt)
-    if not treffer:
-        print("  Hinweis: Verweis auf die Trainingstermine-Datei in js/aktuelles.js nicht gefunden.")
-        return False
+    for pfad in (AKTUELLES_JS, INDEX_JS):
+        name = "js/" + os.path.basename(pfad)
+        if not os.path.isfile(pfad):
+            print(f"  Hinweis: {name} nicht gefunden - Verweis bitte selbst pruefen.")
+            continue
 
-    alt = treffer.group(0)
-    neu = f"{treffer.group(1)}{dateiname}{treffer.group(2)}"
-    if alt == neu:
-        print(f"  js/aktuelles.js zeigt bereits auf {dateiname} - nichts zu tun.")
-        return False
+        inhalt = h.lies_datei(pfad)
+        treffer = muster.search(inhalt)
+        if not treffer:
+            print(f"  Hinweis: Verweis auf die Trainingstermine-Datei in {name} nicht gefunden.")
+            continue
 
-    h.schreibe_datei(AKTUELLES_JS, muster.sub(lambda m: neu, inhalt, count=1))
-    print(f"  js/aktuelles.js: Verweis auf {dateiname} aktualisiert.")
-    print("  WICHTIG: Danach 'Jaehrliches technisches Update' oder build_assets.py")
-    print("  laufen lassen, sonst wirkt die JS-Aenderung nicht (siehe README Abschnitt 9).")
-    return True
+        alt = treffer.group(0)
+        neu = f"{treffer.group(1)}{dateiname}{treffer.group(2)}"
+        if alt == neu:
+            print(f"  {name} zeigt bereits auf {dateiname} - nichts zu tun.")
+            continue
+
+        h.schreibe_datei(pfad, muster.sub(lambda m: neu, inhalt, count=1))
+        print(f"  {name}: Verweis auf {dateiname} aktualisiert.")
+        geaendert = True
+
+    if geaendert:
+        print("  WICHTIG: Danach 'Jaehrliches technisches Update' oder build_assets.py")
+        print("  laufen lassen, sonst wirkt die JS-Aenderung nicht (siehe README Abschnitt 9).")
+    return geaendert
 
 
 def main():

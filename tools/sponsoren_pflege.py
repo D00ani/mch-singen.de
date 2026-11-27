@@ -204,6 +204,106 @@ def freie_logodateien(html):
 
 
 # ------------------------------------------------------------------
+# Logoleiste auf der Startseite ("Unterstuetzt von")
+# ------------------------------------------------------------------
+# Die Leiste ist eine kleine Abschrift der Banden: gleiche Reihenfolge,
+# gleiche Logos, gleiche Anzeigegroesse. Sie wird nach jeder Aenderung an
+# den Banden aus diesen neu gebaut, damit beide nie auseinanderlaufen.
+
+STARTSEITE_HTML = os.path.join(ROOT, "index.html")
+LEISTE_MUSTER = re.compile(
+    r'(?P<auf><div class="sponsor-strip-logos[^"]*">)(?P<inhalt>.*?)(?P<zu>\r?\n[ \t]*</div>)',
+    re.DOTALL)
+LEISTEN_LOGO = re.compile(
+    r'<a class="sponsor-logo" href="([^"]*)"[^>]*>\s*'
+    r'<img src="([^"]*)" alt="([^"]*)" width="(\d+)" height="(\d+)"')
+
+
+def _leisten_eintrag(sponsor):
+    """Was von einer Bande in die Leiste wandert: Link, Logo (WebP, falls es
+    eins gibt), Name und Anzeigegroesse. Pfade ab der Startseite."""
+    masse = re.search(r'width="(\d+)"\s+height="(\d+)"', sponsor["match"].group(0))
+    bild = sponsor["webp"].split(",")[0].split()[0] if sponsor["webp"] else sponsor["bild"]
+    if bild.startswith("../"):
+        bild = bild[3:]
+    return {"link": sponsor["link"], "bild": bild, "name": sponsor["alt"] or sponsor["name"],
+            "breite": masse.group(1) if masse else "100",
+            "hoehe": masse.group(2) if masse else "80"}
+
+
+def _vergleichbar(eintraege):
+    import html as html_modul
+    return [(e["link"], e["bild"], html_modul.unescape(e["name"]), str(e["breite"]),
+             str(e["hoehe"])) for e in eintraege]
+
+
+def leiste_lesen(startseite):
+    treffer = LEISTE_MUSTER.search(startseite)
+    if not treffer:
+        return None
+    return [{"link": l, "bild": b, "name": a, "breite": w, "hoehe": hh}
+            for l, b, a, w, hh in LEISTEN_LOGO.findall(treffer.group("inhalt"))]
+
+
+def leiste_soll(sponsoren_html):
+    return [_leisten_eintrag(s) for s in finde_sponsoren(sponsoren_html)]
+
+
+def leiste_stand():
+    """(passt, Anzahl Logos in der Leiste, Anzahl Banden) - passt ist None,
+    wenn die Leiste auf der Startseite nicht gefunden wurde."""
+    ist = leiste_lesen(h.lies_datei(STARTSEITE_HTML))
+    soll = leiste_soll(lade_html())
+    if ist is None:
+        return None, 0, len(soll)
+    return _vergleichbar(ist) == _vergleichbar(soll), len(ist), len(soll)
+
+
+def baue_leiste(startseite, eintraege):
+    """Gibt die Startseite mit neu gebauter Leiste zurueck."""
+    treffer = LEISTE_MUSTER.search(startseite)
+    if not treffer:
+        raise ValueError("Die Logoleiste (sponsor-strip-logos) steht nicht mehr auf der Startseite.")
+    nl = "\r\n" if "\r\n" in startseite else "\n"
+    einrueckung = re.search(r"([ \t]*)</div>$", treffer.group("zu")).group(1) + " " * 4
+    zeilen = []
+    for e in eintraege:
+        if e["link"] in ("", "#"):
+            zeilen.append(f'{einrueckung}<span class="sponsor-logo" title="{e["name"]}">')
+            schluss = f"{einrueckung}</span>"
+        else:
+            zeilen.append(f'{einrueckung}<a class="sponsor-logo" href="{e["link"]}" target="_blank" '
+                          f'rel="noopener noreferrer" title="{e["name"]}">')
+            schluss = f"{einrueckung}</a>"
+        zeilen.append(f'{einrueckung}    <img src="{e["bild"]}" alt="{e["name"]}" width="{e["breite"]}" '
+                      f'height="{e["hoehe"]}" loading="lazy" decoding="async">')
+        zeilen.append(schluss)
+    inhalt = nl + nl.join(zeilen) if zeilen else ""
+    return startseite[:treffer.start("inhalt")] + inhalt + startseite[treffer.end("inhalt"):]
+
+
+def _startseite_melden():
+    """Fuer das Terminal-Werkzeug: Leiste nachziehen und Bescheid geben."""
+    try:
+        if startseite_abgleichen():
+            print("Logoleiste der Startseite nachgezogen.")
+    except ValueError as fehler:
+        print(f"Hinweis: {fehler}")
+
+
+def startseite_abgleichen():
+    """Baut die Leiste aus den Banden neu, falls sie abweicht. Gibt True
+    zurueck, wenn die Startseite geschrieben wurde."""
+    startseite = h.lies_datei(STARTSEITE_HTML)
+    ist = leiste_lesen(startseite)
+    soll = leiste_soll(lade_html())
+    if ist is None or _vergleichbar(ist) == _vergleichbar(soll):
+        return False
+    h.schreibe_datei(STARTSEITE_HTML, baue_leiste(startseite, soll))
+    return True
+
+
+# ------------------------------------------------------------------
 # Aktionen
 # ------------------------------------------------------------------
 
@@ -262,6 +362,7 @@ def sponsor_hinzufuegen():
     h.schreibe_datei(SPONSOREN_HTML,
                      fuege_sponsor_ein(html, neue_karte, sponsoren, stelle))
     print(f"\nGespeichert in {os.path.relpath(SPONSOREN_HTML, ROOT)}")
+    _startseite_melden()
 
 
 def sponsor_bearbeiten():
@@ -307,6 +408,7 @@ def sponsor_bearbeiten():
 
     h.schreibe_datei(SPONSOREN_HTML, ersetze_sponsor(html, sponsor, neue_karte))
     print(f"\nGespeichert in {os.path.relpath(SPONSOREN_HTML, ROOT)}")
+    _startseite_melden()
 
 
 def sponsor_loeschen():
@@ -326,6 +428,7 @@ def sponsor_loeschen():
 
     h.schreibe_datei(SPONSOREN_HTML, entferne_sponsor(html, sponsor))
     print(f"\nGeloescht. {os.path.relpath(SPONSOREN_HTML, ROOT)} aktualisiert.")
+    _startseite_melden()
 
 
 def groessen_neu_berechnen():
@@ -374,6 +477,7 @@ def groessen_neu_berechnen():
 
     h.schreibe_datei(SPONSOREN_HTML, html)
     print(f"\nGespeichert in {os.path.relpath(SPONSOREN_HTML, ROOT)}")
+    _startseite_melden()
 
 
 # ------------------------------------------------------------------

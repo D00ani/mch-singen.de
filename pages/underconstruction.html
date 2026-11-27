@@ -5,6 +5,8 @@
     <link rel="apple-touch-icon" href="../media/logos/favicon.png">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Sicherheitsrichtlinie: erlaubt nur eigene Skripte und die Dienste, die die Seite wirklich nutzt (Open-Meteo, FormSubmit, Google-Karten). Neue fremde Dienste hier ergaenzen. -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; media-src 'self'; connect-src 'self' https://api.open-meteo.com https://formsubmit.co; frame-src https://www.google.com; form-action 'self' https://formsubmit.co; object-src 'none'; base-uri 'self'">
     <meta name="robots" content="noindex, nofollow">
     <meta http-equiv="refresh" content="0;url=../index.html">
     <link rel="canonical" href="https://mch-singen.de/pages/underconstruction.html">
@@ -198,7 +200,7 @@
                 <h2 class="footer-heading footer-heading--spaced">Kart-Training</h2>
                 <ul class="footer-contact">
                     <li><i class="fa-solid fa-stopwatch" aria-hidden="true"></i><span><span data-pflege="training.kart-tag">Samstags</span> <span data-pflege="training.kart-zeit">9:00 &ndash; 13:30 Uhr</span></span></li>
-                    <li><i class="fa-solid fa-location-dot" aria-hidden="true"></i><span>Münchriedstraße 10<br>78224 Singen (Hohentwiel)</span></li>
+                    <li><i class="fa-solid fa-location-dot" aria-hidden="true"></i><span><span data-pflege="adresse.gelaende-strasse">Münchriedstraße 10</span><br><span data-pflege="adresse.gelaende-ort">78224 Singen (Hohentwiel)</span></span></li>
                 </ul>
             </div>
             <div class="footer-col">

@@ -5,6 +5,8 @@
     <link rel="apple-touch-icon" href="../media/logos/favicon.png">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Sicherheitsrichtlinie: erlaubt nur eigene Skripte und die Dienste, die die Seite wirklich nutzt (Open-Meteo, FormSubmit, Google-Karten). Neue fremde Dienste hier ergaenzen. -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; media-src 'self'; connect-src 'self' https://api.open-meteo.com https://formsubmit.co; frame-src https://www.google.com; form-action 'self' https://formsubmit.co; object-src 'none'; base-uri 'self'">
     <link rel="canonical" href="https://mch-singen.de/pages/impressum-datenschutz.html">
     <meta name="description" content="Impressum und Datenschutzerklärung des MCH Singen Motorsportclubs (DSGVO).">
     <meta property="og:type" content="website">
@@ -134,8 +136,8 @@
                 <h2 style="margin-top:0;">Angaben gemäß § 5 TMG</h2>
                 <p>
                     <strong>MCH Singen Motorsportclub "Hohentwiel" e.V. im DMV</strong><br>
-                    Kleiststr. 3<br>
-                    78239 Rielasingen
+                    <span data-pflege="adresse.verein-strasse">Kleiststr. 3</span><br>
+                    <span data-pflege="adresse.verein-ort">78239 Rielasingen</span>
                 </p>
                 <h2>Vereinsregister</h2>
                 <p>
@@ -144,7 +146,7 @@
                 </p>
                 <h2>Kontakt</h2>
                 <p>
-                    Telefon: 07731/2 34 22<br>
+                    Telefon: <span data-pflege="adresse.telefon">07731 / 2 34 22</span><br>
                     E-Mail: <a class="mail-link" data-name="jochen.isak" data-domain="t-online.de" style="color: var(--primary-blue); text-decoration: none;">jochen.isak [at] t-online.de</a>
                 </p>
             </div>
@@ -157,9 +159,9 @@
             <h3>Verantwortlicher</h3>
             <p>
                 MCH Singen Motorsportclub "Hohentwiel" e.V. im DMV<br>
-                Kleiststr. 3<br>
-                78239 Rielasingen<br><br>
-                Telefon: 07731/2 34 22<br>
+                <span data-pflege="adresse.verein-strasse">Kleiststr. 3</span><br>
+                <span data-pflege="adresse.verein-ort">78239 Rielasingen</span><br><br>
+                Telefon: <span data-pflege="adresse.telefon">07731 / 2 34 22</span><br>
                 E-Mail: <a class="mail-link" data-name="jochen.isak" data-domain="t-online.de" style="color: var(--primary-blue); text-decoration: none;">jochen.isak [at] t-online.de</a>
             </p>
 
@@ -283,7 +285,7 @@
                     <h2 class="footer-heading footer-heading--spaced">Kart-Training</h2>
                     <ul class="footer-contact">
                         <li><i class="fa-solid fa-stopwatch" aria-hidden="true"></i><span><span data-pflege="training.kart-tag">Samstags</span> <span data-pflege="training.kart-zeit">9:00 &ndash; 13:30 Uhr</span></span></li>
-                        <li><i class="fa-solid fa-location-dot" aria-hidden="true"></i><span>Münchriedstraße 10<br>78224 Singen (Hohentwiel)</span></li>
+                        <li><i class="fa-solid fa-location-dot" aria-hidden="true"></i><span><span data-pflege="adresse.gelaende-strasse">Münchriedstraße 10</span><br><span data-pflege="adresse.gelaende-ort">78224 Singen (Hohentwiel)</span></span></li>
                     </ul>
                 </div>
                 <div class="footer-col">

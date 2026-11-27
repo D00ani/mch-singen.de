@@ -32,39 +32,56 @@ ROOT = h.ROOT
 
 class SeitentexteSeite(Seite):
     titel = "Texte & Zahlen"
-    untertitel = ("Kurze Texte, Zahlen, Trainingszeiten und Preise der Webseite. Steht etwas "
-                  "an mehreren Stellen (z. B. die Trainingszeit im Fußbereich jeder Seite), "
-                  "ändert ein Speichern alle Stellen gemeinsam.")
+    untertitel = ("Kurze Texte, Zahlen, Adressen, Trainingszeiten, Preise und die Texte der "
+                  "Kart- und Trial-Seite. Steht etwas an mehreren Stellen (z. B. im Fußbereich "
+                  "jeder Seite), ändert ein Speichern alle Stellen gemeinsam.")
+
+    ALLE = "Alle Bereiche"
 
     def baue(self):
         self.knopf("Shop-Link", self.shop)
         self.knopf("Bearbeiten", self.bearbeiten, "haupt")
         self.baum = None
-        self.schluessel = []
+        self.sichtbar = []
+
+        from tkinter import ttk
+        leiste = tk.Frame(self.fest, bg=B.FARBEN["grund"])
+        leiste.pack(fill="x", pady=(0, 4))
+        tk.Label(leiste, text="Bereich:", bg=B.FARBEN["grund"], fg=B.FARBEN["text"],
+                 font=self.s.text).pack(side="left", padx=(0, 8))
+        gruppen = [self.ALLE] + list(dict.fromkeys(f[0] for f in seitentexte.FELDER))
+        self.bereich = ttk.Combobox(leiste, values=gruppen, state="readonly", width=22,
+                                    font=self.s.text)
+        self.bereich.set(self.ALLE)
+        self.bereich.pack(side="left")
+        self.bereich.bind("<<ComboboxSelected>>", lambda _: self.aktualisieren())
 
     def aktualisieren(self):
         self.leeren()
         werte = seitentexte.lies_alle()
 
         art, adresse = seitentexte.shop_stand()
-        B.abschnitt(self.inhalt, self.s, "Shop-Link", "Kopfzeile, Menü und Fußbereich aller Seiten")
-        if art == seitentexte.SHOP_AUFFANG:
-            B.karte(self.inhalt, self.s, uebersicht.HINWEIS,
-                    "Zeigt auf die Auffangseite „Shop nicht erreichbar“",
-                    "Läuft der Shop wieder, hier auf die Adresse des Shops umstellen.",
-                    "Umstellen", self.shop)
-        else:
-            B.karte(self.inhalt, self.s, uebersicht.INFO, f"Zeigt auf den Shop: {adresse}",
-                    "Geht der Shop nicht, hier auf die Auffangseite zurückstellen.",
-                    "Umstellen", self.shop)
+        if self.bereich.get() == self.ALLE:
+            B.abschnitt(self.inhalt, self.s, "Shop-Link", "Kopfzeile, Menü und Fußbereich aller Seiten")
+            if art == seitentexte.SHOP_AUFFANG:
+                B.karte(self.inhalt, self.s, uebersicht.HINWEIS,
+                        "Zeigt auf die Auffangseite „Shop nicht erreichbar“",
+                        "Läuft der Shop wieder, hier auf die Adresse des Shops umstellen.",
+                        "Umstellen", self.shop)
+            else:
+                B.karte(self.inhalt, self.s, uebersicht.INFO, f"Zeigt auf den Shop: {adresse}",
+                        "Geht der Shop nicht, hier auf die Auffangseite zurückstellen.",
+                        "Umstellen", self.shop)
 
         B.abschnitt(self.inhalt, self.s, "Texte und Zahlen",
                     "Doppelklick oder „Bearbeiten“ - die Änderung gilt an allen genannten Stellen")
-        self.schluessel = [f[1] for f in seitentexte.FELDER]
+        self.sichtbar = [n for n, f in enumerate(seitentexte.FELDER)
+                         if self.bereich.get() in (self.ALLE, f[0])]
         self.baum = self.tabelle(
             self.inhalt, ("Bereich", "Was", "Steht jetzt da", "Wo"), (110, 230, 300, 130),
-            hoehe=min(len(self.schluessel), 16), zeilenzahl=len(self.schluessel))
-        for nummer, (gruppe, schluessel, beschriftung, _, _) in enumerate(seitentexte.FELDER):
+            hoehe=min(len(self.sichtbar), 16), zeilenzahl=len(self.sichtbar))
+        for nummer in self.sichtbar:
+            gruppe, schluessel, beschriftung, _, _ = seitentexte.FELDER[nummer]
             eintrag = werte.get(schluessel)
             if not eintrag:
                 wo, wert = "nicht gefunden", "-"
@@ -72,10 +89,17 @@ class SeitentexteSeite(Seite):
                 anzahl = len(eintrag["stellen"])
                 wo = (f"{anzahl} Stelle" if anzahl == 1 else f"{anzahl} Stellen")
                 wo += " - unterschiedlich!" if eintrag["abweichend"] else ""
-                wert = eintrag["wert"]
+                wert = eintrag["wert"].replace("\n", " / ")
             self.baum.insert("", "end", iid=str(nummer),
                              values=(gruppe, beschriftung, wert, wo))
         self.baum.bind("<Double-1>", lambda _: self.bearbeiten())
+
+        tk.Label(self.inhalt, bg=B.FARBEN["grund"], fg=B.FARBEN["gedimmt"],
+                 font=self.s.klein, justify="left", anchor="w", wraplength=640,
+                 text=("In den Texten geht **fett** für Fettschrift; ein Zeilenwechsel im Feld "
+                       "wird auf der Seite ein Zeilenumbruch. Links und Bilder gehen hier nicht - "
+                       "dafür „Suchen & Ersetzen“ oder die jeweilige Pflegeseite.")).pack(
+                           anchor="w", pady=(10, 0))
 
     def bearbeiten(self):
         if not self.baum or not self.baum.selection():
@@ -94,9 +118,11 @@ class SeitentexteSeite(Seite):
         werte = B.frage_formular(
             self.rahmen, self.s, beschriftung,
             [{"schluessel": "wert", "beschriftung": beschriftung, "art": art,
-              "hinweis": hinweis, "pruefer": seitentexte.pruefe_wert}],
+              "hinweis": hinweis, "pruefer": seitentexte.pruefer_fuer(schluessel),
+              "hoehe": min(10, max(3, len(eintrag["wert"]) // 50 + 2)), "breite": 54}],
             {"wert": eintrag["wert"]},
-            einleitung=f"{gruppe} · steht hier: {wo}")
+            einleitung=f"{gruppe} · steht hier: {wo}",
+            vorschau=lambda w: seitentexte.vorschau_zeigen(schluessel, w["wert"]))
         if not werte or werte["wert"] == eintrag["wert"]:
             return
         seitentexte.setze(schluessel, werte["wert"])

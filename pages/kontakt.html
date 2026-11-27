@@ -5,6 +5,8 @@
     <link rel="apple-touch-icon" href="../media/logos/favicon.png">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Sicherheitsrichtlinie: erlaubt nur eigene Skripte und die Dienste, die die Seite wirklich nutzt (Open-Meteo, FormSubmit, Google-Karten). Neue fremde Dienste hier ergaenzen. -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; media-src 'self'; connect-src 'self' https://api.open-meteo.com https://formsubmit.co; frame-src https://www.google.com; form-action 'self' https://formsubmit.co; object-src 'none'; base-uri 'self'">
     <link rel="canonical" href="https://mch-singen.de/pages/kontakt.html">
     <meta name="description" content="Schreib uns eine Nachricht - Kontaktformular und Kontaktdaten des MCH Singen Motorsportclubs.">
     <meta property="og:type" content="website">
@@ -138,7 +140,7 @@
                     <div class="ci-icon"><i class="fa-solid fa-location-dot"></i></div>
                     <div class="ci-text">
                         <strong>Postanschrift</strong>
-                        <span>MCH Singen e.V. im DMV<br>1. Vors.: Jochen Isak<br>Kleiststr. 3, 78239 Rielasingen</span>
+                        <span>MCH Singen e.V. im DMV<br>1. Vors.: Jochen Isak<br><span data-pflege="adresse.verein-strasse">Kleiststr. 3</span>, <span data-pflege="adresse.verein-ort">78239 Rielasingen</span></span>
                     </div>
                 </div>
 
@@ -146,7 +148,7 @@
                     <div class="ci-icon"><i class="fa-solid fa-phone"></i></div>
                     <div class="ci-text">
                         <strong>Telefon</strong>
-                        <span>07731 / 2 34 22</span>
+                        <span data-pflege="adresse.telefon">07731 / 2 34 22</span>
                     </div>
                 </div>
 
@@ -292,7 +294,7 @@
                 <h2 class="footer-heading footer-heading--spaced">Kart-Training</h2>
                 <ul class="footer-contact">
                     <li><i class="fa-solid fa-stopwatch" aria-hidden="true"></i><span><span data-pflege="training.kart-tag">Samstags</span> <span data-pflege="training.kart-zeit">9:00 &ndash; 13:30 Uhr</span></span></li>
-                    <li><i class="fa-solid fa-location-dot" aria-hidden="true"></i><span>Münchriedstraße 10<br>78224 Singen (Hohentwiel)</span></li>
+                    <li><i class="fa-solid fa-location-dot" aria-hidden="true"></i><span><span data-pflege="adresse.gelaende-strasse">Münchriedstraße 10</span><br><span data-pflege="adresse.gelaende-ort">78224 Singen (Hohentwiel)</span></span></li>
                 </ul>
             </div>
             <div class="footer-col">

@@ -565,6 +565,9 @@ class SaisonwechselSeite(AssistentSeite):
          "trainingstermine"),
         ("Renntermine der neuen Saison",
          "Kart- und Trial-Termine für Countdown und Kalender-Download.", "termine"),
+        ("Jahrgänge der Kart-Klassen weiterschieben",
+         "Auf der Kart-Seite rutschen die Jugendklassen einen Jahrgang weiter - "
+         "dort der Knopf „Jahrgänge +1“.", "klassen"),
         ("Diagramm der abgeschlossenen Saison einfrieren",
          "Endwerte eintragen und die Überschrift auf die abgelaufene Saison setzen. "
          "Läuft im Terminal - die Diagramme sind der einzige Teil ohne Fensterseite.",

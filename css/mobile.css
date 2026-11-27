@@ -897,3 +897,32 @@
         aside nav ul li a:active { transform: none; }
     }
 }
+
+/* =========================================
+   TREFFERFLAECHEN FUER DEN FINGER
+   Breadcrumb-Knopf (26px), Klassen-Knoepfe auf Live (35px) und die
+   Aktions-Knoepfe wie "Kurs-Planer oeffnen" (32px) waren mit dem Finger
+   knapp zu treffen. Ein unsichtbarer Rand per ::after vergroessert die
+   Flaeche auf gut 40px - das Aussehen bleibt gleich. Nur bei
+   Fingerbedienung, mit der Maus aendert sich nichts.
+   ========================================= */
+@media (pointer: coarse) {
+    .breadcrumb-gruppe-btn,
+    .btn-filter,
+    .action-btn {
+        position: relative;
+    }
+
+    .breadcrumb-gruppe-btn::after,
+    .btn-filter::after,
+    .action-btn::after {
+        content: '';
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 50%;
+        height: 44px;
+        min-height: 100%;
+        transform: translateY(-50%);
+    }
+}

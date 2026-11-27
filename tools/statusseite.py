@@ -33,6 +33,8 @@ KOPF = """<!DOCTYPE html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- Sicherheitsrichtlinie: die Statusseite hat keine Skripte und laedt nichts von aussen. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; img-src 'self' data:; base-uri 'none'; form-action 'none'">
 <meta name="robots" content="noindex, nofollow">
 <title>Status - MCH Singen</title>
 <style>

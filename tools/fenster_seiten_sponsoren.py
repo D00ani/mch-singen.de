@@ -118,6 +118,25 @@ class SponsorenSeite(Seite):
                              values=(B.lesbar(sponsor["name"]), ziel,
                                      sponsor["email"] or "-", groesse, logo))
 
+        passt, in_leiste, banden = sp.leiste_stand()
+        if passt is None:
+            B.karte(self.inhalt, self.s, uebersicht.HINWEIS,
+                    "Logoleiste der Startseite nicht gefunden",
+                    "Der Bereich „Unterstützt von“ auf index.html wurde umgebaut - "
+                    "er wird nicht mehr automatisch nachgezogen.")
+        elif passt:
+            tk.Label(self.inhalt, bg=B.FARBEN["grund"], fg=B.FARBEN["gedimmt"],
+                     font=self.s.klein, anchor="w",
+                     text=f"Startseite „Unterstützt von“: {in_leiste} Logos, gleiche Reihenfolge "
+                          "- wird nach jeder Änderung hier automatisch nachgezogen.").pack(
+                         anchor="w", pady=(10, 0))
+        else:
+            B.karte(self.inhalt, self.s, uebersicht.FAELLIG,
+                    "Logoleiste der Startseite weicht ab",
+                    f"Dort stehen {in_leiste} Logos, hier {banden} Banden (oder Reihenfolge, "
+                    "Link bzw. Größe unterscheiden sich).",
+                    "Startseite abgleichen", self.startseite_abgleichen)
+
         B.knopf(self.inhalt, "Alle Logo-Größen neu berechnen", self.groessen_neu,
                 self.s).pack(anchor="w", pady=(12, 0))
         tk.Label(self.inhalt, bg=B.FARBEN["grund"], fg=B.FARBEN["gedimmt"],
@@ -282,6 +301,7 @@ class SponsorenSeite(Seite):
 
         h.schreibe_datei(sp.SPONSOREN_HTML,
                          sp.fuege_sponsor_ein(html, karte, sponsoren, stelle))
+        self._startseite_nachziehen()
         self.aktualisieren()
         self.app.fuss_auffrischen()
 
@@ -373,6 +393,7 @@ class SponsorenSeite(Seite):
 
         h.schreibe_datei(sp.SPONSOREN_HTML,
                          sp.ersetze_sponsor(html, aktuell[nummer], karte))
+        self._startseite_nachziehen()
         self.aktualisieren()
         self.app.fuss_auffrischen()
 
@@ -490,6 +511,7 @@ class SponsorenSeite(Seite):
             if nummer < len(aktuell):
                 h.schreibe_datei(sp.SPONSOREN_HTML,
                                  sp.entferne_sponsor(html, aktuell[nummer]))
+                self._startseite_nachziehen()
 
         elif self._linkliste():
             liste = self._linkliste()
@@ -503,6 +525,23 @@ class SponsorenSeite(Seite):
                 del eintraege[nummer]
                 sp.schreibe_links(html, start, ende, eintraege, inhalt)
 
+        self.aktualisieren()
+        self.app.fuss_auffrischen()
+
+    # -------------------------------------------------- Startseite
+    def _startseite_nachziehen(self):
+        """Logoleiste der Startseite an die Banden anpassen - still, wenn es
+        klappt; eine Warnung, wenn die Leiste nicht mehr zu finden ist."""
+        try:
+            sp.startseite_abgleichen()
+        except (OSError, ValueError) as fehler:
+            messagebox.showwarning("Startseite nicht nachgezogen", str(fehler))
+
+    def startseite_abgleichen(self):
+        if sp.startseite_abgleichen():
+            messagebox.showinfo("Startseite abgeglichen",
+                                "Die Logoleiste „Unterstützt von“ zeigt jetzt dieselben "
+                                "Sponsoren in derselben Reihenfolge wie die Banden.")
         self.aktualisieren()
         self.app.fuss_auffrischen()
 
@@ -545,5 +584,6 @@ class SponsorenSeite(Seite):
             html = sp.ersetze_sponsor(html, sponsor, karte)
 
         h.schreibe_datei(sp.SPONSOREN_HTML, html)
+        self._startseite_nachziehen()
         self.aktualisieren()
         self.app.fuss_auffrischen()

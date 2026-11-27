@@ -996,6 +996,17 @@ body.dark-mode .skill-bar-bg {
     margin: 20px 0;
 }
 
+/* Zweite Zeile der Winterpause-Meldung ("Die Termine fuer ... folgen") */
+.countdown-msg-zusatz {
+    display: block;
+    margin-top: 6px;
+    font-family: var(--font-body);
+    font-size: var(--text-base);
+    font-weight: 400;
+    color: inherit;
+    opacity: 0.85;
+}
+
 /* Sichtbarkeit steuert der .pdf-wrapper (per JS) - hier kein display:none,
    sonst bleibt der Button auch bei eingeblendetem Wrapper unsichtbar */
 .countdown-pdf-btn {

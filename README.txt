@@ -312,6 +312,17 @@ Im Header/Footer wird die kleine Version mch-logo-128.png verwendet (Ladezeit!).
 - LADEZEIT: Wenn du etwas hochlädst, dauert es 1-3 Minuten, bis die Änderungen online sind.
 - BROWSER-CACHE: Drücke auf der Webseite Strg + F5 (oder Cmd + Shift + R am Mac),
   um das Laden der neuesten Version zu erzwingen!
+- VERÖFFENTLICHT WIRD NUR DIE WEBSEITE: .github/workflows/webseite.yml packt
+  bei jedem Push auf main alles außer tools/, README.txt und .htaccess
+  zusammen und stellt es online. Voraussetzung ist die Einstellung
+  Settings -> Pages -> Source: "GitHub Actions" im Repo mch-singen.de.
+  Ob es geklappt hat, zeigt der Reiter "Actions" auf GitHub.
+- SICHERHEITSRICHTLINIE (Content-Security-Policy): Jede Seite hat im <head>
+  ein <meta http-equiv="Content-Security-Policy" ...>. Es lässt nur Skripte
+  von der eigenen Seite zu, dazu Open-Meteo (Wetter), FormSubmit (Formular)
+  und Google-Karten. Wird ein NEUER fremder Dienst eingebunden (z. B. ein
+  YouTube-Video), muss seine Adresse dort auf ALLEN Seiten ergänzt werden,
+  sonst blockiert der Browser ihn still.
 
 -------------------------------------------------------
 9. PERFORMANCE-BUILD (WICHTIG BEI CSS/JS-ÄNDERUNGEN!)

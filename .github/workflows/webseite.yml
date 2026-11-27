@@ -1,0 +1,75 @@
+# Veroeffentlicht mch-singen.de - aber nur die Webseite selbst.
+#
+# Bisher hat GitHub Pages den ganzen Branch main ausgeliefert, damit waren
+# auch tools/ (die Pflege-Skripte) und README.txt oeffentlich abrufbar.
+# Dieser Ablauf kopiert nur die Dateien der Webseite in ein Paket und
+# veroeffentlicht das.
+#
+# WIRKT ERST NACH EINER EINSTELLUNG AUF GITHUB:
+#   Repo mch-singen.de -> Settings -> Pages -> "Build and deployment"
+#   -> Source: "GitHub Actions" (statt "Deploy from a branch").
+# Solange dort noch "Deploy from a branch" steht, bleibt alles wie bisher
+# und dieser Ablauf schlaegt beim Schritt "Veroeffentlichen" nur fehl.
+# Die eigene Domain (mch-singen.de) bleibt in den Pages-Einstellungen
+# eingetragen und muss nicht neu gesetzt werden.
+#
+# Im Beta-Repo (mch_singen_beta) laeuft er nicht - siehe "if" unten.
+
+name: Webseite veroeffentlichen
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Das Live-Timing pusht am Renntag oft. Es wartet hoechstens ein Lauf, ein
+# neuerer ersetzt einen wartenden; ein laufendes Veroeffentlichen wird
+# nicht abgebrochen.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  veroeffentlichen:
+    if: github.repository == 'D00ani/mch-singen.de'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Nur die Webseiten-Dateien zusammenstellen
+        run: |
+          mkdir _site
+          # Alles kopieren ausser Pflege-Werkzeugen, Anleitung und Repo-Dateien.
+          rsync -a ./ _site/ \
+            --exclude '.git/' \
+            --exclude '.github/' \
+            --exclude '.gitignore' \
+            --exclude '.htaccess' \
+            --exclude '.pflege-sicherungen/' \
+            --exclude 'tools/' \
+            --exclude 'README.txt' \
+            --exclude '_site/' \
+            --exclude '*.py' \
+            --exclude '*.bat'
+          # Sicherheitsnetz: bricht ab, falls doch etwas Internes mitgeht.
+          test ! -e _site/tools
+          test ! -e _site/README.txt
+          echo "Dateien im Paket: $(find _site -type f | wc -l)"
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+      - name: Veroeffentlichen
+        id: deployment
+        uses: actions/deploy-pages@v4

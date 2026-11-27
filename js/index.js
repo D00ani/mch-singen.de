@@ -339,12 +339,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 .catch(() => show(false));
         }
 
-        setInterval(() => {
+        // Winterpause: Jahr des letzten Termins der Datei. Steht noch nichts
+        // drin, gilt das laufende Jahr.
+        const letztesJahr = dates.length
+            ? new Date(Math.max(...dates.map(d => d.timestamp))).getFullYear()
+            : new Date().getFullYear();
+        const saisonEndeHtml = `Saison ${letztesJahr} beendet`
+            + `<span class="countdown-msg-zusatz">Die Termine für ${letztesJahr + 1}`
+            + ` folgen hier, sobald sie feststehen.</span>`;
+
+        function takt() {
             const ev = getNextEvent(dates);
 
             if (!ev) {
                 if (cdBoxEl) cdBoxEl.style.display = 'none';
-                if (cdMsgEl) { cdMsgEl.innerHTML = 'Saison beendet!'; cdMsgEl.style.display = 'block'; }
+                if (cdMsgEl) { setzeHtml(cdMsgEl, saisonEndeHtml); cdMsgEl.style.display = 'block'; }
                 if (headEl)  headEl.style.display = 'none';
                 if (pdfWrapper) pdfWrapper.style.display = 'none';
                 return;
@@ -396,7 +405,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (cdBoxEl) cdBoxEl.style.display = 'flex';
                 if (cdMsgEl) cdMsgEl.style.display  = 'none';
             }
-        }, 1000);
+        }
+
+        // Sofort einmal zeichnen, sonst bleibt der Countdown beim Laden
+        // eine Sekunde leer.
+        takt();
+        setInterval(takt, 1000);
     }
 
 
@@ -512,6 +526,63 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         })
         .catch(() => {});
+
+
+    // ==========================================
+    // 5b. WINTERPAUSE BEIM KART-TRAINING
+    // Die Ueberschrift "Komm vorbei - Training Samstags" steht das ganze
+    // Jahr da. Liegt laut Trainingsplan in den naechsten 8 Tagen kein
+    // Training, erscheint darunter ein Hinweis - sonst faehrt im Winter
+    // jemand umsonst hin. Den Dateinamen haelt tools/trainingstermine_import.py
+    // aktuell (wie in js/aktuelles.js).
+    // Format pro Zeile: Tag;Monat;Jahr;Startzeit-Endzeit;Gruppe
+    // ==========================================
+    (function trainingPause() {
+        const hinweis = document.getElementById('training-pause-kart');
+        if (!hinweis) return;
+
+        const MONATSNUMMER = {
+            januar: 0, january: 0, februar: 1, february: 1, märz: 2, maerz: 2, march: 2,
+            april: 3, mai: 4, may: 4, juni: 5, june: 5, juli: 6, july: 6,
+            august: 7, september: 8, oktober: 9, october: 9, november: 10,
+            dezember: 11, december: 11,
+        };
+
+        fetch('data/trainingstermine2026.txt')
+            .then(r => { if (!r.ok) throw new Error(); return r.text(); })
+            .then(text => {
+                const termine = [];
+                text.split('\n').forEach(zeile => {
+                    const p = zeile.split(';').map(s => s.trim());
+                    if (p.length < 4) return;
+                    const monat = MONATSNUMMER[p[1].toLowerCase()];
+                    if (monat === undefined) return;
+                    // Ende des Trainings zaehlt, damit es am Trainingstag selbst
+                    // nicht schon ab 9 Uhr als vorbei gilt.
+                    const ende = (p[3].split('-')[1] || p[3].split('-')[0]).split(':');
+                    const ts = new Date(+p[2], monat, +p[0], +ende[0] || 23, +ende[1] || 59).getTime();
+                    if (!isNaN(ts)) termine.push(ts);
+                });
+                if (!termine.length) return;
+
+                const jetzt = Date.now();
+                const naechster = termine.filter(ts => ts >= jetzt).sort((a, b) => a - b)[0];
+                const ACHT_TAGE = 8 * 24 * 60 * 60 * 1000;
+                if (naechster && naechster - jetzt <= ACHT_TAGE) return;
+
+                if (naechster) {
+                    const datum = new Date(naechster).toLocaleDateString('de-DE',
+                        { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+                    hinweis.textContent = `Gerade ist Trainingspause. Nächstes Training: ${datum}.`;
+                } else {
+                    const jahr = new Date(Math.max(...termine)).getFullYear() + 1;
+                    hinweis.textContent = `Gerade ist Winterpause. Die Trainingstermine für ${jahr} `
+                        + 'stehen hier, sobald sie feststehen.';
+                }
+                hinweis.hidden = false;
+            })
+            .catch(() => {});
+    })();
 
 
     // ==========================================

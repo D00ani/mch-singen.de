@@ -72,9 +72,14 @@ class Seite:
         tk.Label(links, text=self.titel, bg=B.FARBEN["grund"], fg=B.FARBEN["text"],
                  font=self.s.titel, anchor="w").pack(anchor="w")
         if self.untertitel:
-            tk.Label(links, text=self.untertitel, bg=B.FARBEN["grund"],
-                     fg=B.FARBEN["gedimmt"], font=self.s.klein, anchor="w",
-                     justify="left", wraplength=520).pack(anchor="w")
+            unter = tk.Label(links, text=self.untertitel, bg=B.FARBEN["grund"],
+                             fg=B.FARBEN["gedimmt"], font=self.s.klein, anchor="w",
+                             justify="left", wraplength=520)
+            unter.pack(anchor="w")
+            # Bei vielen Knoepfen bleibt weniger Platz - dann frueher umbrechen
+            # statt rechts abzuschneiden
+            links.bind("<Configure>", lambda e: unter.configure(
+                wraplength=max(240, min(520, e.width - 4))))
 
     def knopf(self, text, befehl, art="neben"):
         k = B.knopf(self.aktionen, text, befehl, self.s, art)

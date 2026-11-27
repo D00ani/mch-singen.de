@@ -955,14 +955,37 @@ document.addEventListener('DOMContentLoaded', () => {
         // Grosser Bildschirm: laden und losspielen wie bisher.
         // matchMedia statt Fensterbreite, damit auch ein gedrehtes Tablet
         // richtig einsortiert wird.
+        // Geladen wird aber erst, wenn das Video ins Bild kommt - vorher
+        // kamen die 8 MB bei jedem Aufruf, auch wenn niemand bis hierher
+        // scrollte. Wer Datensparen oder "weniger Bewegung" eingestellt hat,
+        // bekommt nur das Standbild; ein Klick auf Abspielen laedt es dann.
         if (window.matchMedia('(min-width: 769px)').matches) {
-            video.preload = 'auto';
-            video.autoplay = true;
-            quelleSetzen();
-            // play() kann abgelehnt werden (Energiesparmodus, Datensparmodus).
-            // Dann bleibt einfach das Standbild mit Abspielknopf stehen.
-            const versuch = video.play();
-            if (versuch && typeof versuch.catch === 'function') versuch.catch(() => {});
+            const sparen = navigator.connection?.saveData
+                || window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            // Abspielknopf, bevor die Quelle gesetzt ist: Quelle nachladen
+            // und erneut starten (das Laden haelt die Wiedergabe sonst an).
+            video.addEventListener('play', () => {
+                if (video.src) return;
+                losspielen();
+            });
+
+            function losspielen() {
+                video.preload = 'auto';
+                quelleSetzen();
+                // play() kann abgelehnt werden (Energiesparmodus). Dann
+                // bleibt einfach das Standbild mit Abspielknopf stehen.
+                const versuch = video.play();
+                if (versuch && typeof versuch.catch === 'function') versuch.catch(() => {});
+            }
+
+            if (sparen) return;
+            if (!('IntersectionObserver' in window)) { losspielen(); return; }
+            const beobachter = new IntersectionObserver(eintraege => {
+                if (!eintraege.some(e => e.isIntersecting)) return;
+                beobachter.disconnect();
+                losspielen();
+            }, { rootMargin: '200px 0px' });
+            beobachter.observe(video);
             return;
         }
 

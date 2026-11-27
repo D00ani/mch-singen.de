@@ -167,7 +167,9 @@ async function ladeRenntermineICS() {
 }
 
 // ---- Trial-Renntermine als ICS herunterladen ----
-// Format pro Zeile: Tag;Monat;Jahr;Startzeit;Verein;Ort;MapsLink
+// Format pro Zeile: Tag;Monat;Jahr;Startzeit;Verein;Ort;MapsLink;PDF;Titel
+// Wie bei Kart: steht in der letzten Spalte ein Name (Event, z. B. eine
+// Versammlung), ersetzt er "Trial-Lauf ..." im Kalender.
 async function ladeTrialRenntermineICS() {
     try {
         const res  = await fetch('../data/timer_trial.txt');
@@ -186,10 +188,11 @@ async function ladeTrialRenntermineICS() {
             const verein   = p[4]?.trim() ?? "";
             const ort      = p[5]?.trim() ?? "Unbekannt";
             const mapsLink = p[6]?.trim() ?? "";
+            const eigener  = p[8]?.trim() ?? "";
 
             ics += icsTermin({
                 kennung:      icsKennung(['trial', jahr, monat, tag, verein, ort]),
-                titel:        `Trial-Lauf ${verein} ${ort}`,
+                titel:        eigener || `Trial-Lauf ${verein} ${ort}`,
                 start:        `${jahr}${monat}${tag}T${zeit}00`,
                 ende:         icsEndzeit(jahr, monat, tag, zeit, 8),
                 ort:          ort,

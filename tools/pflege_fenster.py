@@ -65,6 +65,7 @@ try:
     import fenster_bausteine as B
     import fenster_seiten as S
     import fenster_seiten_inhalte as I
+    import fenster_seiten_mehr as M
     import fenster_seiten_personen as P
     import fenster_seiten_rest as R
     import fenster_seiten_sponsoren as SP
@@ -94,6 +95,10 @@ SEITEN = {
     "archiv":     I.ArchivSeite,
     "news":       T.NewsSeite,
     "seitentexte": T.SeitentexteSeite,
+    "ersetzen":   M.ErsetzenSeite,
+    "klassen":    M.KlassenSeite,
+    "geschichte": M.GeschichteSeite,
+    "slider":     M.SliderSeite,
     "faq":        T.FaqSeite,
     "technik":    TE.TechnikSeite,
     "team":       P.TeamSeite,
@@ -148,6 +153,10 @@ WERKZEUGE = [
         ("Vorstand & Trainer", "#team"),
         ("Fragen & Antworten", "#faq"),
         ("Texte & Zahlen", "#seitentexte"),
+        ("Suchen & Ersetzen", "#ersetzen"),
+        ("Bilder der Startseite", "#slider"),
+        ("Kart-Klassen", "#klassen"),
+        ("Geschichte", "#geschichte"),
         ("Sommerferienprogramm", "#ferienprogramm"),
         ("Bilder aufnehmen", "#bilder"),
     ]),
@@ -252,12 +261,51 @@ class PflegeFenster:
         tk.Label(beschriftung, text="Arbeitsordner: arbeit", bg=B.FARBEN["tief"],
                  fg=B.FARBEN["rail_text"], font=self.schriften.klein).pack(anchor="w")
 
+        # Die Punkte stehen in einer rollbaren Flaeche: bei kleinem Fenster
+        # waeren die unteren sonst einfach abgeschnitten. Gerollt wird mit
+        # dem Mausrad, solange der Zeiger ueber der Leiste steht.
+        mehr = tk.Label(rail, text="▾ weitere Punkte - Mausrad", bg=B.FARBEN["tief"],
+                        fg=B.FARBEN["gelb"], font=self.schriften.klein, anchor="w")
+        leinwand = tk.Canvas(rail, bg=B.FARBEN["tief"], highlightthickness=0, bd=0,
+                             yscrollincrement=22)
+        leinwand.pack(fill="both", expand=True)
+        liste = tk.Frame(leinwand, bg=B.FARBEN["tief"])
+        fenster_id = leinwand.create_window((0, 0), window=liste, anchor="nw")
+
+        def hinweis():
+            unten = leinwand.yview()[1] >= 0.999
+            if unten and mehr.winfo_ismapped():
+                mehr.pack_forget()
+            elif not unten and not mehr.winfo_ismapped():
+                mehr.pack(side="bottom", fill="x", padx=14, pady=(2, 6), before=leinwand)
+
+        def anpassen(_=None):
+            leinwand.configure(scrollregion=(0, 0, liste.winfo_reqwidth(), liste.winfo_reqheight()))
+            leinwand.after_idle(hinweis)
+
+        def rollen(ereignis):
+            try:
+                unter = self.wurzel.winfo_containing(ereignis.x_root, ereignis.y_root)
+            except (KeyError, tk.TclError):      # z. B. ueber einer offenen Auswahlliste
+                return
+            while unter is not None and unter is not rail:
+                unter = unter.master
+            if unter is rail and liste.winfo_reqheight() > leinwand.winfo_height():
+                leinwand.yview_scroll(-1 if ereignis.delta > 0 else 1, "units")
+                hinweis()
+
+        liste.bind("<Configure>", anpassen)
+        leinwand.bind("<Configure>",
+                      lambda e: (leinwand.itemconfigure(fenster_id, width=e.width), anpassen()))
+        self.wurzel.bind_all("<MouseWheel>", rollen, add="+")
+        self.rail_leinwand = leinwand
+
         for gruppe, punkte in WERKZEUGE:
-            tk.Label(rail, text=gruppe.upper(), bg=B.FARBEN["tief"],
+            tk.Label(liste, text=gruppe.upper(), bg=B.FARBEN["tief"],
                      fg=B.FARBEN["rail_text"], font=self.schriften.label,
-                     anchor="w").pack(fill="x", padx=14, pady=(11, 1))
+                     anchor="w").pack(fill="x", padx=14, pady=(10, 1))
             for beschriftung, ziel in punkte:
-                self._rail_knopf(rail, beschriftung, ziel)
+                self._rail_knopf(liste, beschriftung, ziel)
 
     def _rail_knopf(self, rail, beschriftung, ziel):
         knopf = tk.Label(rail, text="  " + beschriftung, bg=B.FARBEN["tief"],

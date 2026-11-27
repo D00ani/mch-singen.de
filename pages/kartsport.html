@@ -5,6 +5,8 @@
     <link rel="apple-touch-icon" href="../media/logos/favicon.png">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Sicherheitsrichtlinie: erlaubt nur eigene Skripte und die Dienste, die die Seite wirklich nutzt (Open-Meteo, FormSubmit, Google-Karten). Neue fremde Dienste hier ergaenzen. -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; media-src 'self'; connect-src 'self' https://api.open-meteo.com https://formsubmit.co; frame-src https://www.google.com; form-action 'self' https://formsubmit.co; object-src 'none'; base-uri 'self'">
     <link rel="canonical" href="https://mch-singen.de/pages/kartsport.html">
     <meta name="description" content="Jugendkart-Slalom und BKC - alles zum Kartsport beim MCH Singen Motorsportclub.">
     <meta property="og:type" content="website">
@@ -140,8 +142,8 @@
             <!-- FOTOS GEMEINSCHAFTSLAUF 2026 - ENDE ============================== -->
             <p class="page-kicker">Sport<span class="seiten-buehne-zusatz"> · Bodensee-Kart-Cup</span></p>
             <h1>Kartsport im MCH Singen</h1>
-            <p class="page-lead">Die Kartabteilung des MCH Singen nimmt jedes Jahr mit seinen aktiven Mitgliedern an den verschiedenen Läufen des Bodensee-Kart-Cups (BKC) teil. Diese finden in der näheren Umgebung des Bodensees statt. Aktuell besteht der BKC aus 8 Läufen. Nähere Infos zum BKC findest du in der Ausschreibung.</p>
-            <p class="seiten-buehne-satz">Unsere Kartabteilung fährt jedes Jahr die Läufe des Bodensee-Kart-Cups (BKC).</p>
+            <p class="page-lead" data-pflege="kart.einleitung">Die Kartabteilung des MCH Singen nimmt jedes Jahr mit seinen aktiven Mitgliedern an den verschiedenen Läufen des Bodensee-Kart-Cups (BKC) teil. Diese finden in der näheren Umgebung des Bodensees statt. Aktuell besteht der BKC aus 8 Läufen. Nähere Infos zum BKC findest du in der Ausschreibung.</p>
+            <p class="seiten-buehne-satz" data-pflege="kart.buehne-satz">Unsere Kartabteilung fährt jedes Jahr die Läufe des Bodensee-Kart-Cups (BKC).</p>
             <div class="seiten-buehne-knoepfe">
                 <a class="seiten-buehne-knopf seiten-buehne-knopf--hell" href="kontakt.html">Schnuppertraining</a>
                 <a class="seiten-buehne-knopf seiten-buehne-knopf--glas" href="../media/dokumente/regelwerk.pdf" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-file-pdf" aria-hidden="true"></i> Regelwerk</a>
@@ -168,7 +170,7 @@
              im Text darunter und auf der Startseite ("Wer wir sind") -
              aendern sie sich, an allen drei Stellen mitziehen. -->
         <div class="kurz-block">
-            <p>Kartslalom: ein Kurs aus Pylonen, schnell und ohne Verfahren. Das trainiert Konzentration, Reaktion und Geschick.</p>
+            <p data-pflege="kart.kurz">Kartslalom: ein Kurs aus Pylonen, schnell und ohne Verfahren. Das trainiert Konzentration, Reaktion und Geschick.</p>
             <ul class="zahlen-kacheln">
                 <li><strong data-pflege="zahl.kinder">20+</strong><span>Kinder und Jugendliche</span></li>
                 <li><strong data-pflege="zahl.erwachsene">5</strong><span>Erwachsene und Trainer</span></li>
@@ -181,11 +183,11 @@
              Einleitungstext aus dem Seitenkopf, weil der am Handy in der
              Buehne nicht steht - bei Aenderungen BEIDE Stellen anpassen. -->
         <div class="klapp-text" id="kart-text">
-            <p class="klapp-text-nur-handy">Die Kartabteilung des MCH Singen nimmt jedes Jahr mit seinen aktiven Mitgliedern an den verschiedenen Läufen des Bodensee-Kart-Cups (BKC) teil. Diese finden in der näheren Umgebung des Bodensees statt. Aktuell besteht der BKC aus 8 Läufen. Nähere Infos zum BKC findest du in der Ausschreibung.</p>
+            <p class="klapp-text-nur-handy" data-pflege="kart.einleitung">Die Kartabteilung des MCH Singen nimmt jedes Jahr mit seinen aktiven Mitgliedern an den verschiedenen Läufen des Bodensee-Kart-Cups (BKC) teil. Diese finden in der näheren Umgebung des Bodensees statt. Aktuell besteht der BKC aus 8 Läufen. Nähere Infos zum BKC findest du in der Ausschreibung.</p>
 
-            <p>Wir fahren hauptsächlich an Kartslalom Veranstaltungen. Bei dieser Art des Kartsports wird ein Kurs mit Pylonen abgesteckt, welcher schnellstmöglich und ohne sich zu verfahren, bewältigt werden muss. Somit wird hauptsächlich die Konzentrations- und Reaktionsfähigkeit gestärkt, sowie die Geschicklichkeit trainiert.</p>
+            <p data-pflege="kart.slalom">Wir fahren hauptsächlich an Kartslalom Veranstaltungen. Bei dieser Art des Kartsports wird ein Kurs mit Pylonen abgesteckt, welcher schnellstmöglich und ohne sich zu verfahren, bewältigt werden muss. Somit wird hauptsächlich die Konzentrations- und Reaktionsfähigkeit gestärkt, sowie die Geschicklichkeit trainiert.</p>
 
-            <p>Derzeit besteht unsere Kartabteilung aus über 20 Kindern und Jugendlichen sowie 5 Erwachsenen und Trainern.</p>
+            <p data-pflege="kart.abteilung">Derzeit besteht unsere Kartabteilung aus über 20 Kindern und Jugendlichen sowie 5 Erwachsenen und Trainern.</p>
         </div>
         <button type="button" class="weiterlesen" aria-expanded="false" aria-controls="kart-text"><span>Weiterlesen</span> <i class="fa-solid fa-chevron-down" aria-hidden="true"></i></button>
 
@@ -390,7 +392,7 @@
             </a>
             <div class="kursplaner-text">
                 <h3>Kurs-Planer für Streckenpläne</h3>
-                <p>Wer einen Lauf ausrichtet, muss vorher den Kurs aufzeichnen. Mit unserem Kurs-Planer geht das direkt im Browser: Pylonentore, Spurgassen, Kreisel und die übrigen Figuren ziehst du auf den Platz, die Maße aus der BKC-Rahmenausschreibung sind schon hinterlegt. Den fertigen Streckenplan speicherst du als Datei oder gibst ihn als PDF in DIN A4 aus.</p>
+                <p data-pflege="kart.kursplaner">Wer einen Lauf ausrichtet, muss vorher den Kurs aufzeichnen. Mit unserem Kurs-Planer geht das direkt im Browser: Pylonentore, Spurgassen, Kreisel und die übrigen Figuren ziehst du auf den Platz, die Maße aus der BKC-Rahmenausschreibung sind schon hinterlegt. Den fertigen Streckenplan speicherst du als Datei oder gibst ihn als PDF in DIN A4 aus.</p>
                 <p class="kursplaner-hinweis">Läuft an PC, Tablet und Handy. Als App installiert auch ohne Internet.</p>
                 <a href="../kurs-planer/" class="action-btn">
                     <i class="fa-solid fa-map-signs" aria-hidden="true"></i> Kurs-Planer öffnen
@@ -420,7 +422,7 @@
                 <h2 class="footer-heading footer-heading--spaced">Kart-Training</h2>
                 <ul class="footer-contact">
                     <li><i class="fa-solid fa-stopwatch" aria-hidden="true"></i><span><span data-pflege="training.kart-tag">Samstags</span> <span data-pflege="training.kart-zeit">9:00 &ndash; 13:30 Uhr</span></span></li>
-                    <li><i class="fa-solid fa-location-dot" aria-hidden="true"></i><span>Münchriedstraße 10<br>78224 Singen (Hohentwiel)</span></li>
+                    <li><i class="fa-solid fa-location-dot" aria-hidden="true"></i><span><span data-pflege="adresse.gelaende-strasse">Münchriedstraße 10</span><br><span data-pflege="adresse.gelaende-ort">78224 Singen (Hohentwiel)</span></span></li>
                 </ul>
             </div>
             <div class="footer-col">

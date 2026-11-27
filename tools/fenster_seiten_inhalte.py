@@ -37,14 +37,16 @@ ROOT = h.ROOT
 class RenntermineSeite(Seite):
     titel = "Renntermine verwalten"
     untertitel = ("Die Termine, aus denen der Countdown auf der Startseite und der "
-                  "Kalender-Download entstehen. Unter „Event“ stehen Termine, die "
-                  "kein Rennen sind, etwa eine Feier oder die Siegerehrung.")
+                  "Kalender-Download entstehen. Unter „Kart-Event“ und „Trial-Event“ "
+                  "stehen Termine, die kein Rennen sind, etwa eine Feier, eine "
+                  "Versammlung oder die Siegerehrung.")
 
-    # Events stehen in derselben Datei wie die Kart-Rennen, tragen aber in
-    # Spalte 9 ihren Namen (tv.ist_event). Die Webseite zeigt dann diesen
-    # Namen statt "Rennen beim ...". Damit "Kart" nur die Rennen zeigt, haben
-    # Events einen eigenen Reiter.
-    DATEIEN = {"Kart": "timer.txt", "Trial": "timer_trial.txt", "Event": "timer.txt"}
+    # Events stehen in derselben Datei wie die Rennen ihrer Sparte, tragen
+    # aber in Spalte 9 ihren Namen (tv.ist_event). Die Webseite zeigt dann
+    # diesen Namen statt "Rennen beim ..." bzw. "Trial-Lauf ...". Damit
+    # "Kart" und "Trial" nur die Rennen zeigen, haben Events eigene Reiter.
+    DATEIEN = {"Kart": "timer.txt", "Trial": "timer_trial.txt",
+               "Kart-Event": "timer.txt", "Trial-Event": "timer_trial.txt"}
     EVENT_VEREIN = "MCH"  # Spalte 5 eines neuen Events, auf der Seite unsichtbar
 
     def baue(self):
@@ -71,7 +73,7 @@ class RenntermineSeite(Seite):
         return h.lies_zeilen(self._datei())
 
     def _ist_event_reiter(self):
-        return self.sportart.get() == "Event"
+        return self.sportart.get().endswith("Event")
 
     def _eintraege(self, zeilen):
         """(Zeilennummer in der Datei, Zeile) fuer den gewaehlten Reiter.
@@ -81,9 +83,7 @@ class RenntermineSeite(Seite):
         zeigt."""
         if self._ist_event_reiter():
             return [(i, z) for i, z in enumerate(zeilen) if tv.ist_event(z)]
-        if self.sportart.get() == "Kart":
-            return [(i, z) for i, z in enumerate(zeilen) if not tv.ist_event(z)]
-        return list(enumerate(zeilen))
+        return [(i, z) for i, z in enumerate(zeilen) if not tv.ist_event(z)]
 
     def _spalten(self, zeile):
         """Eine timer.txt-Zeile als lesbare Tabellenzeile."""
@@ -110,7 +110,7 @@ class RenntermineSeite(Seite):
         event = self._ist_event_reiter()
 
         B.abschnitt(self.inhalt, self.s,
-                    "Events" if event else f"{self.sportart.get()}-Termine",
+                    f"{self.sportart.get()}s" if event else f"{self.sportart.get()}-Termine",
                     f"{len(eintraege)} Einträge · data/{self.DATEIEN[self.sportart.get()]}")
 
         if not eintraege:

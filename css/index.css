@@ -1128,6 +1128,32 @@ body.dark-mode .weather-text strong {
     color: #e8ecff;
 }
 
+/* Winterpause-Hinweis unter "Komm vorbei - Training" (js/index.js, 5b).
+   Gelber Rand wie die Akzentfarbe, sonst im Stil der Wetter-Leiste. */
+.training-pause {
+    margin: 0 0 16px 0;
+    padding: 10px 14px;
+    background: var(--surface-muted);
+    border: 1px solid var(--border-soft);
+    border-left: 4px solid var(--accent);
+    border-radius: 10px;
+    text-align: left;
+    font-size: var(--text-sm);
+    font-weight: 600;
+    color: #222;
+}
+
+.training-pause[hidden] {
+    display: none;
+}
+
+body.dark-mode .training-pause {
+    background: rgba(30, 32, 55, 0.6);
+    border-color: rgba(255, 255, 255, 0.08);
+    border-left-color: var(--accent);
+    color: #e8ecff;
+}
+
 
 /* =========================================
    8. SPONSORENLEISTE
@@ -1351,8 +1377,12 @@ body.dark-mode .sponsor-strip-mehr { color: var(--blue-light); }
     /* Punkte werden zu Balken wie bei einer Bildergeschichte. Der aktive
        Balken fuellt sich in den 5 Sekunden bis zum naechsten Bild
        (Takt aus js/index.js, startAutoPlay). */
+    /* Die Schaltflaechen reichen vom oberen Fotorand bis knapp an die
+       Bildunterschrift "Unseren Verein entdecken" (28px, vorher 22px) -
+       mehr Platz ist dort nicht, darunter beginnt der Link des Fotos.
+       Das Polster oben haelt den sichtbaren Balken an seiner alten Stelle. */
     .slider-dots {
-        top: 6px;
+        top: 0;
         bottom: auto;
         left: 12px;
         right: 12px;
@@ -1362,8 +1392,9 @@ body.dark-mode .sponsor-strip-mehr { color: var(--blue-light); }
     .slider-dot {
         flex: 1;
         width: auto;
-        height: 22px;
-        padding: 0 4px;
+        height: 28px;
+        padding: 6px 4px 0;
+        box-sizing: border-box;
     }
 
     .slider-dot::before {
@@ -1593,6 +1624,7 @@ body.dark-mode .sponsor-strip-mehr { color: var(--blue-light); }
 
     .location-box h2 { font-size: var(--text-base); }
     .location-box p { margin-bottom: 0; }
+    .location-box .training-pause { margin-bottom: 14px; }
 
     /* Kartenfeld und "Groessere Karte" entfallen - Route und Mini-Karte
        oeffnen die Karten-App direkt. Der Wetter-Hinweis wandert in den
